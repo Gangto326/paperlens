@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { TextExtractionPayload } from '@shared/ipc';
 import type { Page, TextItemRecord } from '@shared/schema';
+import { NORMALIZER_VERSION, normalizeText } from '@shared/normalize/normalizer';
 import { SAMPLE_SHA } from '@shared/schema/fixtures';
 import { PaperCacheStore } from '../cache/paper-cache-store';
 import { computeExtractionRevision } from './revision';
@@ -67,7 +68,9 @@ function textPayload(): TextExtractionPayload {
 
 describe('saveTextItems', () => {
   it('텍스트 PDF: source-map.json 저장, manifest는 extracting + rev + 파일 해시', async () => {
-    const r = await saveTextItems(store, textPayload());
+    const payload = textPayload();
+    const items = payload.textItems;
+    const r = await saveTextItems(store, payload);
     expect(r.halted).toBe(false);
     expect(r.textQuality).toBe('ok');
     expect(r.itemCount).toBe(10);
@@ -76,7 +79,9 @@ describe('saveTextItems', () => {
     const doc = await store.readJson('sourceMapDocument', r.sourceMapPath);
     expect(doc.extractionRevision).toBe(r.extractionRevision);
     expect(doc.textItems).toHaveLength(10);
-    expect(doc.normalizationMaps).toEqual([]);
+    expect(doc.normalizationMaps.map((m) => m.id)).toEqual(items.map((i) => `nm_${i.id}`));
+    expect(doc.normalizationMaps.every((m) => m.version === NORMALIZER_VERSION)).toBe(true);
+    expect(doc.normalizationMaps[0]?.segments).toEqual(normalizeText(items[0]!.str).segments);
 
     const m = await store.readManifest(SAMPLE_SHA);
     expect(m.state).toBe('extracting');
@@ -140,11 +145,14 @@ describe('saveTextItems', () => {
 
 describe('computeExtractionRevision', () => {
   it('같은 입력이면 같은 rev, 버전이 다르면 다른 rev', () => {
-    const a = computeExtractionRevision({ pdfjsVersion: '6.3.289', textExtractorVersion: '1' });
-    const b = computeExtractionRevision({ textExtractorVersion: '1', pdfjsVersion: '6.3.289' });
-    const c = computeExtractionRevision({ pdfjsVersion: '6.3.290', textExtractorVersion: '1' });
+    const base = { pdfjsVersion: '6.3.289', textExtractorVersion: '1', normalizerVersion: '1' };
+    const a = computeExtractionRevision(base);
+    const b = computeExtractionRevision({ ...base, pdfjsVersion: '6.3.289' });
+    const c = computeExtractionRevision({ ...base, pdfjsVersion: '6.3.290' });
+    const d = computeExtractionRevision({ ...base, normalizerVersion: '2' });
     expect(a).toBe(b);
     expect(a).not.toBe(c);
+    expect(a).not.toBe(d);
     expect(a).toMatch(/^r[0-9a-f]{12}$/);
   });
 });

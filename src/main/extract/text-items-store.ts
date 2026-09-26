@@ -1,5 +1,6 @@
 import type { TextExtractionPayload, TextExtractionResult } from '@shared/ipc';
 import { SCHEMA_VERSION, type Failure, type Page, type TextQuality } from '@shared/schema';
+import { createNormalizationMap, NORMALIZER_VERSION } from '@shared/normalize/normalizer';
 import { classifyDocument, classifyPage, haltsPipeline, pageTextStats } from '@shared/text-quality';
 import type { PaperCacheStore } from '../cache/paper-cache-store';
 import { computeExtractionRevision } from './revision';
@@ -44,7 +45,8 @@ function assertConsistent(payload: TextExtractionPayload): void {
 
 /**
  * renderer가 모은 텍스트 항목을 extraction/<rev>/source-map.json에 저장하고 텍스트 품질을 판정한다.
- * - normalizationMaps는 C1.9 전까지 빈 배열.
+ * - normalizationMaps는 항목마다 하나(`nm_<textItemId>`). 정규화 텍스트는 파일에 쓰지 않고
+ *   같은 NORMALIZER_VERSION으로 다시 계산한다.
  * - needs_ocr·garbled이면 manifest.state=failed + errors에 기록하고 halted=true를 돌려준다.
  * - 그 외에는 state=extracting, currentExtractionRevision=rev. 다음 단계(GROBID)는 C1.6~.
  * pages는 아직 파일에 쓰지 않는다(document.json 확정은 C1.14). textQuality를 채워 돌려준다.
@@ -69,6 +71,7 @@ export async function saveTextItems(
   const extractionRevision = computeExtractionRevision({
     pdfjsVersion: payload.pdfjsVersion,
     textExtractorVersion: payload.textExtractorVersion,
+    normalizerVersion: NORMALIZER_VERSION,
   });
   const sourceMapPath = store.extractionPath(pdfSha256, extractionRevision, 'source-map.json');
   const fileSha = await store.writeJson('sourceMapDocument', sourceMapPath, {
@@ -77,7 +80,9 @@ export async function saveTextItems(
     extractionRevision,
     pdfjsVersion: payload.pdfjsVersion,
     textItems: payload.textItems,
-    normalizationMaps: [],
+    normalizationMaps: payload.textItems.map(
+      (item) => createNormalizationMap(item.str, `nm_${item.id}`).map,
+    ),
   });
 
   await store.updateManifest(
