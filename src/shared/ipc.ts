@@ -9,6 +9,6 @@ export const IPC = {
 export interface AppInfo {
   appVersion: string;
   electronVersion: string;
-  platform: NodeJS.Platform | string;
+  platform: string;
   userDataPath: string;
 }

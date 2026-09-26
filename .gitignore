@@ -17,3 +17,4 @@ fixtures/**/*.tei.xml
 coverage/
 playwright-report/
 test-results/
+*.tsbuildinfo
