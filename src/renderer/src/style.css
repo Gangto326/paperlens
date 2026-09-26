@@ -1,0 +1,11 @@
+:root {
+  color-scheme: light dark;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
+  font-size: 14px;
+}
+html, body, #app { height: 100%; margin: 0; }
+#app { display: flex; flex-direction: column; }
+#topbar { padding: 8px 12px; border-bottom: 1px solid rgb(128 128 128 / 0.3); font-weight: 600; }
+#layout { flex: 1; display: grid; grid-template-columns: 1fr 420px; min-height: 0; }
+#viewer { overflow: auto; background: rgb(128 128 128 / 0.08); }
+#panel { overflow: auto; padding: 12px; border-left: 1px solid rgb(128 128 128 / 0.3); }
