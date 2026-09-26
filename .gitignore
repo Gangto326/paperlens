@@ -18,3 +18,8 @@ coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
+# mcp-session-router (ccode) 세션 데이터와 라우터 사용 로그 — 별도 프로젝트의 데이터
+.session-manager/
+project-context.md
+session-router-log.md
+.claude/settings.json
