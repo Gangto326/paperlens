@@ -62,3 +62,66 @@ body,
 .pdf-page .textLayer ::selection {
   background: rgb(0 120 255 / 0.35);
 }
+
+/* 상단 단계 표시 */
+#stage:not(:empty)::before {
+  content: '·';
+  margin-right: 8px;
+}
+
+/* 우측 패널: 선택 문장 (C1.16) */
+#status {
+  margin: 0 0 12px;
+  font-size: 12px;
+}
+.selection-summary {
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+.sentence {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgb(128 128 128 / 0.3);
+  border-radius: 6px;
+}
+.sentence-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.status-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: rgb(128 128 128 / 0.15);
+}
+.status-badge.status-uncertain {
+  background: rgb(255 170 0 / 0.25);
+}
+.status-badge.status-unmapped {
+  background: rgb(255 80 80 / 0.25);
+}
+.sentence-notice {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: rgb(200 90 0);
+}
+.sentence.status-unmapped .sentence-notice {
+  color: rgb(200 40 40);
+}
+.sentence-en {
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+.eq-token {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgb(80 140 255 / 0.18);
+  font-size: 12px;
+}
+.sentence-translation {
+  margin: 0;
+  font-size: 12px;
+}
