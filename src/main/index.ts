@@ -18,6 +18,7 @@ import { buildAndSaveDocument, readSentenceIndex } from './extract/document-stor
 import type { Page } from '@shared/schema';
 import { GrobidClient } from './parser/grobid-client';
 import { FULLTEXT_PARAMS, processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
+import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -26,6 +27,8 @@ let grobid: GrobidClient;
 const extractedPages = new Map<string, Page[]>();
 /** 마지막 헬스체크에서 읽은 GROBID 버전(Pipeline.parserVersion). */
 let grobidVersion: string | null = null;
+/** 앱이 소유하는 Codex App Server(C1.18). PAPERLENS_NO_CODEX=1이면 띄우지 않는다. */
+let codex: CodexRuntime | null = null;
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -196,12 +199,51 @@ function registerIpc(): void {
   );
 }
 
+// Codex App Server를 앱 전용 CODEX_HOME으로 띄우고, 도구 없는 스레드의 유효 도구 목록을 로그로 남긴다(C1.18 확인 항목).
+async function bootCodex(): Promise<void> {
+  if (process.env['PAPERLENS_NO_CODEX']) {
+    console.log('[codex] PAPERLENS_NO_CODEX 설정으로 App Server를 띄우지 않습니다');
+    return;
+  }
+  const runtime = new CodexRuntime({
+    userDataPath: app.getPath('userData'),
+    appVersion: app.getVersion(),
+    log: (line) => console.log(`[codex] ${line}`),
+  });
+  codex = runtime;
+  try {
+    const info = await runtime.start();
+    console.log(
+      `[codex] app-server ${info.binary.version} 시작 ${info.startupMs}ms home=${info.home.root} ua=${info.userAgent}`,
+    );
+    const thread = await runtime.startThread();
+    console.log(
+      `[codex] thread ${thread.threadId} model=${thread.model} sandbox=${JSON.stringify(thread.sandbox)} approval=${JSON.stringify(thread.approvalPolicy)}`,
+    );
+    console.log(`[codex] ${formatToolInventory(await runtime.toolInventory(thread.threadId))}`);
+  } catch (err) {
+    console.error(`[codex] 시작 실패: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
+let quitting = false;
+app.on('before-quit', (event) => {
+  if (quitting || !codex || codex.client?.state === 'exited') return;
+  quitting = true;
+  event.preventDefault();
+  void codex
+    .stop()
+    .catch((err: unknown) => console.error(`[codex] 종료 실패: ${String(err)}`))
+    .finally(() => app.quit());
+});
+
 void app.whenReady().then(() => {
   store = new PaperCacheStore(join(app.getPath('userData'), 'cache'));
   registry = new PdfRegistry(store);
   grobid = new GrobidClient();
   registerIpc();
   createWindow();
+  void bootCodex();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

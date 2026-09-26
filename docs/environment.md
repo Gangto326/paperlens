@@ -26,6 +26,8 @@ docker run --rm --init --ulimit core=0 -m 4g -p 127.0.0.1:8070:8070 grobid/grobi
 - `CODEX_HOME`을 앱 데이터 디렉터리 하위(`userData/codex-home`)로 두고, 그 안의 `config.toml`만 사용한다. 전역 `~/.codex`의 플러그인·설정은 읽지 않는다.
 - 프로토콜 타입은 고정한 npm 버전의 `codex app-server generate-ts`로 생성해 커밋한다.
 - 인증은 앱 안에서 `account/login/start {type: "chatgpt"}`로 1회 수행한다. `auth.json`은 커밋하지 않는다.
+- 자식 프로세스 환경은 최소만 넘긴다(PATH·TMPDIR·LANG 등). `OPENAI_*`·`CODEX_*`는 넘기지 않고, HOME은 `codex-home/home`(빈 디렉터리)로 둔다 — HOME을 바꾸지 않으면 `~/.agents/skills`가 모델 프롬프트의 스킬 루트로 붙는다(0.157.1 실측).
+- config.toml은 앱이 시작마다 생성하고 `app-server --strict-config`로 띄운다. `[features]`에서 shell·unified_exec·apps·multi_agent·goals·hooks·플러그인·브라우저·컴퓨터 사용 등을 끄고, 시작 후 `config/read`로 유효 설정을 대조해 다르면 시작 실패로 처리한다. 조사 도구(MCP)는 `thread/start.config.mcp_servers`로 해당 스레드에만 붙인다(스레드별 적용 실측 확인).
 
 ## 검사·실행
 

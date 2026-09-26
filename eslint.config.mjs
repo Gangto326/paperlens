@@ -31,8 +31,10 @@ export default tseslint.config(
   },
   { files: ['**/*.js', '**/*.cjs', '**/*.mjs'], ...tseslint.configs.disableTypeChecked },
   {
-    files: ['scripts/**/*.mjs'],
-    languageOptions: { globals: { process: 'readonly', console: 'readonly' } },
+    files: ['scripts/**/*.mjs', 'src/**/__fixtures__/*.mjs'],
+    languageOptions: {
+      globals: { process: 'readonly', console: 'readonly', setInterval: 'readonly' },
+    },
   },
   prettier,
 );
