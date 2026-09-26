@@ -11,6 +11,7 @@ export const IPC = {
   extractSaveTextItems: 'extract:saveTextItems',
   parserHealth: 'parser:health',
   parserFulltext: 'parser:fulltext',
+  extractBuildDocument: 'extract:buildDocument',
 } as const;
 
 export interface AppInfo {
@@ -75,5 +76,21 @@ export interface ParserFulltextResult {
   byteLength: number;
   hasSentenceCoords: boolean;
   parserConfigHash: string;
+  elapsedMs: number;
+}
+
+/** document.json 확정 결과(C1.14). 문장 본문은 파일에만 두고 renderer에는 집계만 보낸다. */
+export interface MappingResult {
+  extractionRevision: string;
+  documentPath: string;
+  sentenceCount: number;
+  mapped: number;
+  uncertain: number;
+  unmapped: number;
+  /** 인라인 수식 자리표시자 수(detected + math_uncertain) */
+  equationCount: number;
+  readingOrderMismatches: number;
+  /** 문서 수준 경고(document.json의 warnings와 같다) */
+  warnings: string[];
   elapsedMs: number;
 }

@@ -79,10 +79,16 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
   console.info(
     `[paperlens] grobid fulltext bytes=${parsed.byteLength} sentenceCoords=${parsed.hasSentenceCoords} configHash=${parsed.parserConfigHash} ms=${parsed.elapsedMs}`,
   );
+  if (!parsed.hasSentenceCoords) {
+    setStatus(`구조 분석 완료. 그러나 문장 좌표(<s coords>)가 없어 위치 매핑을 할 수 없습니다.`);
+  }
+  setStatus(`구조 분석 완료 (${Math.round(parsed.elapsedMs / 1000)}s). 문장 위치를 잇는 중…`);
+  const mapped = await window.paperlens.buildDocument(result.pdfSha256);
+  console.info(
+    `[paperlens] document rev=${mapped.extractionRevision} sentences=${mapped.sentenceCount} mapped=${mapped.mapped} uncertain=${mapped.uncertain} unmapped=${mapped.unmapped} equations=${mapped.equationCount} readingOrder=${mapped.readingOrderMismatches} warnings=${JSON.stringify(mapped.warnings)} ms=${mapped.elapsedMs}`,
+  );
   setStatus(
-    parsed.hasSentenceCoords
-      ? `구조 분석 완료 (TEI ${Math.round(parsed.byteLength / 1024)}KB, ${Math.round(parsed.elapsedMs / 1000)}s). 문장을 클릭하거나 드래그하세요.`
-      : `구조 분석 완료. 그러나 문장 좌표(<s coords>)가 없어 위치 매핑을 할 수 없습니다.`,
+    `문장 ${mapped.sentenceCount}개 준비 (연결 ${mapped.mapped}, 불확실 ${mapped.uncertain}, 미연결 ${mapped.unmapped}, 수식 ${mapped.equationCount}). 문장을 클릭하거나 드래그하세요.`,
   );
 }
 

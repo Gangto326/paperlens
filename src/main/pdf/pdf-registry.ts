@@ -25,6 +25,13 @@ export class PdfRegistry {
     return this.paths.has(pdfSha256);
   }
 
+  /** 등록된 해시의 원본 경로. 미등록이면 예외. */
+  originalPathOf(pdfSha256: string): string {
+    const path = this.paths.get(pdfSha256);
+    if (!path) throw new Error(`등록되지 않은 PDF: ${pdfSha256}`);
+    return path;
+  }
+
   /** 등록된 해시에 대해서만 바이트를 준다. 임의 경로 읽기를 renderer에 허용하지 않는다. */
   async readBytes(pdfSha256: string): Promise<Uint8Array> {
     const path = this.paths.get(pdfSha256);

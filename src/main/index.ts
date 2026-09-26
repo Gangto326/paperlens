@@ -1,9 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import {
   IPC,
   type AppInfo,
+  type MappingResult,
   type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
@@ -12,12 +13,18 @@ import {
 import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
 import { parseTextExtractionPayload, saveTextItems } from './extract/text-items-store';
+import { buildAndSaveDocument } from './extract/document-store';
+import type { Page } from '@shared/schema';
 import { GrobidClient } from './parser/grobid-client';
-import { processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
+import { FULLTEXT_PARAMS, processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
 let grobid: GrobidClient;
+/** saveTextItems가 판정한 페이지 정보. document.json(C1.14)에 넣기 전까지 `<sha>:<rev>`로 기억한다. */
+const extractedPages = new Map<string, Page[]>();
+/** 마지막 헬스체크에서 읽은 GROBID 버전(Pipeline.parserVersion). */
+let grobidVersion: string | null = null;
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -113,11 +120,21 @@ function registerIpc(): void {
       if (!registry.isRegistered(parsed.pdfSha256)) {
         throw new Error(`등록되지 않은 PDF: ${parsed.pdfSha256}`);
       }
-      return saveTextItems(store, parsed);
+      const result = await saveTextItems(store, parsed, {
+        parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
+      });
+      if (!result.halted) {
+        extractedPages.set(`${parsed.pdfSha256}:${result.extractionRevision}`, result.pages);
+      }
+      return result;
     },
   );
 
-  ipcMain.handle(IPC.parserHealth, (): Promise<ParserHealth> => grobid.isAlive());
+  ipcMain.handle(IPC.parserHealth, async (): Promise<ParserHealth> => {
+    const health = await grobid.isAlive();
+    if (health.ok) grobidVersion = health.version;
+    return health;
+  });
 
   // 텍스트 추출(C1.5)이 끝난 논문만 GROBID에 보낸다. TEI 원본은 같은 rev 아래 보존한다.
   ipcMain.handle(
@@ -139,6 +156,30 @@ function registerIpc(): void {
         parserConfigHash: result.parserConfigHash,
         elapsedMs: result.elapsedMs,
       };
+    },
+  );
+
+  // TEI(C1.7)와 source-map(C1.5)을 합쳐 document.json을 확정하고 manifest를 mapping으로 옮긴다(C1.14).
+  ipcMain.handle(
+    IPC.extractBuildDocument,
+    async (_event, pdfSha256: unknown): Promise<MappingResult> => {
+      if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
+        throw new Error('등록되지 않은 PDF');
+      }
+      const manifest = await store.readManifest(pdfSha256);
+      const rev = manifest.currentExtractionRevision;
+      if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
+      const pages = extractedPages.get(`${pdfSha256}:${rev}`);
+      if (!pages) throw new Error('텍스트 추출 결과가 메모리에 없습니다. PDF를 다시 여세요.');
+      const originalPath = registry.originalPathOf(pdfSha256);
+      const { build: _build, ...result } = await buildAndSaveDocument(store, pdfSha256, {
+        fileName: basename(originalPath),
+        originalPath,
+        pages,
+        parserVersion: grobidVersion,
+        parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
+      });
+      return result;
     },
   );
 }

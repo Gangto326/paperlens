@@ -7,11 +7,12 @@ import type { Page, TextItemRecord } from '@shared/schema';
 import { NORMALIZER_VERSION, normalizeText } from '@shared/normalize/normalizer';
 import { SAMPLE_SHA } from '@shared/schema/fixtures';
 import { PaperCacheStore } from '../cache/paper-cache-store';
-import { computeExtractionRevision } from './revision';
+import { computeExtractionRevision, revisionInputFor } from './revision';
 import { parseTextExtractionPayload, saveTextItems } from './text-items-store';
 
 let root: string;
 let store: PaperCacheStore;
+const OPTS = { parserConfigHash: 'cfg0' };
 
 beforeEach(async () => {
   root = await fs.mkdtemp(join(tmpdir(), 'paperlens-extract-'));
@@ -72,7 +73,7 @@ describe('saveTextItems', () => {
   it('텍스트 PDF: source-map.json 저장, manifest는 extracting + rev + 파일 해시', async () => {
     const payload = textPayload();
     const items = payload.textItems;
-    const r = await saveTextItems(store, payload);
+    const r = await saveTextItems(store, payload, OPTS);
     expect(r.halted).toBe(false);
     expect(r.textQuality).toBe('ok');
     expect(r.itemCount).toBe(10);
@@ -96,7 +97,7 @@ describe('saveTextItems', () => {
   });
 
   it('스캔 PDF(항목 없음): needs_ocr로 중단하고 manifest는 failed + errors', async () => {
-    const r = await saveTextItems(store, { ...textPayload(), textItems: [] });
+    const r = await saveTextItems(store, { ...textPayload(), textItems: [] }, OPTS);
     expect(r.halted).toBe(true);
     expect(r.textQuality).toBe('needs_ocr');
     const m = await store.readManifest(SAMPLE_SHA);
@@ -110,7 +111,7 @@ describe('saveTextItems', () => {
     const pua = ''.repeat(40);
     const payload = textPayload();
     payload.textItems = payload.textItems.map((t) => ({ ...t, str: pua }));
-    const r = await saveTextItems(store, payload);
+    const r = await saveTextItems(store, payload, OPTS);
     expect(r.textQuality).toBe('garbled');
     expect(r.halted).toBe(true);
     const m = await store.readManifest(SAMPLE_SHA);
@@ -118,22 +119,22 @@ describe('saveTextItems', () => {
   });
 
   it('같은 입력을 다시 저장해도 rev·errors가 늘지 않는다', async () => {
-    const r1 = await saveTextItems(store, textPayload());
-    const r2 = await saveTextItems(store, textPayload());
+    const r1 = await saveTextItems(store, textPayload(), OPTS);
+    const r2 = await saveTextItems(store, textPayload(), OPTS);
     expect(r2.extractionRevision).toBe(r1.extractionRevision);
     expect((await store.readManifest(SAMPLE_SHA)).files).toHaveLength(1);
-    await saveTextItems(store, { ...textPayload(), textItems: [] });
-    await saveTextItems(store, { ...textPayload(), textItems: [] });
+    await saveTextItems(store, { ...textPayload(), textItems: [] }, OPTS);
+    await saveTextItems(store, { ...textPayload(), textItems: [] }, OPTS);
     expect((await store.readManifest(SAMPLE_SHA)).errors).toHaveLength(1);
   });
 
   it('ID 규칙에 어긋나는 항목은 저장하지 않는다', async () => {
     const payload = textPayload();
     payload.textItems[0]!.id = 't_0_99';
-    await expect(saveTextItems(store, payload)).rejects.toThrow(/≠/);
+    await expect(saveTextItems(store, payload, OPTS)).rejects.toThrow(/≠/);
     const bad = textPayload();
     bad.textItems.push(item(5, 0, SENTENCE));
-    await expect(saveTextItems(store, bad)).rejects.toThrow(/범위 밖/);
+    await expect(saveTextItems(store, bad, OPTS)).rejects.toThrow(/범위 밖/);
     expect(await store.exists(store.extractionPath(SAMPLE_SHA, 'x', 'source-map.json'))).toBe(
       false,
     );
@@ -142,20 +143,28 @@ describe('saveTextItems', () => {
   it('스키마에 맞지 않는 항목(필드 누락)은 쓰기 단계에서 거부된다', async () => {
     const payload = textPayload();
     delete (payload.textItems[0] as Partial<TextItemRecord>).fontName;
-    await expect(saveTextItems(store, payload)).rejects.toThrow(/sourceMapDocument/);
+    await expect(saveTextItems(store, payload, OPTS)).rejects.toThrow(/sourceMapDocument/);
   });
 });
 
 describe('computeExtractionRevision', () => {
   it('같은 입력이면 같은 rev, 버전이 다르면 다른 rev', () => {
-    const base = { pdfjsVersion: '6.3.289', textExtractorVersion: '1', normalizerVersion: '1' };
+    const base = revisionInputFor({
+      pdfjsVersion: '6.3.289',
+      textExtractorVersion: '1',
+      parserConfigHash: 'cfg0',
+    });
     const a = computeExtractionRevision(base);
     const b = computeExtractionRevision({ ...base, pdfjsVersion: '6.3.289' });
     const c = computeExtractionRevision({ ...base, pdfjsVersion: '6.3.290' });
     const d = computeExtractionRevision({ ...base, normalizerVersion: '2' });
+    const e = computeExtractionRevision({ ...base, parserConfigHash: 'cfg1' });
+    const f = computeExtractionRevision({ ...base, alignmentVersion: '2' });
     expect(a).toBe(b);
     expect(a).not.toBe(c);
     expect(a).not.toBe(d);
+    expect(a).not.toBe(e);
+    expect(a).not.toBe(f);
     expect(a).toMatch(/^r[0-9a-f]{12}$/);
   });
 });

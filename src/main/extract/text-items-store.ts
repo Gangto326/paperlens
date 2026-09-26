@@ -1,9 +1,9 @@
 import type { TextExtractionPayload, TextExtractionResult } from '@shared/ipc';
 import { SCHEMA_VERSION, type Failure, type Page, type TextQuality } from '@shared/schema';
-import { createNormalizationMap, NORMALIZER_VERSION } from '@shared/normalize/normalizer';
+import { createNormalizationMap } from '@shared/normalize/normalizer';
 import { classifyDocument, classifyPage, haltsPipeline, pageTextStats } from '@shared/text-quality';
 import type { PaperCacheStore } from '../cache/paper-cache-store';
-import { computeExtractionRevision } from './revision';
+import { computeExtractionRevision, revisionInputFor } from './revision';
 
 const SHA256_RE = /^[0-9a-f]{64}$/;
 
@@ -49,13 +49,21 @@ function assertConsistent(payload: TextExtractionPayload): void {
  *   같은 NORMALIZER_VERSION으로 다시 계산한다.
  * - needs_ocr·garbled이면 manifest.state=failed + errors에 기록하고 halted=true를 돌려준다.
  * - 그 외에는 state=extracting, currentExtractionRevision=rev. 다음 단계(GROBID)는 C1.6~.
- * pages는 아직 파일에 쓰지 않는다(document.json 확정은 C1.14). textQuality를 채워 돌려준다.
+ * pages는 여기서 파일에 쓰지 않고 textQuality를 채워 돌려준다. document.json은 C1.14(build-document·document-store)가
+ * GROBID 결과와 합쳐 확정한다.
  */
+export interface SaveTextItemsOptions {
+  /** GROBID 이미지 태그+요청 설정 해시(GrobidClient.parserConfigHash). extraction revision 입력이다. */
+  parserConfigHash: string;
+  now?: Date;
+}
+
 export async function saveTextItems(
   store: PaperCacheStore,
   payload: TextExtractionPayload,
-  now = new Date(),
+  opts: SaveTextItemsOptions,
 ): Promise<TextExtractionResult> {
+  const now = opts.now ?? new Date();
   assertConsistent(payload);
   const { pdfSha256 } = payload;
 
@@ -68,11 +76,13 @@ export async function saveTextItems(
   const textQuality: TextQuality = classifyDocument(pages.map((p) => p.textQuality));
   const halted = haltsPipeline(textQuality);
 
-  const extractionRevision = computeExtractionRevision({
-    pdfjsVersion: payload.pdfjsVersion,
-    textExtractorVersion: payload.textExtractorVersion,
-    normalizerVersion: NORMALIZER_VERSION,
-  });
+  const extractionRevision = computeExtractionRevision(
+    revisionInputFor({
+      pdfjsVersion: payload.pdfjsVersion,
+      textExtractorVersion: payload.textExtractorVersion,
+      parserConfigHash: opts.parserConfigHash,
+    }),
+  );
   const sourceMapPath = store.extractionPath(pdfSha256, extractionRevision, 'source-map.json');
   const fileSha = await store.writeJson('sourceMapDocument', sourceMapPath, {
     schemaVersion: SCHEMA_VERSION,

@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument, version as PDFJS_VERSION } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { PageBox } from '@shared/geometry/coords';
-import type { Sentence, TextItemRecord } from '@shared/schema/types';
+import type { FontRecord, Page, Sentence, TextItemRecord } from '@shared/schema/types';
 import { normalizeTei } from '../../parser/tei-normalize';
 
 /**
@@ -25,6 +25,13 @@ export interface Loaded {
   sentences: Sentence[];
   /** 항목 fontName(내부 이름) → 실제 글꼴 이름. opts.fonts일 때만 채운다(getOperatorList 비용: 52쪽 약 8초). */
   fonts: Map<string, string>;
+  /** fonts를 FontRecord 배열로(family는 미상 ''). document.json 조립(C1.14) 입력용. */
+  fontRecords: FontRecord[];
+  /** Page 배열(textQuality 'ok'). mediaBox는 PDF.js가 노출하지 않아 view로 대신한다. */
+  pages: Page[];
+  /** GROBID TEI 원문 */
+  tei: string;
+  pdfjsVersion: string;
 }
 
 function fontBaseName(
@@ -44,14 +51,26 @@ export async function loadSample(id: string, opts: { fonts?: boolean } = {}): Pr
   const doc = await task.promise;
   const items: TextItemRecord[] = [];
   const boxes: PageBox[] = [];
+  const pages: Page[] = [];
   const fonts = new Map<string, string>();
   for (let i = 0; i < doc.numPages; i++) {
     const page = await doc.getPage(i + 1);
     if (opts.fonts) await page.getOperatorList();
-    boxes.push({
-      viewBox: page.view as [number, number, number, number],
+    const view = page.view as [number, number, number, number];
+    boxes.push({ viewBox: view, rotation: page.rotate, userUnit: page.userUnit });
+    const vp = page.getViewport({ scale: 1 });
+    pages.push({
+      pageIndex: i,
+      pdfPageNumber: i + 1,
+      width: vp.width,
+      height: vp.height,
       rotation: page.rotate,
       userUnit: page.userUnit,
+      mediaBox: view,
+      cropBox: view,
+      coordinateSpace: 'pdf_user_space',
+      textQuality: 'ok',
+      warnings: [],
     });
     const content = await page.getTextContent();
     let index = 0;
@@ -77,5 +96,6 @@ export async function loadSample(id: string, opts: { fonts?: boolean } = {}): Pr
   await task.destroy();
   const tei = readFileSync(resolve(teis, `${id}.tei.xml`), 'utf8');
   const { sentences } = normalizeTei(tei, { pdfSha256: 'a'.repeat(64), extractionRevision: 'r' });
-  return { items, boxes, sentences, fonts };
+  const fontRecords = [...fonts].map(([id, name]) => ({ id, name, family: '' }));
+  return { items, boxes, sentences, fonts, fontRecords, pages, tei, pdfjsVersion: PDFJS_VERSION };
 }
