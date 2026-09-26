@@ -1,0 +1,19 @@
+node_modules/
+dist/
+out/
+.vite/
+*.log
+.DS_Store
+# 앱 전용 Codex 홈·인증·캐시 (절대 커밋 금지)
+.codex-home/
+codex-home/
+cache/
+# 샘플 PDF는 재배포하지 않음 (해시·URL만 fixtures에 기록)
+fixtures/**/*.pdf
+fixtures/**/*.tei.xml
+# 로컬 환경
+.env
+.env.*
+coverage/
+playwright-report/
+test-results/
