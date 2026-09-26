@@ -19,7 +19,7 @@ afterEach(async () => {
   server = null;
 });
 
-const fast = { timeoutMs: 500, retryDelayMs: 1, retryCount: 2 };
+const fast = { timeoutMs: 500, healthTimeoutMs: 500, retryDelayMs: 1, retryCount: 2 };
 
 describe('GrobidClient.isAlive', () => {
   it('isalive가 true이면 ok, version을 같이 준다', async () => {
@@ -46,7 +46,7 @@ describe('GrobidClient.isAlive', () => {
 
   it('응답이 늦으면 timeout', async () => {
     const baseUrl = await listen(() => undefined);
-    const health = await new GrobidClient({ baseUrl, ...fast, timeoutMs: 50 }).isAlive();
+    const health = await new GrobidClient({ baseUrl, ...fast, healthTimeoutMs: 50 }).isAlive();
     expect(health).toMatchObject({ ok: false, reason: 'timeout' });
   });
 

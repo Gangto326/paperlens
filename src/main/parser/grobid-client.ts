@@ -11,8 +11,10 @@ export interface GrobidConfig {
   baseUrl: string;
   /** 사용자에게 안내하는 기본 Docker 이미지. 실제로 어떤 이미지가 떠 있는지는 알 수 없어 /api/version으로 보완한다. */
   imageTag: string;
-  /** 요청 하나의 제한 시간 */
+  /** 처리 요청(processFulltextDocument 등) 하나의 제한 시간. 수십 페이지 논문은 수십 초 걸린다. */
   timeoutMs: number;
+  /** 헬스체크(/api/isalive, /api/version)의 제한 시간. 데몬이 꺼져 있으면 빨리 알아야 한다. */
+  healthTimeoutMs: number;
   /** 503일 때 재시도 횟수 */
   retryCount: number;
   /** 503일 때 재시도 전 대기 (밀리초). 계획은 5~10초. */
@@ -23,6 +25,7 @@ export const DEFAULT_GROBID_CONFIG: GrobidConfig = {
   baseUrl: 'http://127.0.0.1:8070',
   imageTag: 'grobid/grobid:0.9.1-crf',
   timeoutMs: 120_000,
+  healthTimeoutMs: 5_000,
   retryCount: 2,
   retryDelayMs: 7_000,
 };
@@ -74,7 +77,7 @@ export class GrobidClient {
   async isAlive(): Promise<GrobidHealth> {
     let res: Response;
     try {
-      res = await this.fetchRaw('/api/isalive', { method: 'GET' });
+      res = await this.fetchRaw('/api/isalive', { method: 'GET' }, this.config.healthTimeoutMs);
     } catch (e) {
       const err = e instanceof GrobidError ? e : new GrobidError('unreachable', String(e));
       return {
@@ -95,7 +98,7 @@ export class GrobidClient {
     }
     let version: string | null = null;
     try {
-      const v = await this.fetchRaw('/api/version', { method: 'GET' });
+      const v = await this.fetchRaw('/api/version', { method: 'GET' }, this.config.healthTimeoutMs);
       if (v.ok) version = (await v.text()).trim() || null;
     } catch {
       version = null;
@@ -139,14 +142,18 @@ export class GrobidClient {
     );
   }
 
-  private async fetchRaw(path: string, init: RequestInit): Promise<Response> {
+  private async fetchRaw(
+    path: string,
+    init: RequestInit,
+    timeoutMs: number = this.config.timeoutMs,
+  ): Promise<Response> {
     const url = `${this.config.baseUrl}${path}`;
-    const signal = AbortSignal.timeout(this.config.timeoutMs);
+    const signal = AbortSignal.timeout(timeoutMs);
     try {
       return await this.fetchImpl(url, { ...init, signal });
     } catch (e) {
       if (e instanceof Error && e.name === 'TimeoutError') {
-        throw new GrobidError('timeout', `GROBID ${path} 응답 없음 (${this.config.timeoutMs}ms)`);
+        throw new GrobidError('timeout', `GROBID ${path} 응답 없음 (${timeoutMs}ms)`);
       }
       const cause = e instanceof Error && e.cause instanceof Error ? e.cause.message : '';
       throw new GrobidError('unreachable', `GROBID ${url} 연결 실패${cause ? `: ${cause}` : ''}`);

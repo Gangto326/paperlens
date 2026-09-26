@@ -146,7 +146,7 @@ function registerIpc(): void {
 void app.whenReady().then(() => {
   store = new PaperCacheStore(join(app.getPath('userData'), 'cache'));
   registry = new PdfRegistry(store);
-  grobid = new GrobidClient({ timeoutMs: 5_000 });
+  grobid = new GrobidClient();
   registerIpc();
   createWindow();
   app.on('activate', () => {
