@@ -1,8 +1,8 @@
 import 'pdfjs-dist/web/pdf_viewer.css';
 import type { OpenedPdf } from '@shared/ipc';
-import { pageInfoFromProxy } from './viewer/page-info';
+import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
 import { PdfViewer } from './viewer/pdf-viewer';
-import { PDFJS_VERSION } from './viewer/pdfjs';
+import { PDFJS_VERSION, type PDFDocumentProxy } from './viewer/pdfjs';
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -32,13 +32,44 @@ async function loadOpened(result: OpenedPdf): Promise<void> {
   const doc = await viewer.load(bytes);
   titleEl.textContent = `${result.fileName} · ${doc.numPages}쪽 · ${result.pdfSha256.slice(0, 12)}…`;
   const ms = Math.round(performance.now() - t0);
-  setStatus(`열림 (${ms}ms). 문장을 클릭하거나 드래그하세요.`);
+  setStatus(`열림 (${ms}ms).`);
   console.info(`[paperlens] loaded ${result.fileName} pages=${doc.numPages} loadMs=${ms}`);
-  const first = await doc.getPage(1);
-  const info = pageInfoFromProxy(0, first);
-  console.info(
-    `[paperlens] page0 view=${JSON.stringify(info.cropBox)} rot=${info.rotation} size=${info.width}x${info.height}`,
+  await extractText(result, doc);
+}
+
+/** 전 페이지 텍스트 항목을 모아 메인에 저장한다. 품질 판정으로 중단되면 상태 줄에 알린다. */
+async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<void> {
+  const t0 = performance.now();
+  const collected = await collectTextItems(doc, (done, total) =>
+    setStatus(`텍스트 추출 중… ${done}/${total}쪽`),
   );
+  const saved = await window.paperlens.saveTextItems({
+    pdfSha256: result.pdfSha256,
+    pdfjsVersion: PDFJS_VERSION,
+    textExtractorVersion: TEXT_EXTRACTOR_VERSION,
+    ...collected,
+  });
+  const ms = Math.round(performance.now() - t0);
+  const p0 = saved.pages[0];
+  console.info(
+    `[paperlens] extracted items=${saved.itemCount} pages=${saved.pages.length} quality=${saved.textQuality} halted=${saved.halted} rev=${saved.extractionRevision} extractMs=${ms}`,
+  );
+  if (p0) {
+    console.info(
+      `[paperlens] page0 view=${JSON.stringify(p0.cropBox)} rot=${p0.rotation} size=${p0.width}x${p0.height} quality=${p0.textQuality}`,
+    );
+  }
+  if (saved.halted) {
+    setStatus(
+      saved.textQuality === 'needs_ocr'
+        ? '이 PDF에는 선택할 수 있는 텍스트가 거의 없습니다(스캔본으로 보임). OCR은 지원하지 않아 번역을 진행하지 않습니다.'
+        : '이 PDF의 텍스트가 심하게 깨져 있어(글꼴 인코딩 문제) 번역을 진행하지 않습니다.',
+    );
+  } else {
+    setStatus(
+      `텍스트 추출 완료 (${saved.itemCount}개 항목, ${ms}ms). 문장을 클릭하거나 드래그하세요.`,
+    );
+  }
 }
 
 function updateZoomLabel(): void {

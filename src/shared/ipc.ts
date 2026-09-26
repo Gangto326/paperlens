@@ -1,3 +1,5 @@
+import type { Page, TextItemRecord, TextQuality } from './schema';
+
 /**
  * renderer ↔ main 사이의 제한된 IPC 계약.
  * 채널 이름과 요청/응답 타입을 한곳에서 정의한다. preload는 이 목록에 있는 채널만 노출한다.
@@ -6,6 +8,7 @@ export const IPC = {
   appInfo: 'app:info',
   pdfOpenDialog: 'pdf:openDialog',
   pdfReadBytes: 'pdf:readBytes',
+  extractSaveTextItems: 'extract:saveTextItems',
 } as const;
 
 export interface AppInfo {
@@ -28,3 +31,26 @@ export interface OpenedPdf {
 }
 
 export type PdfOpenDialogResult = { canceled: true } | ({ canceled: false } & OpenedPdf);
+
+/** renderer가 PDF.js로 전 페이지 텍스트 항목을 모아 메인에 저장을 요청할 때 보내는 값. */
+export interface TextExtractionPayload {
+  pdfSha256: string;
+  pdfjsVersion: string;
+  /** renderer 추출 규칙(ID·index 부여) 버전. 바뀌면 extraction revision이 바뀐다. */
+  textExtractorVersion: string;
+  /** textQuality는 메인이 판정해 채운다. renderer는 'ok'로 보낸다. */
+  pages: Page[];
+  textItems: TextItemRecord[];
+}
+
+/** 메인이 source-map.json을 쓰고 품질을 판정한 결과. */
+export interface TextExtractionResult {
+  extractionRevision: string;
+  sourceMapPath: string;
+  itemCount: number;
+  /** textQuality가 채워진 페이지 정보 (document.json 확정은 C1.14) */
+  pages: Page[];
+  textQuality: TextQuality;
+  /** needs_ocr·garbled이면 true. manifest.state는 failed, 이후 단계는 진행하지 않는다. */
+  halted: boolean;
+}

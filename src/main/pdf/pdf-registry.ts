@@ -21,6 +21,10 @@ export class PdfRegistry {
     return { pdfSha256, fileName: basename(originalPath), originalPath, byteLength: stat.size };
   }
 
+  isRegistered(pdfSha256: string): boolean {
+    return this.paths.has(pdfSha256);
+  }
+
   /** 등록된 해시에 대해서만 바이트를 준다. 임의 경로 읽기를 renderer에 허용하지 않는다. */
   async readBytes(pdfSha256: string): Promise<Uint8Array> {
     const path = this.paths.get(pdfSha256);

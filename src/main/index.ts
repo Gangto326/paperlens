@@ -1,9 +1,15 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { writeFile } from 'node:fs/promises';
-import { IPC, type AppInfo, type PdfOpenDialogResult } from '@shared/ipc';
+import {
+  IPC,
+  type AppInfo,
+  type PdfOpenDialogResult,
+  type TextExtractionResult,
+} from '@shared/ipc';
 import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
+import { parseTextExtractionPayload, saveTextItems } from './extract/text-items-store';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -94,6 +100,17 @@ function registerIpc(): void {
     if (typeof pdfSha256 !== 'string') throw new Error('pdfSha256 must be a string');
     return registry.readBytes(pdfSha256);
   });
+
+  ipcMain.handle(
+    IPC.extractSaveTextItems,
+    async (_event, payload: unknown): Promise<TextExtractionResult> => {
+      const parsed = parseTextExtractionPayload(payload);
+      if (!registry.isRegistered(parsed.pdfSha256)) {
+        throw new Error(`등록되지 않은 PDF: ${parsed.pdfSha256}`);
+      }
+      return saveTextItems(store, parsed);
+    },
+  );
 }
 
 void app.whenReady().then(() => {
