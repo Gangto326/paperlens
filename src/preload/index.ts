@@ -6,6 +6,7 @@ import {
   type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
+  type ReadDocumentResult,
   type TextExtractionPayload,
   type TextExtractionResult,
 } from '@shared/ipc';
@@ -23,6 +24,8 @@ const api = {
     ipcRenderer.invoke(IPC.parserFulltext, pdfSha256),
   buildDocument: (pdfSha256: string): Promise<MappingResult> =>
     ipcRenderer.invoke(IPC.extractBuildDocument, pdfSha256),
+  readDocument: (pdfSha256: string): Promise<ReadDocumentResult> =>
+    ipcRenderer.invoke(IPC.extractReadDocument, pdfSha256),
 };
 
 export type PaperLensApi = typeof api;

@@ -1,7 +1,9 @@
 import 'pdfjs-dist/web/pdf_viewer.css';
 import type { OpenedPdf } from '@shared/ipc';
 import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
+import { rangesFromSelection } from './viewer/dom-selection';
 import { PdfViewer } from './viewer/pdf-viewer';
+import { SelectionController, type SelectionEvent } from './viewer/selection-controller';
 import { PDFJS_VERSION, type PDFDocumentProxy } from './viewer/pdfjs';
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -13,7 +15,9 @@ const $ = <T extends HTMLElement>(id: string): T => {
 const statusEl = $('status');
 const titleEl = $('doc-title');
 const zoomLabel = $('zoom-label');
-const viewer = new PdfViewer({ container: $('viewer') });
+const viewerEl = $('viewer');
+const viewer = new PdfViewer({ container: viewerEl });
+const selection = new SelectionController(viewer, viewerEl);
 
 function setStatus(text: string): void {
   statusEl.textContent = text;
@@ -27,6 +31,7 @@ async function openPdf(): Promise<void> {
 
 async function loadOpened(result: OpenedPdf): Promise<void> {
   setStatus(`읽는 중… ${result.fileName}`);
+  selection.setIndex(null);
   const t0 = performance.now();
   const bytes = await window.paperlens.readPdfBytes(result.pdfSha256);
   const doc = await viewer.load(bytes);
@@ -87,8 +92,44 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
   console.info(
     `[paperlens] document rev=${mapped.extractionRevision} sentences=${mapped.sentenceCount} mapped=${mapped.mapped} uncertain=${mapped.uncertain} unmapped=${mapped.unmapped} equations=${mapped.equationCount} readingOrder=${mapped.readingOrderMismatches} warnings=${JSON.stringify(mapped.warnings)} ms=${mapped.elapsedMs}`,
   );
+  await loadSentenceIndex(result.pdfSha256);
   setStatus(
     `문장 ${mapped.sentenceCount}개 준비 (연결 ${mapped.mapped}, 불확실 ${mapped.uncertain}, 미연결 ${mapped.unmapped}, 수식 ${mapped.equationCount}). 문장을 클릭하거나 드래그하세요.`,
+  );
+}
+
+/** 확정된 document.json의 문장 색인을 받아 선택 해석기에 넣는다(C1.15). */
+async function loadSentenceIndex(pdfSha256: string): Promise<void> {
+  const t0 = performance.now();
+  const index = await window.paperlens.readDocument(pdfSha256);
+  selection.setIndex(index);
+  const spans = index.sentences.reduce((n, s) => n + s.sourceSpans.length, 0);
+  console.info(
+    `[paperlens] sentence index rev=${index.extractionRevision} sentences=${index.sentences.length} spans=${spans} excluded=${index.excludedBlocks.length} ms=${Math.round(performance.now() - t0)}`,
+  );
+}
+
+/** 선택 해석 결과를 상태 줄과 로그에 남긴다. 우측 패널 표시는 C1.16. */
+function onSelection(ev: SelectionEvent): void {
+  const ids = ev.result.sentences.map((s) => s.id);
+  console.info(
+    `[paperlens] selection kind=${ev.kind} reason=${ev.result.reason} byRect=${ev.result.byRect} ranges=${JSON.stringify(ev.ranges.map((r) => [r.textItemId, r.start, r.end]))} sentences=${JSON.stringify(ids)} ms=${ev.elapsedMs.toFixed(1)}`,
+  );
+  if (ev.result.reason === 'empty_selection') return;
+  if (ev.result.sentences.length === 0) {
+    setStatus(
+      ev.result.reason === 'whitespace_only'
+        ? '공백만 선택했습니다.'
+        : ev.result.reason === 'excluded_block'
+          ? '본문 문장이 아닌 영역(수식·표·머리글 등)입니다.'
+          : '이 위치에서 문장을 찾지 못했습니다.',
+    );
+    return;
+  }
+  const first = ev.result.sentences[0]!;
+  const more = ev.result.sentences.length > 1 ? ` 외 ${ev.result.sentences.length - 1}개` : '';
+  setStatus(
+    `선택: ${first.id}${more} (${first.mappingStatus}${ev.result.byRect ? ', 위치로 찾음' : ''}) · ${first.en.slice(0, 80)}`,
   );
 }
 
@@ -119,6 +160,7 @@ async function boot(): Promise<void> {
         .catch(showError),
   );
   updateZoomLabel();
+  selection.addListener(onSelection);
   viewer.addPageRenderedListener((pageIndex) => {
     const tl = viewer.textLayerOf(pageIndex);
     if (info.screenshotMode && pageIndex === 0 && tl && tl.textDivs.length > 12) {
@@ -128,6 +170,12 @@ async function boot(): Promise<void> {
       range.setEndAfter(tl.textDivs[11]!);
       window.getSelection()?.removeAllRanges();
       window.getSelection()?.addRange(range);
+      // 선택 → 항목 범위 변환을 검증 로그로 남긴다(문장 색인이 있으면 해석까지).
+      const ranges = rangesFromSelection(window.getSelection(), viewerEl);
+      console.info(
+        `[paperlens] screenshot selection ranges=${JSON.stringify(ranges.map((r) => [r.textItemId, r.start, r.end, r.text]))}`,
+      );
+      if (selection.hasIndex) selection.handle();
     }
     console.info(
       `[paperlens] rendered page ${pageIndex} textDivs=${tl?.textDivs.length ?? 0} items=${tl?.textContentItemsStr.length ?? 0}`,

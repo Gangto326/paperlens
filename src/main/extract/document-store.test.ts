@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PaperCacheStore } from '../cache/paper-cache-store';
 import { saveOriginalTei } from '../parser/grobid-fulltext';
 import { TINY_SHA, TINY_TEI, tinyFonts, tinyItems, tinyPages } from './__fixtures__/tiny-paper';
-import { buildAndSaveDocument } from './document-store';
+import { buildAndSaveDocument, readSentenceIndex } from './document-store';
 import { saveTextItems } from './text-items-store';
 
 let root: string;
@@ -107,5 +107,42 @@ describe('buildAndSaveDocument', () => {
     await expect(buildAndSaveDocument(store, TINY_SHA, buildOpts())).rejects.toThrow(/missing/);
     expect(await store.exists(store.extractionPath(TINY_SHA, rev, 'document.json'))).toBe(false);
     expect((await store.readManifest(TINY_SHA)).state).toBe('extracting');
+  });
+});
+
+describe('readSentenceIndex', () => {
+  it('document.json이 없으면 missing 오류, 확정 뒤에는 order 순 문장 색인을 돌려준다', async () => {
+    const rev = await extract();
+    await expect(readSentenceIndex(store, TINY_SHA)).rejects.toMatchObject({ reason: 'missing' });
+    await saveOriginalTei(store, TINY_SHA, rev, TINY_TEI);
+    const saved = await buildAndSaveDocument(store, TINY_SHA, buildOpts());
+
+    const index = await readSentenceIndex(store, TINY_SHA);
+    expect(index.documentPath).toBe(saved.documentPath);
+    expect(index.extractionRevision).toBe(rev);
+    expect(index.pages.length).toBe(tinyPages().length);
+    expect(index.sentences.map((s) => s.id)).toEqual(
+      saved.build.document.sentences.map((s) => s.id),
+    );
+    expect(index.sentences.map((s) => s.order)).toEqual(
+      [...index.sentences.map((s) => s.order)].sort((a, b) => a - b),
+    );
+    for (const s of index.sentences) {
+      expect(s).not.toHaveProperty('enRaw');
+      expect(s).not.toHaveProperty('citationMarkers');
+      // 사각형은 document.json의 것을 그대로 준다(tiny fixture는 페이지 상자 밖 좌표라 GROBID 공간이 남는 것도 있다).
+      expect(s.rects).toEqual(saved.build.document.sentences.find((d) => d.id === s.id)?.rects);
+    }
+    expect(index.excludedBlocks.length).toBe(saved.build.document.excludedBlocks.length);
+  });
+
+  it('document.json이 manifest 해시와 다르면 hash_mismatch', async () => {
+    const rev = await extract();
+    await saveOriginalTei(store, TINY_SHA, rev, TINY_TEI);
+    const saved = await buildAndSaveDocument(store, TINY_SHA, buildOpts());
+    await fs.appendFile(saved.documentPath, ' ');
+    await expect(readSentenceIndex(store, TINY_SHA)).rejects.toMatchObject({
+      reason: 'hash_mismatch',
+    });
   });
 });

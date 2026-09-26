@@ -1,3 +1,6 @@
+import { pageBoxOf, viewportToUserSpace } from '@shared/geometry/coords';
+import type { PointHit } from '@shared/mapping/selection';
+import { pageInfoFromProxy } from './page-info';
 import { pdfjs, type PDFDocumentProxy, type PDFPageProxy } from './pdfjs';
 
 export interface PdfViewerOptions {
@@ -121,6 +124,35 @@ export class PdfViewer {
     return this.slots[pageIndex]?.page ?? null;
   }
 
+  /** 화면 좌표(client px)가 놓인 페이지 자리. 페이지 사이 여백이면 null. */
+  pageIndexAt(clientX: number, clientY: number): number | null {
+    for (const s of this.slots) {
+      const r = s.element.getBoundingClientRect();
+      if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+        return s.pageIndex;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 화면 좌표(client px) → 그 페이지의 user space 지점(C1.15 클릭 → 문장 사각형 조회).
+   * 자리 안의 px는 현재 scale의 뷰포트 px와 같으므로(자리 크기 = floor(viewport)) 저장 좌표와 같은 행렬을 거꾸로 적용한다.
+   */
+  userSpacePointAt(pageIndex: number, clientX: number, clientY: number): PointHit | null {
+    const slot = this.slots[pageIndex];
+    if (!slot?.page) return null;
+    const r = slot.element.getBoundingClientRect();
+    const box = pageBoxOf(pageInfoFromProxy(pageIndex, slot.page));
+    const rect = viewportToUserSpace(
+      { x: clientX - r.left, y: clientY - r.top, width: 0, height: 0 },
+      pageIndex,
+      box,
+      this.scale,
+    );
+    return { pageIndex, x: rect.x, y: rect.y };
+  }
+
   /** 페이지 크기를 확대율에 맞춰 자리 크기를 정하고 관찰을 다시 등록한다. */
   private async layout(): Promise<void> {
     if (!this.doc) return;
@@ -202,5 +234,17 @@ export class PdfViewer {
     slot.textLayerDiv = div;
     slot.textLayer = layer;
     await layer.render();
+    // DOM ↔ 텍스트 항목 연결(C1.15): TextLayer는 str이 있는 항목마다 span 하나를 textDivs에 넣고(빈 str은 DOM에 붙이지 않음),
+    // 그 순서가 collectTextItems의 index와 같다(둘 다 str 없는 marked-content 항목을 건너뛴다). 항목 ID를 span에 새겨
+    // 선택 해석이 DOM 구조(markedContent 중첩·br)가 아니라 ID로 항목을 찾게 한다. 1:1 대응이 깨지면 로그로 드러난다.
+    const divs = layer.textDivs;
+    if (divs.length !== layer.textContentItemsStr.length) {
+      console.warn(
+        `[paperlens] page ${slot.pageIndex}: textDivs=${divs.length} != items=${layer.textContentItemsStr.length}`,
+      );
+    }
+    for (let k = 0; k < divs.length; k++) {
+      divs[k]!.dataset['itemId'] = `t_${slot.pageIndex}_${k}`;
+    }
   }
 }

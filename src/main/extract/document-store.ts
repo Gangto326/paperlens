@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import { relative } from 'node:path';
-import type { MappingResult } from '@shared/ipc';
+import type { MappingResult, ReadDocumentResult } from '@shared/ipc';
+import { sentenceIndexOf } from '@shared/mapping/selection';
 import type { Page } from '@shared/schema';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { buildExtractionDocument, type BuildDocumentResult } from './build-document';
@@ -87,4 +88,26 @@ export async function buildAndSaveDocument(
     elapsedMs: Date.now() - t0,
     build,
   };
+}
+
+/**
+ * renderer의 선택 해석·표시용 색인(C1.15): manifest의 현재 rev 아래 document.json을 해시 대조·스키마 검증해 읽고
+ * 문장 요약만 돌려준다. document.json이 아직 없으면(GROBID 미실행 등) CacheReadError('missing').
+ */
+export async function readSentenceIndex(
+  store: PaperCacheStore,
+  pdfSha256: string,
+): Promise<ReadDocumentResult> {
+  const manifest = await store.readManifest(pdfSha256);
+  const rev = manifest.currentExtractionRevision;
+  if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
+  const documentPath = store.extractionPath(pdfSha256, rev, 'document.json');
+  const recorded = manifest.files.find(
+    (f) => f.path === relative(store.paperDir(pdfSha256), documentPath),
+  );
+  if (!recorded) {
+    throw new CacheReadError(documentPath, 'missing', ['문장 연결(document.json)이 아직 없습니다']);
+  }
+  const doc = await store.readJson('extractionDocument', documentPath, recorded.sha256);
+  return { ...sentenceIndexOf(doc), documentPath };
 }

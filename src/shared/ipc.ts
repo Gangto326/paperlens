@@ -1,4 +1,7 @@
 import type { FontRecord, Page, TextItemRecord, TextQuality } from './schema';
+import type { SentenceIndex } from './mapping/selection';
+
+export type { SentenceIndex, SentenceIndexEntry } from './mapping/selection';
 
 /**
  * renderer ↔ main 사이의 제한된 IPC 계약.
@@ -12,6 +15,7 @@ export const IPC = {
   parserHealth: 'parser:health',
   parserFulltext: 'parser:fulltext',
   extractBuildDocument: 'extract:buildDocument',
+  extractReadDocument: 'extract:readDocument',
 } as const;
 
 export interface AppInfo {
@@ -94,3 +98,9 @@ export interface MappingResult {
   warnings: string[];
   elapsedMs: number;
 }
+
+/**
+ * document.json에서 renderer가 선택 해석·표시에 쓰는 부분만 뽑은 색인(C1.15). 문장 본문(en)·스팬·사각형은 포함하고
+ * TEI 원문·정규화 대응표·서지는 포함하지 않는다. 문장 수백 개·스팬 수천 개라도 수백 KB 수준이라 한 번에 보낸다.
+ */
+export type ReadDocumentResult = SentenceIndex & { documentPath: string };

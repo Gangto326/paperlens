@@ -8,12 +8,13 @@ import {
   type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
+  type ReadDocumentResult,
   type TextExtractionResult,
 } from '@shared/ipc';
 import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
 import { parseTextExtractionPayload, saveTextItems } from './extract/text-items-store';
-import { buildAndSaveDocument } from './extract/document-store';
+import { buildAndSaveDocument, readSentenceIndex } from './extract/document-store';
 import type { Page } from '@shared/schema';
 import { GrobidClient } from './parser/grobid-client';
 import { FULLTEXT_PARAMS, processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
@@ -180,6 +181,17 @@ function registerIpc(): void {
         parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
       });
       return result;
+    },
+  );
+
+  // 확정된 document.json의 문장 색인을 renderer에 보낸다(C1.15 선택 해석·C1.16 표시용).
+  ipcMain.handle(
+    IPC.extractReadDocument,
+    async (_event, pdfSha256: unknown): Promise<ReadDocumentResult> => {
+      if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
+        throw new Error('등록되지 않은 PDF');
+      }
+      return readSentenceIndex(store, pdfSha256);
     },
   );
 }
