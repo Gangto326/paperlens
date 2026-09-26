@@ -4,6 +4,8 @@
  */
 export const IPC = {
   appInfo: 'app:info',
+  pdfOpenDialog: 'pdf:openDialog',
+  pdfReadBytes: 'pdf:readBytes',
 } as const;
 
 export interface AppInfo {
@@ -11,4 +13,16 @@ export interface AppInfo {
   electronVersion: string;
   platform: string;
   userDataPath: string;
+  /** PAPERLENS_OPEN_PDF 환경변수로 시작 시 자동 등록된 PDF (개발·E2E용) */
+  autoOpened?: OpenedPdf | null;
 }
+
+/** 파일 선택 후 메인이 해시·등록을 마치고 돌려주는 정보. 바이트는 별도 요청으로 받는다. */
+export interface OpenedPdf {
+  pdfSha256: string;
+  fileName: string;
+  originalPath: string;
+  byteLength: number;
+}
+
+export type PdfOpenDialogResult = { canceled: true } | ({ canceled: false } & OpenedPdf);

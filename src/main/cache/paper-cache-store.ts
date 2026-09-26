@@ -37,7 +37,11 @@ export class PaperCacheStore {
     return join(this.paperDir(pdfSha256), 'manifest.json');
   }
 
-  extractionPath(pdfSha256: string, revision: string, file: 'document.json' | 'source-map.json' | 'original.tei.xml'): string {
+  extractionPath(
+    pdfSha256: string,
+    revision: string,
+    file: 'document.json' | 'source-map.json' | 'original.tei.xml',
+  ): string {
     return join(this.paperDir(pdfSha256), 'extraction', revision, file);
   }
 
@@ -148,7 +152,9 @@ export class PaperCacheStore {
   }
 
   /** manifest.files의 모든 파일이 존재하고 해시가 맞는지 검사한다. 어긋난 항목을 돌려준다. */
-  async verifyFiles(pdfSha256: string): Promise<{ path: string; problem: 'missing' | 'hash_mismatch' }[]> {
+  async verifyFiles(
+    pdfSha256: string,
+  ): Promise<{ path: string; problem: 'missing' | 'hash_mismatch' }[]> {
     const manifest = await this.readManifest(pdfSha256);
     const problems: { path: string; problem: 'missing' | 'hash_mismatch' }[] = [];
     for (const f of manifest.files) {

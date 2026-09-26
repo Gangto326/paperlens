@@ -29,10 +29,8 @@ describe('PaperCacheStore', () => {
 
   it('스키마에 맞지 않는 값은 쓰지 않는다', async () => {
     const path = store.generationPath(SAMPLE_SHA, 'gen_1', 'chunks/c1.json');
-    // @ts-expect-error 고의로 잘못된 상태값
-    await expect(store.writeJson('chunkDocument', path, { ...sampleChunk, status: 'nope' })).rejects.toThrow(
-      /검증 실패/,
-    );
+    const bad = { ...sampleChunk, status: 'nope' } as unknown as typeof sampleChunk; // 고의로 잘못된 상태값
+    await expect(store.writeJson('chunkDocument', path, bad)).rejects.toThrow(/검증 실패/);
     expect(await store.exists(path)).toBe(false);
   });
 
@@ -48,22 +46,26 @@ describe('PaperCacheStore', () => {
     expect(renameSpy).toHaveBeenCalled();
 
     expect(await fs.readFile(path, 'utf8')).toBe(before);
-    const leftovers = (await fs.readdir(join(root, 'papers', SAMPLE_SHA, 'generations', 'gen_1', 'chunks'))).filter(
-      (n) => n.endsWith('.tmp'),
-    );
+    const leftovers = (
+      await fs.readdir(join(root, 'papers', SAMPLE_SHA, 'generations', 'gen_1', 'chunks'))
+    ).filter((n) => n.endsWith('.tmp'));
     expect(leftovers).toEqual([]);
   });
 
   it('손상된 JSON·해시 불일치·스키마 위반을 구분해 보고한다', async () => {
     const path = join(root, 'x.json');
     const hash = await store.writeJson('chunkDocument', path, sampleChunk);
-    await expect(store.readJson('chunkDocument', path, hash)).resolves.toMatchObject({ id: 'chunk_1' });
+    await expect(store.readJson('chunkDocument', path, hash)).resolves.toMatchObject({
+      id: 'chunk_1',
+    });
     await expect(store.readJson('chunkDocument', path, 'f'.repeat(64))).rejects.toMatchObject({
       reason: 'hash_mismatch',
     } satisfies Partial<CacheReadError>);
 
     await writeFileAtomic(path, '{ not json');
-    await expect(store.readJson('chunkDocument', path)).rejects.toMatchObject({ reason: 'invalid_json' });
+    await expect(store.readJson('chunkDocument', path)).rejects.toMatchObject({
+      reason: 'invalid_json',
+    });
 
     await writeFileAtomic(path, JSON.stringify({ ...sampleChunk, status: 'nope' }));
     await expect(store.readJson('chunkDocument', path)).rejects.toMatchObject({ reason: 'schema' });

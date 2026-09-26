@@ -12,11 +12,19 @@
   </head>
   <body>
     <div id="app">
-      <header id="topbar">PaperLens</header>
+      <header id="topbar">
+        <button id="btn-open" type="button">PDF 열기</button>
+        <span id="doc-title" class="muted">열린 문서 없음</span>
+        <span class="spacer"></span>
+        <button id="btn-zoom-out" type="button" aria-label="축소">−</button>
+        <span id="zoom-label">125%</span>
+        <button id="btn-zoom-in" type="button" aria-label="확대">+</button>
+        <span id="stage" class="muted"></span>
+      </header>
       <main id="layout">
         <section id="viewer" aria-label="원문 뷰어"></section>
         <aside id="panel" aria-label="번역·해설 패널">
-          <p id="status">초기화 중…</p>
+          <p id="status" class="muted">초기화 중…</p>
         </aside>
       </main>
     </div>
