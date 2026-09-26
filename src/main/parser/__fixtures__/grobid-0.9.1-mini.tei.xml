@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</title>
+				<funder ref="#_uzJd3yj">
+					<orgName type="full">National Science Foundation</orgName>
+					<orgName type="abbreviated">NSF</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2021-04-12">12 Apr 2021</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct status="extracted">
+					<analytic>
+						<author role="corresp">
+							<persName coords="1,240.45,181.86,58.84,8.96;1,299.29,180.35,1.95,6.12"><forename type="first">Patrick</forename><surname>Lewis</surname></persName>
+							<email>plewis@fb.com</email>
+							<affiliation key="aff0">
+								<orgName type="department">Facebook AI Research</orgName>
+								<orgName type="institution" key="instit1">‡ University College London</orgName>
+								<orgName type="institution" key="instit2">New York University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName coords="1,312.57,181.86,51.92,8.96"><forename type="first">Ethan</forename><surname>Perez</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Facebook AI Research</orgName>
+								<orgName type="institution" key="instit1">‡ University College London</orgName>
+								<orgName type="institution" key="instit2">New York University</orgName>
+							</affiliation>
+						</author>
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						<title level="a" type="main">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2021-04-12">12 Apr 2021</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">2BD227682DDB17D259D48455A8B9D951</idno>
+					<idno type="arXiv">arXiv:2005.11401v4[cs.CL]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.9.1" ident="GROBID" when="2026-09-26T09:15+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">0.9.1</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[s, figure, formula, biblStruct, ref, persName], flavor=null, debugLabelingCollector=disabled</label>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s coords="1,143.87,344.43,324.26,8.64;1,143.87,355.34,325.92,8.64;1,143.87,366.25,71.18,8.64">Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when fine-tuned on downstream NLP tasks.</s><s coords="1,218.10,366.25,251.69,8.64;1,143.87,377.16,324.26,8.64;1,143.87,388.07,149.87,8.64">However, their ability to access and precisely manipulate knowledge is still limited, and hence on knowledge-intensive tasks, their performance lags behind task-specific architectures.</s></p></div>
+</abstract>
+		</profileDesc>
+	</teiHeader>
+<text xml:lang="en">
+<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p><s coords="1,108.00,624.04,397.65,8.64;1,108.00,634.95,81.86,8.64">Pre-trained neural language models have been shown to learn a substantial amount of in-depth knowledge from data <ref type="bibr" coords="1,170.69,634.95,15.33,8.64" target="#b46">[47]</ref>.</s><s coords="1,192.96,634.95,311.04,8.64;1,108.00,645.86,135.80,8.64">They can do so without any access to an external memory, as a parameterized implicit knowledge base <ref type="bibr" coords="1,209.53,645.86,15.88,8.64" target="#b50">[51,</ref><ref type="bibr" coords="1,227.91,645.86,11.92,8.64" target="#b51">52]</ref>.</s><s coords="1,246.92,645.86,258.73,8.64;1,108.00,656.77,396.00,8.64;1,108.00,667.68,231.27,8.64">While this development is exciting, such models do have downsides: They cannot easily expand or revise their memory, can't straightforwardly provide insight into their predictions, and may produce "hallucinations" <ref type="bibr" coords="1,320.01,667.68,15.41,8.64" target="#b37">[38]</ref>.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RAG-Sequence Model</head><p><s coords="3,205.16,212.21,298.84,8.64;3,108.00,222.80,329.83,8.96">Technically, it treats the retrieved document as a single latent variable that is marginalized to get the seq2seq probability p(y|x) via a top-K approximation.</s><s coords="3,442.11,223.12,61.89,8.64;3,108.00,234.03,396.00,8.64;3,108.00,244.94,240.81,8.64">Concretely, the top K documents are retrieved using the retriever, and the generator produces the output sequence probability for each document, which are then marginalized,</s></p><formula xml:id="formula_0" coords="3,143.36,260.06,325.28,30.94">p RAG-Sequence (y|x) ≈ z∈top-k(p(•|x)) p η (z|x)p θ (y|x, z) = z∈top-k(p(•|x)) p η (z|x) N i p θ (y i |x, z, y 1:i-1 )</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Models</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RAG-Token Model</head><p><s coords="3,198.69,303.72,305.31,8.64;3,108.00,314.45,165.64,8.82">In the RAG-Token model we can draw a different latent document for each target token and marginalize accordingly.</s></p></div>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0" coords="7,108.00,141.06,397.66,9.65;7,108.00,152.29,396.00,8.64;7,107.64,163.20,396.36,8.64"><head>Document 1 :Figure 2 :</head><label>12</label><figDesc><div><p><s coords="7,108.00,141.06,397.66,9.65;7,108.00,152.29,245.70,8.64">Figure 2: RAG-Token document posterior p(z i |x, y i , y -i ) for each generated token for input "Hemingway" for Jeopardy generation with 5 retrieved documents.</s><s coords="7,356.78,152.29,147.22,8.64;7,107.64,163.20,396.36,8.64">The posterior for document 1 is high when generating "A Farewell to Arms" and for document 2 when generating "The Sun Also Rises".</s></p></div></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" coords="6,107.69,80.32,196.01,129.68"><head>Table 1 :</head><label>1</label><figDesc><div><p><s coords="6,141.65,80.32,120.72,8.64">Open-Domain QA Test Scores.</s><s coords="6,265.31,80.32,37.98,8.64;6,108.00,91.23,195.70,8.64;6,108.00,102.14,194.04,8.64;6,108.00,113.04,29.89,8.64">For TQA, left column uses the standard test set for Open-Domain QA, right column uses the TQA-Wiki test set.</s><s coords="6,140.98,113.04,140.55,8.64">See Appendix D for further details.</s></p></div></figDesc><table coords="6,113.82,132.31,182.41,77.68"><row><cell></cell><cell>Model</cell><cell>NQ</cell><cell>TQA</cell><cell cols="2">WQ CT</cell></row><row><cell>Closed</cell><cell>T5-11B [52]</cell><cell>34.5</cell><cell cols="2">-/50.1 37.4</cell><cell>-</cell></row><row><cell>Book</cell><cell cols="2">T5-11B+SSM[52] 36.6</cell><cell cols="2">-/60.5 44.7</cell><cell>-</cell></row><row><cell>Open</cell><cell cols="2">REALM [20] 40.4</cell><cell>-/ -</cell><cell cols="2">40.7 46.8</cell></row><row><cell>Book</cell><cell>DPR [26]</cell><cell cols="2">41.5 57.9/ -</cell><cell cols="2">41.1 50.6</cell></row><row><cell></cell><cell>RAG-Token</cell><cell cols="4">44.1 55.2/66.1 45.5 50.0</cell></row><row><cell></cell><cell>RAG-Seq.</cell><cell cols="4">44.5 56.8/68.0 45.2 52.2</cell></row></table></figure>
+<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p><s coords="2,124.14,694.24,381.35,7.77;2,108.00,704.20,396.94,7.83;2,108.00,714.52,63.42,7.47">Code to run experiments with RAG has been open-sourced as part of the HuggingFace Transformers Library<ref type="bibr" coords="2,150.51,704.20,15.05,7.77" target="#b66">[66]</ref> and can be found at https://github.com/huggingface/transformers/blob/master/ examples/rag/.</s><s coords="2,174.20,714.16,318.09,7.83">An interactive demo of RAG models can be found at https://huggingface.co/rag/</s></p></note>
+</body>
+<back>
+<div type="acknowledgement">
+<div><head>Acknowledgments</head><p><s coords="10,107.69,297.69,396.30,8.64;10,108.00,308.60,346.13,8.64">The authors would like to thank the reviewers for their thoughtful and constructive feedback on this paper, as well as HuggingFace for their help in open-sourcing code to run RAG models.</s></p></div>
+			</div>
+<div type="references">
+
+<listBibl>
+<biblStruct coords="14,129.58,299.07,375.67,8.64;14,129.58,309.80,374.42,8.82;14,129.25,320.70,374.75,8.59;14,129.14,331.61,374.86,8.82;14,129.58,342.70,374.98,8.64;14,129.58,353.61,286.77,8.70" status="extracted" xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Language models as knowledge bases?</title>
+		<author>
+			<persName coords=""><forename type="first">Fabio</forename><surname>Petroni</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Tim</forename><surname>Rocktäschel</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Sebastian</forename><surname>Riedel</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Patrick</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Anton</forename><surname>Bakhtin</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Yuxiang</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Alexander</forename><surname>Miller</surname></persName>
+		</author>
+		<idno type="DOI">10.18653/v1/D19-1250</idno>
+		<ptr target="https://www.aclweb.org/anthology/D19-1250" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)</title>
+		<meeting>the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)<address><addrLine>Hong Kong, China</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2019-11">November 2019</date>
+			<biblScope unit="page" from="2463" to="2473" />
+		</imprint>
+	</monogr>
+</biblStruct>
+<biblStruct coords="10,129.58,607.12,374.59,8.64;10,129.58,617.85,374.42,8.82;10,129.25,628.76,375.99,8.82;10,129.39,639.85,375.09,8.64;10,129.58,651.16,217.38,8.30" status="extracted" xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Reading Wikipedia to Answer Open-Domain Questions</title>
+		<author>
+			<persName coords=""><forename type="first">Danqi</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Adam</forename><surname>Fisch</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName coords=""><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<idno type="DOI">10.18653/v1/P17-1171</idno>
+		<ptr target="https://www.aclweb.org/anthology/P17-1171" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics</title>
+		<meeting>the 55th Annual Meeting of the Association for Computational Linguistics<address><addrLine>Vancouver, Canada</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2017-07">July 2017</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1870" to="1879" />
+		</imprint>
+	</monogr>
+	<note>Long Papers)</note>
+</biblStruct>
+</listBibl>
+</div>
+</back>
+</text>
+</TEI>
