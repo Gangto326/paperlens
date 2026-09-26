@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import {
   IPC,
   type AppInfo,
+  type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
   type TextExtractionResult,
@@ -12,6 +13,7 @@ import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
 import { parseTextExtractionPayload, saveTextItems } from './extract/text-items-store';
 import { GrobidClient } from './parser/grobid-client';
+import { processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -116,6 +118,29 @@ function registerIpc(): void {
   );
 
   ipcMain.handle(IPC.parserHealth, (): Promise<ParserHealth> => grobid.isAlive());
+
+  // 텍스트 추출(C1.5)이 끝난 논문만 GROBID에 보낸다. TEI 원본은 같은 rev 아래 보존한다.
+  ipcMain.handle(
+    IPC.parserFulltext,
+    async (_event, pdfSha256: unknown): Promise<ParserFulltextResult> => {
+      if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
+        throw new Error('등록되지 않은 PDF');
+      }
+      const manifest = await store.readManifest(pdfSha256);
+      const rev = manifest.currentExtractionRevision;
+      if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
+      const bytes = await registry.readBytes(pdfSha256);
+      const result = await processFulltext(grobid, bytes);
+      const teiPath = await saveOriginalTei(store, pdfSha256, rev, result.tei);
+      return {
+        teiPath,
+        byteLength: Buffer.byteLength(result.tei),
+        hasSentenceCoords: result.hasSentenceCoords,
+        parserConfigHash: result.parserConfigHash,
+        elapsedMs: result.elapsedMs,
+      };
+    },
+  );
 }
 
 void app.whenReady().then(() => {

@@ -70,13 +70,20 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
   setStatus(`텍스트 추출 완료 (${saved.itemCount}개 항목, ${ms}ms). GROBID 확인 중…`);
   const health = await window.paperlens.checkParser();
   console.info(`[paperlens] grobid ${JSON.stringify(health)}`);
-  if (health.ok) {
-    setStatus(
-      `텍스트 추출 완료 · GROBID ${health.version ?? '?'} 연결됨. 문장을 클릭하거나 드래그하세요.`,
-    );
-  } else {
+  if (!health.ok) {
     setStatus(`텍스트 추출 완료. ${health.guidance}`);
+    return;
   }
+  setStatus(`GROBID ${health.version ?? '?'} 연결됨 · 구조 분석 중… (문서에 따라 수십 초)`);
+  const parsed = await window.paperlens.runParser(result.pdfSha256);
+  console.info(
+    `[paperlens] grobid fulltext bytes=${parsed.byteLength} sentenceCoords=${parsed.hasSentenceCoords} configHash=${parsed.parserConfigHash} ms=${parsed.elapsedMs}`,
+  );
+  setStatus(
+    parsed.hasSentenceCoords
+      ? `구조 분석 완료 (TEI ${Math.round(parsed.byteLength / 1024)}KB, ${Math.round(parsed.elapsedMs / 1000)}s). 문장을 클릭하거나 드래그하세요.`
+      : `구조 분석 완료. 그러나 문장 좌표(<s coords>)가 없어 위치 매핑을 할 수 없습니다.`,
+  );
 }
 
 function updateZoomLabel(): void {

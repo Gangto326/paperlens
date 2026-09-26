@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   IPC,
   type AppInfo,
+  type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
   type TextExtractionPayload,
@@ -17,6 +18,8 @@ const api = {
   saveTextItems: (payload: TextExtractionPayload): Promise<TextExtractionResult> =>
     ipcRenderer.invoke(IPC.extractSaveTextItems, payload),
   checkParser: (): Promise<ParserHealth> => ipcRenderer.invoke(IPC.parserHealth),
+  runParser: (pdfSha256: string): Promise<ParserFulltextResult> =>
+    ipcRenderer.invoke(IPC.parserFulltext, pdfSha256),
 };
 
 export type PaperLensApi = typeof api;

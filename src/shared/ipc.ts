@@ -10,6 +10,7 @@ export const IPC = {
   pdfReadBytes: 'pdf:readBytes',
   extractSaveTextItems: 'extract:saveTextItems',
   parserHealth: 'parser:health',
+  parserFulltext: 'parser:fulltext',
 } as const;
 
 export interface AppInfo {
@@ -65,3 +66,12 @@ export type ParserHealth =
       message: string;
       guidance: string;
     };
+
+/** GROBID processFulltextDocument 결과. TEI 본문은 파일에만 두고 renderer에는 요약만 보낸다. */
+export interface ParserFulltextResult {
+  teiPath: string;
+  byteLength: number;
+  hasSentenceCoords: boolean;
+  parserConfigHash: string;
+  elapsedMs: number;
+}
