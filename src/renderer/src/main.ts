@@ -1,4 +1,6 @@
+import 'pdfjs-dist/web/pdf_viewer.css';
 import type { OpenedPdf } from '@shared/ipc';
+import { pageInfoFromProxy } from './viewer/page-info';
 import { PdfViewer } from './viewer/pdf-viewer';
 import { PDFJS_VERSION } from './viewer/pdfjs';
 
@@ -32,6 +34,11 @@ async function loadOpened(result: OpenedPdf): Promise<void> {
   const ms = Math.round(performance.now() - t0);
   setStatus(`열림 (${ms}ms). 문장을 클릭하거나 드래그하세요.`);
   console.info(`[paperlens] loaded ${result.fileName} pages=${doc.numPages} loadMs=${ms}`);
+  const first = await doc.getPage(1);
+  const info = pageInfoFromProxy(0, first);
+  console.info(
+    `[paperlens] page0 view=${JSON.stringify(info.cropBox)} rot=${info.rotation} size=${info.width}x${info.height}`,
+  );
 }
 
 function updateZoomLabel(): void {
@@ -61,9 +68,20 @@ async function boot(): Promise<void> {
         .catch(showError),
   );
   updateZoomLabel();
-  viewer.addPageRenderedListener((pageIndex) =>
-    console.info(`[paperlens] rendered page ${pageIndex}`),
-  );
+  viewer.addPageRenderedListener((pageIndex) => {
+    const tl = viewer.textLayerOf(pageIndex);
+    if (info.screenshotMode && pageIndex === 0 && tl && tl.textDivs.length > 12) {
+      // 스크린샷 검증용(PAPERLENS_SCREENSHOT): 첫 페이지 텍스트 일부를 선택해 텍스트 레이어 정렬을 캡처로 확인한다.
+      const range = document.createRange();
+      range.setStartBefore(tl.textDivs[6]!);
+      range.setEndAfter(tl.textDivs[11]!);
+      window.getSelection()?.removeAllRanges();
+      window.getSelection()?.addRange(range);
+    }
+    console.info(
+      `[paperlens] rendered page ${pageIndex} textDivs=${tl?.textDivs.length ?? 0} items=${tl?.textContentItemsStr.length ?? 0}`,
+    );
+  });
   if (info.autoOpened) await loadOpened(info.autoOpened);
 }
 

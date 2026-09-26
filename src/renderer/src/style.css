@@ -53,3 +53,12 @@ body,
 .pdf-page canvas {
   display: block;
 }
+
+/* pdf_viewer.css의 .page 기본 여백·테두리를 우리 레이아웃에 맞게 무력화 */
+.pdfViewer .page.pdf-page {
+  margin: 0 auto 16px;
+  border: 0;
+}
+.pdf-page .textLayer ::selection {
+  background: rgb(0 120 255 / 0.35);
+}

@@ -10,6 +10,8 @@ interface PageSlot {
   pageIndex: number;
   element: HTMLDivElement;
   canvas: HTMLCanvasElement | null;
+  textLayerDiv: HTMLDivElement | null;
+  textLayer: pdfjs.TextLayer | null;
   rendered: boolean;
   rendering: Promise<void> | null;
   renderTask: pdfjs.RenderTask | null;
@@ -54,16 +56,21 @@ export class PdfViewer {
     const doc = await task.promise;
     this.doc = doc;
     this.container.replaceChildren();
+    // pdf_viewer.css의 .textLayer는 --scale-factor(뷰어)·--user-unit(페이지)로 글자 크기를 계산한다.
+    this.container.classList.add('pdfViewer');
+    this.container.style.setProperty('--scale-factor', String(this.scale));
     this.slots = [];
     for (let i = 0; i < doc.numPages; i++) {
       const element = document.createElement('div');
-      element.className = 'pdf-page';
+      element.className = 'pdf-page page';
       element.dataset['pageIndex'] = String(i);
       this.container.append(element);
       this.slots.push({
         pageIndex: i,
         element,
         canvas: null,
+        textLayerDiv: null,
+        textLayer: null,
         rendered: false,
         rendering: null,
         renderTask: null,
@@ -87,17 +94,31 @@ export class PdfViewer {
 
   async setScale(scale: number): Promise<void> {
     this.scale = Math.min(4, Math.max(0.5, scale));
+    this.container.style.setProperty('--scale-factor', String(this.scale));
     for (const s of this.slots) {
       s.renderTask?.cancel();
       s.renderTask = null;
       s.rendered = false;
       s.rendering = null;
+      s.textLayer?.cancel();
+      s.textLayer = null;
+      s.textLayerDiv?.remove();
+      s.textLayerDiv = null;
     }
     await this.layout();
   }
 
   pageElement(pageIndex: number): HTMLDivElement | undefined {
     return this.slots[pageIndex]?.element;
+  }
+
+  /** 렌더된 페이지의 TextLayer. textDivs·textContentItemsStr로 DOM↔텍스트 항목을 잇는다(C1.15). */
+  textLayerOf(pageIndex: number): pdfjs.TextLayer | null {
+    return this.slots[pageIndex]?.textLayer ?? null;
+  }
+
+  pageProxyOf(pageIndex: number): PDFPageProxy | null {
+    return this.slots[pageIndex]?.page ?? null;
   }
 
   /** 페이지 크기를 확대율에 맞춰 자리 크기를 정하고 관찰을 다시 등록한다. */
@@ -109,6 +130,7 @@ export class PdfViewer {
       const viewport = slot.page.getViewport({ scale: this.scale });
       slot.element.style.width = `${Math.floor(viewport.width)}px`;
       slot.element.style.height = `${Math.floor(viewport.height)}px`;
+      slot.element.style.setProperty('--user-unit', String(slot.page.userUnit));
       this.observer.observe(slot.element);
     }
   }
@@ -148,10 +170,11 @@ export class PdfViewer {
     });
     slot.renderTask = task;
     slot.rendering = task.promise
-      .then(() => {
+      .then(async () => {
         slot.canvas?.remove();
         slot.canvas = canvas;
         slot.element.prepend(canvas);
+        await this.renderTextLayer(slot, viewport);
         slot.rendered = true;
         for (const fn of this.onPageRendered) fn(slot.pageIndex, slot.element);
       })
@@ -163,5 +186,21 @@ export class PdfViewer {
         slot.renderTask = null;
       });
     await slot.rendering;
+  }
+
+  /** 캔버스 위에 선택 가능한 텍스트 레이어를 만든다. 항목 하나 = span 하나를 가정하지 않는다. */
+  private async renderTextLayer(slot: PageSlot, viewport: pdfjs.PageViewport): Promise<void> {
+    if (!slot.page) return;
+    slot.textLayer?.cancel();
+    slot.textLayerDiv?.remove();
+    const div = document.createElement('div');
+    div.className = 'textLayer';
+    pdfjs.setLayerDimensions(div, viewport);
+    slot.element.append(div);
+    const textContent = await slot.page.getTextContent();
+    const layer = new pdfjs.TextLayer({ textContentSource: textContent, container: div, viewport });
+    slot.textLayerDiv = div;
+    slot.textLayer = layer;
+    await layer.render();
   }
 }

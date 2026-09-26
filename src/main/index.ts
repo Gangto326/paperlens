@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
+import { writeFile } from 'node:fs/promises';
 import { IPC, type AppInfo, type PdfOpenDialogResult } from '@shared/ipc';
 import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
@@ -23,6 +24,22 @@ function createWindow(): BrowserWindow {
   });
 
   win.on('ready-to-show', () => win.show());
+
+  // PAPERLENS_SCREENSHOT=<png 경로>이면 로드 후 일정 시간 뒤 창을 캡처한다 (개발·자동 검증용).
+  const shotPath = process.env['PAPERLENS_SCREENSHOT'];
+  if (shotPath) {
+    win.webContents.once('did-finish-load', () => {
+      setTimeout(
+        () => {
+          void win.webContents.capturePage().then(async (img) => {
+            await writeFile(shotPath, img.toPNG());
+            console.log(`[main] screenshot saved ${shotPath}`);
+          });
+        },
+        Number(process.env['PAPERLENS_SCREENSHOT_DELAY_MS'] ?? 4000),
+      );
+    });
+  }
 
   // PAPERLENS_DEBUG=1이면 renderer 콘솔을 stdout으로 넘긴다 (개발·자동 검증용).
   if (process.env['PAPERLENS_DEBUG']) {
@@ -56,6 +73,7 @@ function registerIpc(): void {
       platform: process.platform,
       userDataPath: app.getPath('userData'),
       autoOpened,
+      screenshotMode: Boolean(process.env['PAPERLENS_SCREENSHOT']),
     };
   });
 
