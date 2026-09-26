@@ -51,6 +51,7 @@ export const sampleExtraction: ExtractionDocument = {
       width: 612,
       height: 792,
       rotation: 0,
+      userUnit: 1,
       mediaBox: [0, 0, 612, 792],
       cropBox: [0, 0, 612, 792],
       coordinateSpace: 'pdf_user_space',

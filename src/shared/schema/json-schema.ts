@@ -159,6 +159,7 @@ const page = obj({
   width: num,
   height: num,
   rotation: { type: 'integer', enum: [0, 90, 180, 270] },
+  userUnit: { type: 'number', exclusiveMinimum: 0 },
   mediaBox: tuple(4, num),
   cropBox: tuple(4, num),
   coordinateSpace: enumOf(COORDINATE_SPACES),

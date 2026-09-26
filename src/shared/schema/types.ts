@@ -99,6 +99,8 @@ export interface Page {
   width: number;
   height: number;
   rotation: number;
+  /** PDF /UserUnit (기본 1). PDF.js 뷰포트 scale에 곱해진다. GROBID 좌표에는 반영되지 않는다. */
+  userUnit: number;
   mediaBox: [number, number, number, number];
   cropBox: [number, number, number, number];
   coordinateSpace: CoordinateSpace;
