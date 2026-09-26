@@ -4,7 +4,16 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['out/**', 'dist/**', 'node_modules/**', 'coverage/**'] },
+  {
+    ignores: [
+      'out/**',
+      'dist/**',
+      'node_modules/**',
+      'coverage/**',
+      // codex app-server generate-ts 생성물(scripts/generate-codex-protocol.mjs)
+      'src/main/llm/codex/protocol/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
@@ -21,5 +30,9 @@ export default tseslint.config(
     },
   },
   { files: ['**/*.js', '**/*.cjs', '**/*.mjs'], ...tseslint.configs.disableTypeChecked },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { process: 'readonly', console: 'readonly' } },
+  },
   prettier,
 );
