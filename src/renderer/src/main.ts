@@ -65,10 +65,17 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
         ? '이 PDF에는 선택할 수 있는 텍스트가 거의 없습니다(스캔본으로 보임). OCR은 지원하지 않아 번역을 진행하지 않습니다.'
         : '이 PDF의 텍스트가 심하게 깨져 있어(글꼴 인코딩 문제) 번역을 진행하지 않습니다.',
     );
-  } else {
+    return;
+  }
+  setStatus(`텍스트 추출 완료 (${saved.itemCount}개 항목, ${ms}ms). GROBID 확인 중…`);
+  const health = await window.paperlens.checkParser();
+  console.info(`[paperlens] grobid ${JSON.stringify(health)}`);
+  if (health.ok) {
     setStatus(
-      `텍스트 추출 완료 (${saved.itemCount}개 항목, ${ms}ms). 문장을 클릭하거나 드래그하세요.`,
+      `텍스트 추출 완료 · GROBID ${health.version ?? '?'} 연결됨. 문장을 클릭하거나 드래그하세요.`,
     );
+  } else {
+    setStatus(`텍스트 추출 완료. ${health.guidance}`);
   }
 }
 

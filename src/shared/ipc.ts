@@ -9,6 +9,7 @@ export const IPC = {
   pdfOpenDialog: 'pdf:openDialog',
   pdfReadBytes: 'pdf:readBytes',
   extractSaveTextItems: 'extract:saveTextItems',
+  parserHealth: 'parser:health',
 } as const;
 
 export interface AppInfo {
@@ -54,3 +55,13 @@ export interface TextExtractionResult {
   /** needs_ocr·garbled이면 true. manifest.state는 failed, 이후 단계는 진행하지 않는다. */
   halted: boolean;
 }
+
+/** GROBID 서비스 상태. 실패 시 guidance에 사용자가 할 일(Docker 실행 명령)을 담는다. */
+export type ParserHealth =
+  | { ok: true; version: string | null }
+  | {
+      ok: false;
+      reason: 'unreachable' | 'timeout' | 'unhealthy';
+      message: string;
+      guidance: string;
+    };

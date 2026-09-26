@@ -4,15 +4,18 @@ import { writeFile } from 'node:fs/promises';
 import {
   IPC,
   type AppInfo,
+  type ParserHealth,
   type PdfOpenDialogResult,
   type TextExtractionResult,
 } from '@shared/ipc';
 import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
 import { parseTextExtractionPayload, saveTextItems } from './extract/text-items-store';
+import { GrobidClient } from './parser/grobid-client';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
+let grobid: GrobidClient;
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -111,11 +114,14 @@ function registerIpc(): void {
       return saveTextItems(store, parsed);
     },
   );
+
+  ipcMain.handle(IPC.parserHealth, (): Promise<ParserHealth> => grobid.isAlive());
 }
 
 void app.whenReady().then(() => {
   store = new PaperCacheStore(join(app.getPath('userData'), 'cache'));
   registry = new PdfRegistry(store);
+  grobid = new GrobidClient({ timeoutMs: 5_000 });
   registerIpc();
   createWindow();
   app.on('activate', () => {
