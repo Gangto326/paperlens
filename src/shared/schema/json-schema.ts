@@ -224,6 +224,8 @@ const textItemRecord = obj({
   hasEOL: bool,
 });
 
+const fontRecord = obj({ id: nonEmpty, name: str, family: str });
+
 const normalizationSegment = obj({
   rawStart: int,
   rawEnd: int,
@@ -244,6 +246,7 @@ export const sourceMapDocumentSchema = obj({
   extractionRevision: nonEmpty,
   pdfjsVersion: nonEmpty,
   textItems: arr(textItemRecord),
+  fonts: arr(fontRecord),
   normalizationMaps: arr(normalizationMap),
 });
 

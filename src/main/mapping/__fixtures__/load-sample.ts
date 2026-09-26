@@ -23,16 +23,31 @@ export interface Loaded {
   items: TextItemRecord[];
   boxes: PageBox[];
   sentences: Sentence[];
+  /** 항목 fontName(내부 이름) → 실제 글꼴 이름. opts.fonts일 때만 채운다(getOperatorList 비용: 52쪽 약 8초). */
+  fonts: Map<string, string>;
 }
 
-export async function loadSample(id: string): Promise<Loaded> {
+function fontBaseName(
+  page: { commonObjs: { has(id: string): boolean; get(id: string): unknown } },
+  fontName: string,
+): string {
+  if (!page.commonObjs.has(fontName)) return '';
+  const font = page.commonObjs.get(fontName);
+  if (typeof font !== 'object' || font === null) return '';
+  const name = (font as { name?: unknown }).name;
+  return typeof name === 'string' ? name : '';
+}
+
+export async function loadSample(id: string, opts: { fonts?: boolean } = {}): Promise<Loaded> {
   const data = new Uint8Array(readFileSync(resolve(papers, `${id}.pdf`)));
   const task = getDocument({ data, useSystemFonts: false, verbosity: 0 });
   const doc = await task.promise;
   const items: TextItemRecord[] = [];
   const boxes: PageBox[] = [];
+  const fonts = new Map<string, string>();
   for (let i = 0; i < doc.numPages; i++) {
     const page = await doc.getPage(i + 1);
+    if (opts.fonts) await page.getOperatorList();
     boxes.push({
       viewBox: page.view as [number, number, number, number],
       rotation: page.rotate,
@@ -42,6 +57,8 @@ export async function loadSample(id: string): Promise<Loaded> {
     let index = 0;
     for (const item of content.items) {
       if (!('str' in item)) continue;
+      if (opts.fonts && !fonts.has(item.fontName))
+        fonts.set(item.fontName, fontBaseName(page, item.fontName));
       items.push({
         id: `t_${i}_${index}`,
         pageIndex: i,
@@ -60,5 +77,5 @@ export async function loadSample(id: string): Promise<Loaded> {
   await task.destroy();
   const tei = readFileSync(resolve(teis, `${id}.tei.xml`), 'utf8');
   const { sentences } = normalizeTei(tei, { pdfSha256: 'a'.repeat(64), extractionRevision: 'r' });
-  return { items, boxes, sentences };
+  return { items, boxes, sentences, fonts };
 }

@@ -62,6 +62,7 @@ function textPayload(): TextExtractionPayload {
     pdfSha256: SAMPLE_SHA,
     pdfjsVersion: '6.3.289',
     textExtractorVersion: '1',
+    fonts: [{ id: 'g_d0_f1', name: 'ABCDEF+CMR10', family: 'serif' }],
     pages: [page(0), page(1)],
     textItems: items,
   };
@@ -80,6 +81,7 @@ describe('saveTextItems', () => {
     const doc = await store.readJson('sourceMapDocument', r.sourceMapPath);
     expect(doc.extractionRevision).toBe(r.extractionRevision);
     expect(doc.textItems).toHaveLength(10);
+    expect(doc.fonts).toEqual(payload.fonts);
     expect(doc.normalizationMaps.map((m) => m.id)).toEqual(items.map((i) => `nm_${i.id}`));
     expect(doc.normalizationMaps.every((m) => m.version === NORMALIZER_VERSION)).toBe(true);
     expect(doc.normalizationMaps[0]?.segments).toEqual(normalizeText(items[0]!.str).segments);

@@ -1,4 +1,4 @@
-import type { Page, TextItemRecord, TextQuality } from './schema';
+import type { FontRecord, Page, TextItemRecord, TextQuality } from './schema';
 
 /**
  * renderer ↔ main 사이의 제한된 IPC 계약.
@@ -43,6 +43,8 @@ export interface TextExtractionPayload {
   /** textQuality는 메인이 판정해 채운다. renderer는 'ok'로 보낸다. */
   pages: Page[];
   textItems: TextItemRecord[];
+  /** 항목 fontName → 실제 글꼴 이름. 문서에 나온 글꼴마다 하나. */
+  fonts: FontRecord[];
 }
 
 /** 메인이 source-map.json을 쓰고 품질을 판정한 결과. */

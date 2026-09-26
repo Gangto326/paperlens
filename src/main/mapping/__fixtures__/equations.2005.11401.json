@@ -1,0 +1,263 @@
+[
+  {
+    "order": 15,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "zi",
+    "warning": null,
+    "signals": "font=2 symbol=0 script=1 weak=0",
+    "en": "For query x, we use Maximum Inner Product Search (MIPS) to find the top-K documents [EQ_1] ."
+  },
+  {
+    "order": 36,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pη (z|x)",
+    "warning": null,
+    "signals": "font=6 symbol=2 script=1 weak=0",
+    "en": "As shown in Figure 1, our models leverage two components: (i) a retriever [EQ_1] with parameters η that returns (top-K t…"
+  },
+  {
+    "order": 36,
+    "token": "[EQ_2]",
+    "status": "detected",
+    "rawText": "pθ (yi|x, z, y1:i−1)",
+    "warning": null,
+    "signals": "font=9 symbol=3 script=6 weak=0",
+    "en": "As shown in Figure 1, our models leverage two components: (i) a retriever [EQ_1] with parameters η that returns (top-K t…"
+  },
+  {
+    "order": 36,
+    "token": "[EQ_3]",
+    "status": "detected",
+    "rawText": "i − 1",
+    "warning": null,
+    "signals": "font=4 symbol=1 script=0 weak=0",
+    "en": "As shown in Figure 1, our models leverage two components: (i) a retriever [EQ_1] with parameters η that returns (top-K t…"
+  },
+  {
+    "order": 36,
+    "token": "[EQ_4]",
+    "status": "detected",
+    "rawText": "y1:i−1",
+    "warning": null,
+    "signals": "font=3 symbol=1 script=4 weak=0",
+    "en": "As shown in Figure 1, our models leverage two components: (i) a retriever [EQ_1] with parameters η that returns (top-K t…"
+  },
+  {
+    "order": 41,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pη",
+    "warning": null,
+    "signals": "font=2 symbol=1 script=1 weak=0",
+    "en": "In the following, we formally introduce both models and then describe the [EQ_1] and [EQ_2] components, as well as the t…"
+  },
+  {
+    "order": 41,
+    "token": "[EQ_2]",
+    "status": "detected",
+    "rawText": "pθ",
+    "warning": null,
+    "signals": "font=2 symbol=1 script=1 weak=0",
+    "en": "In the following, we formally introduce both models and then describe the [EQ_1] and [EQ_2] components, as well as the t…"
+  },
+  {
+    "order": 43,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "p(y|x)",
+    "warning": null,
+    "signals": "font=4 symbol=1 script=0 weak=0",
+    "en": "Technically, it treats the retrieved document as a single latent variable that is marginalized to get the seq2seq probab…"
+  },
+  {
+    "order": 49,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pη (z|x)",
+    "warning": null,
+    "signals": "font=6 symbol=2 script=1 weak=0",
+    "en": "The retrieval component [EQ_1] is based on DPR [26]."
+  },
+  {
+    "order": 51,
+    "token": "[EQ_1]",
+    "status": "math_uncertain",
+    "rawText": "d(z)",
+    "warning": null,
+    "signals": "font=1 symbol=0 script=0 weak=1",
+    "en": "where [EQ_1] is a dense representation of a document produced by a BERT BASE document encoder [8], and [EQ_2] a query re…"
+  },
+  {
+    "order": 51,
+    "token": "[EQ_2]",
+    "status": "math_uncertain",
+    "rawText": "q(x)",
+    "warning": null,
+    "signals": "font=1 symbol=0 script=0 weak=1",
+    "en": "where [EQ_1] is a dense representation of a document produced by a BERT BASE document encoder [8], and [EQ_2] a query re…"
+  },
+  {
+    "order": 52,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pη (·|x))",
+    "warning": null,
+    "signals": "font=5 symbol=2 script=1 weak=0",
+    "en": "Calculating top-k([EQ_1], the list of k documents z with highest prior probability [EQ_2], is a Maximum Inner Product Se…"
+  },
+  {
+    "order": 52,
+    "token": "[EQ_2]",
+    "status": "detected",
+    "rawText": "pη (z|x)",
+    "warning": null,
+    "signals": "font=6 symbol=2 script=1 weak=0",
+    "en": "Calculating top-k([EQ_1], the list of k documents z with highest prior probability [EQ_2], is a Maximum Inner Product Se…"
+  },
+  {
+    "order": 56,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pθ (yi|x, z, y1:i−1)",
+    "warning": null,
+    "signals": "font=9 symbol=3 script=6 weak=0",
+    "en": "The generator component [EQ_1] could be modelled using any encoder-decoder."
+  },
+  {
+    "order": 63,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "xj , yj",
+    "warning": null,
+    "signals": "font=5 symbol=0 script=2 weak=0",
+    "en": "Given a fine-tuning training corpus of input/output pairs ([EQ_1] ), we minimize the negative marginal log-likelihood of…"
+  },
+  {
+    "order": 63,
+    "token": "[EQ_2]",
+    "status": "detected",
+    "rawText": "j − log p(yj |xj )",
+    "warning": null,
+    "signals": "font=12 symbol=2 script=3 weak=0",
+    "en": "Given a fine-tuning training corpus of input/output pairs ([EQ_1] ), we minimize the negative marginal log-likelihood of…"
+  },
+  {
+    "order": 66,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "y p(y|x)",
+    "warning": null,
+    "signals": "font=6 symbol=1 script=1 weak=0",
+    "en": "At test time, RAG-Sequence and RAG-Token require different ways to approximate arg max [EQ_1]."
+  },
+  {
+    "order": 67,
+    "token": "[EQ_1]",
+    "status": "math_uncertain",
+    "rawText": "p′ θ (yi|x, y1:i−1) = ∑ z∈top-k(p(·|x)) pη (zi|x)pθ (yi|x, zi, y1:i−1)",
+    "warning": "not_in_sentence_text",
+    "signals": "font=35 symbol=12 script=26 weak=0",
+    "en": "The RAG-Token model can be seen as a standard, autoregressive seq2seq generator with transition probability: p θ (y i |x…"
+  },
+  {
+    "order": 67,
+    "token": "[EQ_2]",
+    "status": "math_uncertain",
+    "rawText": "p′ θ (yi|x, y1:i−1)",
+    "warning": "not_in_sentence_text",
+    "signals": "font=10 symbol=3 script=7 weak=0",
+    "en": "The RAG-Token model can be seen as a standard, autoregressive seq2seq generator with transition probability: p θ (y i |x…"
+  },
+  {
+    "order": 68,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "p(y|x)",
+    "warning": null,
+    "signals": "font=4 symbol=1 script=0 weak=0",
+    "en": "RAG-Sequence For RAG-Sequence, the likelihood [EQ_1] does not break into a conventional pertoken likelihood, hence we ca…"
+  },
+  {
+    "order": 69,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pθ (yi|x, z, y1:i−1)",
+    "warning": null,
+    "signals": "font=9 symbol=3 script=6 weak=0",
+    "en": "Instead, we run beam search for each document z, scoring each hypothesis using [EQ_1]."
+  },
+  {
+    "order": 71,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pη (z|x)",
+    "warning": null,
+    "signals": "font=6 symbol=2 script=1 weak=0",
+    "en": "To estimate the probability of an hypothesis y we run an additional forward pass for each document z for which y does no…"
+  },
+  {
+    "order": 73,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "|Y |",
+    "warning": null,
+    "signals": "font=4 symbol=2 script=0 weak=0",
+    "en": "For longer output sequences, [EQ_1] can become large, requiring many forward passes."
+  },
+  {
+    "order": 74,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "pθ (y|x, zi) ≈ 0",
+    "warning": null,
+    "signals": "font=9 symbol=3 script=2 weak=0",
+    "en": "For more efficient decoding, we can make a further approximation that [EQ_1] where y was not generated during beam searc…"
+  },
+  {
+    "order": 74,
+    "token": "[EQ_2]",
+    "status": "detected",
+    "rawText": "x, zi",
+    "warning": null,
+    "signals": "font=2 symbol=0 script=1 weak=0",
+    "en": "For more efficient decoding, we can make a further approximation that [EQ_1] where y was not generated during beam searc…"
+  },
+  {
+    "order": 83,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "k ∈ {5, 10}",
+    "warning": null,
+    "signals": "font=6 symbol=1 script=0 weak=0",
+    "en": "We consider [EQ_1] for training and set k for test time using dev data."
+  },
+  {
+    "order": 86,
+    "token": "[EQ_1]",
+    "status": "math_uncertain",
+    "rawText": "x, y",
+    "warning": null,
+    "signals": "font=1 symbol=0 script=0 weak=0",
+    "en": "We treat questions and answers as input-output text pairs ([EQ_1]) and train RAG by directly minimizing the negative log…"
+  },
+  {
+    "order": 169,
+    "token": "[EQ_1]",
+    "status": "detected",
+    "rawText": "p(z|x)",
+    "warning": null,
+    "signals": "font=4 symbol=1 script=0 weak=0",
+    "en": "Here, we replace RAG's retriever with a fixed BM25 system, and use BM25 retrieval scores as logits when calculating [EQ_…"
+  },
+  {
+    "order": 235,
+    "token": "[EQ_1]",
+    "status": "math_uncertain",
+    "rawText": "q, a",
+    "warning": null,
+    "signals": "font=1 symbol=0 script=0 weak=0",
+    "en": "For RAG, we also make use of multiple annotation examples for Natural Questions and WebQuestions by training the model w…"
+  }
+]

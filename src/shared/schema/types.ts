@@ -204,6 +204,17 @@ export interface TextItemRecord {
   hasEOL: boolean;
 }
 
+/**
+ * PDF.js 글꼴 하나. TextItemRecord.fontName(문서 로드마다 달라지는 내부 이름 `g_d0_f3`)을 실제 글꼴 이름에 잇는다.
+ * name은 PDF 글꼴 사전의 BaseFont(서브셋 접두 `ABCDEF+` 포함, 없으면 빈 문자열), family는 getTextContent styles의
+ * fontFamily(serif/sans-serif/monospace 계열 추정). 인라인 수식 검출(C1.13)이 수학 글꼴(CMMI·CMSY…)을 알아보는 데 쓴다.
+ */
+export interface FontRecord {
+  id: string;
+  name: string;
+  family: string;
+}
+
 /** 정규화 대응표: 원본 offset 구간 ↔ 정규화 offset 구간 (둘 다 UTF-16). */
 export interface NormalizationSegment {
   rawStart: number;
@@ -226,6 +237,7 @@ export interface SourceMapDocument {
   extractionRevision: string;
   pdfjsVersion: string;
   textItems: TextItemRecord[];
+  fonts: FontRecord[];
   normalizationMaps: NormalizationMap[];
 }
 

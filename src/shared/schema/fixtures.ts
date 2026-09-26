@@ -124,6 +124,7 @@ export const sampleSourceMap: SourceMapDocument = {
       hasEOL: true,
     },
   ],
+  fonts: [{ id: 'g_d0_f1', name: 'ABCDEF+NimbusRomNo9L-Regu', family: 'serif' }],
   normalizationMaps: [
     {
       id: 'nm_0',

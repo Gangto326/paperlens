@@ -20,8 +20,8 @@ export function parseTextExtractionPayload(value: unknown): TextExtractionPayloa
   if (typeof v['textExtractorVersion'] !== 'string' || !v['textExtractorVersion']) {
     throw new Error('textExtractorVersion must be a non-empty string');
   }
-  if (!Array.isArray(v['pages']) || !Array.isArray(v['textItems'])) {
-    throw new Error('pages and textItems must be arrays');
+  if (!Array.isArray(v['pages']) || !Array.isArray(v['textItems']) || !Array.isArray(v['fonts'])) {
+    throw new Error('pages, textItems and fonts must be arrays');
   }
   return v as unknown as TextExtractionPayload;
 }
@@ -80,6 +80,7 @@ export async function saveTextItems(
     extractionRevision,
     pdfjsVersion: payload.pdfjsVersion,
     textItems: payload.textItems,
+    fonts: payload.fonts,
     normalizationMaps: payload.textItems.map(
       (item) => createNormalizationMap(item.str, `nm_${item.id}`).map,
     ),
