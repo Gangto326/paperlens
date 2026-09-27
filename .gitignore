@@ -23,3 +23,6 @@ test-results/
 project-context.md
 session-router-log.md
 .claude/settings.json
+
+# 개인 환경의 라우터 훅 등록(절대 경로 포함)
+.codex/
