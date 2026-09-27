@@ -10,6 +10,8 @@ import {
   UNMAPPED_NOTICE,
   selectionView,
   splitEquations,
+  translationView,
+  UNSOURCED_BADGE,
 } from './selection-view';
 
 const entry = (
@@ -129,14 +131,80 @@ describe('번역 표시', () => {
       state: 'complete',
       ko: '안녕 세계.',
       note: null,
+      sections: [],
+      concepts: [],
       warnings: [],
     });
     expect(v.sentences[1]?.translation).toEqual({
       state: 'complete',
       ko: '정확도는 높다.',
       note: '정확도는 맞힌 비율이다.',
+      sections: [],
+      concepts: [],
       warnings: ['원문의 수치 44.5가 번역에 그대로 보이지 않습니다', '원문이 잘려 있다'],
     });
+  });
+
+  it('해설은 글이 있는 칸만 보이고, 쉬운 뜻과 역할만 처음부터 펼친다', () => {
+    const v = translationView({
+      ko: '번역',
+      note: '',
+      explanation: { plain: '쉬운 뜻 글', role: ' ', example: '사례 글', deeper: '깊은 글' },
+      warnings: [],
+      chunkId: 'chunk_0001',
+    });
+    if (v.state !== 'complete') throw new Error('state');
+    expect(v.sections.map((s) => [s.key, s.label, s.open, s.text])).toEqual([
+      ['plain', '쉬운 뜻', true, '쉬운 뜻 글'],
+      ['example', '구체적 사례', false, '사례 글'],
+      ['deeper', '더 깊은 설명', false, '깊은 글'],
+    ]);
+  });
+
+  it('개념 카드는 통용 표기와 원어를 함께 보이고, 출처 없는 설명을 표시한다', () => {
+    const card = {
+      id: 'c_1',
+      name: 'fine-tuning',
+      nameKo: '파인튜닝',
+      definitionKo: '학습된 모델을 더 학습시키는 것.',
+      whyItMatters: '',
+      exampleKo: null,
+      prerequisiteConceptIds: ['c_2', 'c_404'],
+      sourced: false,
+    };
+    const concepts = {
+      c_1: card,
+      c_2: {
+        ...card,
+        id: 'c_2',
+        name: 'pre-training',
+        nameKo: null,
+        prerequisiteConceptIds: [],
+        sourced: true,
+      },
+    };
+    const v = translationView(
+      { ko: '번역', note: '', conceptIds: ['c_1', 'c_404', 'c_2'], warnings: [], chunkId: 'x' },
+      concepts,
+    );
+    if (v.state !== 'complete') throw new Error('state');
+    expect(v.concepts).toEqual([
+      {
+        id: 'c_1',
+        title: '파인튜닝(fine-tuning)',
+        badge: UNSOURCED_BADGE,
+        rows: [
+          { label: '뜻', text: '학습된 모델을 더 학습시키는 것.' },
+          { label: '먼저 알 것', text: 'pre-training' },
+        ],
+      },
+      {
+        id: 'c_2',
+        title: 'pre-training',
+        badge: null,
+        rows: [{ label: '뜻', text: '학습된 모델을 더 학습시키는 것.' }],
+      },
+    ]);
   });
 
   it('미완료 문장은 처리 대기, 실패한 청크의 문장은 실패로 표시한다', () => {

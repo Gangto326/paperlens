@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ChunkDocument, ExtractionDocument, Section, Sentence } from '@shared/schema';
-import { sampleChunk, sampleExtraction } from '@shared/schema/fixtures';
+import { sampleChunk, sampleContext, sampleExtraction } from '@shared/schema/fixtures';
 import { PaperCacheStore } from '../cache/paper-cache-store';
 import { readTranslations } from './results-store';
 
@@ -115,8 +115,61 @@ describe('readTranslations', () => {
     expect(snapshot.results['id_0_0']).toEqual({
       ko: '번역 id_0_0',
       note: '',
+      explanation: null,
+      conceptIds: [],
       warnings: [],
       chunkId: 'chunk_0001',
+    });
+    expect(snapshot.concepts).toEqual({});
+  });
+
+  it('해설 칸과 개념 카드를 함께 돌려준다. 카드에 없는 개념 id는 뺀다', async () => {
+    const contextPath = store.generationPath(SHA, GEN, 'context.json');
+    const contextSha = await store.writeJson('contextDocument', contextPath, {
+      ...sampleContext,
+      concepts: [
+        {
+          id: 'c_1',
+          name: 'fine-tuning',
+          nameKo: '파인튜닝',
+          definitionKo: '뜻',
+          whyItMatters: '이유',
+          exampleKo: null,
+          prerequisiteConceptIds: [],
+          refs: [],
+          researchStatus: 'unresolved',
+          contextVersion: 1,
+        },
+      ],
+    });
+    await store.updateManifest(SHA, (m) => {
+      store.recordFile(m, SHA, contextPath, contextSha);
+    });
+    const explanation = { plain: '쉬운 뜻', role: '역할', example: '', deeper: '' };
+    await saveChunk(0, 'complete', {
+      results: ['id_0_0', 'id_0_1'].map((id) => ({
+        id,
+        ko: `번역 ${id}`,
+        note: '',
+        explanation,
+        refs: [],
+        conceptIds: ['c_1', 'c_404'],
+        warnings: [],
+      })),
+    });
+    const snapshot = await readTranslations(store, SHA, CHUNKER);
+    expect(snapshot.results['id_0_0']).toMatchObject({ explanation, conceptIds: ['c_1'] });
+    expect(snapshot.concepts).toEqual({
+      c_1: {
+        id: 'c_1',
+        name: 'fine-tuning',
+        nameKo: '파인튜닝',
+        definitionKo: '뜻',
+        whyItMatters: '이유',
+        exampleKo: null,
+        prerequisiteConceptIds: [],
+        sourced: false,
+      },
     });
   });
 

@@ -162,6 +162,51 @@ body,
   font-size: 13px;
   line-height: 1.55;
 }
+.explain {
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  border-left: 3px solid rgb(80 140 255 / 0.5);
+  background: rgb(80 140 255 / 0.08);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.explain > summary,
+.concept > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+.explain > p {
+  margin: 4px 0 0;
+}
+.concept-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 6px;
+}
+.concept {
+  padding: 4px 8px;
+  border: 1px solid rgb(128 128 128 / 0.35);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.concept-badge {
+  margin: 4px 0 0;
+  font-size: 11px;
+}
+.concept dl {
+  margin: 4px 0 0;
+}
+.concept dt {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.concept dd {
+  margin: 0;
+}
 .sentence-warning {
   margin: 0 0 4px;
   font-size: 12px;

@@ -1,4 +1,11 @@
-import type { FontRecord, Page, PaperState, TextItemRecord, TextQuality } from './schema';
+import type {
+  FontRecord,
+  Page,
+  PaperState,
+  SentenceExplanation,
+  TextItemRecord,
+  TextQuality,
+} from './schema';
 import type { SentenceIndex } from './mapping/selection';
 
 export type { SentenceIndex, SentenceIndexEntry } from './mapping/selection';
@@ -234,10 +241,27 @@ export type ProcessEvent =
 /** 문장 하나의 저장된 번역·해설(C2.9). 검증을 통과해 완료된 청크의 결과만 온다. */
 export interface SentenceTranslation {
   ko: string;
-  /** 필요 없으면 빈 문자열. 화면에서는 숨긴다. */
+  /** 칸으로 나누기 전 세대의 해설. 없으면 빈 문자열. 화면에서는 숨긴다. */
   note: string;
+  /** 해설 칸. 칸으로 나누기 전 세대에는 없다. */
+  explanation?: SentenceExplanation | null;
+  /** 이 문장에 이어진 개념 카드 id. `TranslationSnapshot.concepts`의 키다. */
+  conceptIds?: string[];
   warnings: string[];
   chunkId: string;
+}
+
+/** 화면에 보이는 개념 카드. */
+export interface ConceptCard {
+  id: string;
+  name: string;
+  nameKo: string | null;
+  definitionKo: string;
+  whyItMatters: string;
+  exampleKo: string | null;
+  prerequisiteConceptIds: string[];
+  /** 읽고 확인한 출처가 있는 설명이면 true. 아니면 "일반 설명, 출처 미확인"으로 표시한다. */
+  sourced: boolean;
 }
 
 /** 캐시에 저장된 번역 상태 전체. 선택 시 표시는 이 값을 메모리에서 조회한다. */
@@ -249,6 +273,8 @@ export interface TranslationSnapshot {
   chunks: { id: string; status: 'pending' | 'complete' | 'failed'; sentenceIds: string[] }[];
   /** 문장 ID → 번역. 완료된 문장만 들어 있다. */
   results: Record<string, SentenceTranslation>;
+  /** 개념 카드 id → 카드. 컨텍스트를 읽지 못했거나 카드가 없는 세대는 비어 있다. */
+  concepts?: Record<string, ConceptCard>;
 }
 
 /** 미완료 문장을 골랐을 때 그 청크를 다음 순서로 올린 결과(C2.10). 처리 중이 아니면 빈 배열이다. */

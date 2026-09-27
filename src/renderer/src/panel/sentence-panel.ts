@@ -2,6 +2,8 @@ import type { SelectionResult } from '@shared/mapping/selection';
 import {
   NO_TRANSLATIONS,
   selectionView,
+  type ConceptView,
+  type ExplanationSectionView,
   type SentenceView,
   type TranslationLookup,
 } from './selection-view';
@@ -105,6 +107,13 @@ function renderSentence(s: SentenceView): HTMLElement {
     note.textContent = t.note;
     article.append(note);
   }
+  for (const section of t.sections) article.append(renderSection(section));
+  if (t.concepts.length > 0) {
+    const list = document.createElement('div');
+    list.className = 'concept-list';
+    list.append(...t.concepts.map(renderConcept));
+    article.append(list);
+  }
   for (const warning of t.warnings) {
     const w = document.createElement('p');
     w.className = 'sentence-warning muted';
@@ -112,4 +121,45 @@ function renderSentence(s: SentenceView): HTMLElement {
     article.append(w);
   }
   return article;
+}
+
+/** 해설 칸 하나. 접어 둔 칸은 제목만 보이고 누르면 펼쳐진다. */
+function renderSection(section: ExplanationSectionView): HTMLElement {
+  const details = document.createElement('details');
+  details.className = `explain explain-${section.key}`;
+  details.open = section.open;
+  const summary = document.createElement('summary');
+  summary.textContent = section.label;
+  const body = document.createElement('p');
+  body.lang = 'ko';
+  body.textContent = section.text;
+  details.append(summary, body);
+  return details;
+}
+
+/** 개념 카드. 이름만 보이고 누르면 펼쳐진다. */
+function renderConcept(concept: ConceptView): HTMLElement {
+  const details = document.createElement('details');
+  details.className = 'concept';
+  details.dataset['conceptId'] = concept.id;
+  const summary = document.createElement('summary');
+  summary.textContent = concept.title;
+  details.append(summary);
+  if (concept.badge !== null) {
+    const badge = document.createElement('p');
+    badge.className = 'concept-badge muted';
+    badge.textContent = concept.badge;
+    details.append(badge);
+  }
+  const rows = document.createElement('dl');
+  for (const row of concept.rows) {
+    const label = document.createElement('dt');
+    label.textContent = row.label;
+    const text = document.createElement('dd');
+    text.lang = 'ko';
+    text.textContent = row.text;
+    rows.append(label, text);
+  }
+  details.append(rows);
+  return details;
 }

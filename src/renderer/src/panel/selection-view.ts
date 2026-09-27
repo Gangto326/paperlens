@@ -1,10 +1,12 @@
-import type { SentenceTranslation, TranslationSnapshot } from '@shared/ipc';
+import type { ConceptCard, SentenceTranslation, TranslationSnapshot } from '@shared/ipc';
 import type { SelectionResult, SentenceIndexEntry } from '@shared/mapping/selection';
 
 /**
  * 우측 패널 뷰 모델(C1.16·C2.9). DOM을 모르는 순수 변환이라 node 환경에서 테스트한다.
  * 문장 원문(`en`)과 매핑 상태, 저장된 번역·해설을 보여준다. 결과가 없는 문장은 "처리 대기"(PLAN 9)다.
  * 번역은 메모리에 든 스냅샷에서만 찾는다. 선택할 때 LLM이나 네트워크를 부르지 않는다.
+ * 해설은 칸으로 나눠 보인다. 쉬운 뜻과 역할은 바로 보이고 사례와 더 깊은 설명은 눌러 펼친다.
+ * 개념 카드는 문장마다 이름만 보이고 눌러 펼친다. 같은 카드를 여러 문장이 함께 쓴다.
  */
 
 export const UNMAPPED_NOTICE = '이 부분은 문장 연결을 확인하지 못했습니다';
@@ -13,13 +15,44 @@ export const PENDING_TRANSLATION = '번역·해설: 처리 대기';
 export const FAILED_TRANSLATION =
   '번역·해설: 이 부분은 만들지 못했습니다. 번역을 이어서 하면 다시 시도합니다';
 
+export const UNSOURCED_BADGE = '일반 설명, 출처 미확인';
+
+export type ExplanationKey = 'plain' | 'role' | 'example' | 'deeper';
+
+/** 화면에 보이는 순서다. open이 true인 칸은 처음부터 펼쳐 보인다. */
+const EXPLANATION_SECTIONS: { key: ExplanationKey; label: string; open: boolean }[] = [
+  { key: 'plain', label: '쉬운 뜻', open: true },
+  { key: 'role', label: '이 문장의 역할', open: true },
+  { key: 'example', label: '구체적 사례', open: false },
+  { key: 'deeper', label: '더 깊은 설명', open: false },
+];
+
+export interface ExplanationSectionView {
+  key: ExplanationKey;
+  label: string;
+  text: string;
+  open: boolean;
+}
+
+export interface ConceptView {
+  id: string;
+  /** "파인튜닝(fine-tuning)". 한국어 표기가 없으면 원어만 */
+  title: string;
+  /** 출처 없는 설명이면 표시 문구, 아니면 null */
+  badge: string | null;
+  rows: { label: string; text: string }[];
+}
+
 export type TranslationView =
   | { state: 'pending' | 'failed'; text: string }
   | {
       state: 'complete';
       ko: string;
-      /** 빈 해설은 null. 화면에서 숨긴다. */
+      /** 칸으로 나누기 전 세대의 해설. 빈 해설은 null. 화면에서 숨긴다. */
       note: string | null;
+      /** 글이 있는 칸만 들어 있다. */
+      sections: ExplanationSectionView[];
+      concepts: ConceptView[];
       warnings: string[];
     };
 
@@ -44,11 +77,55 @@ export function warningText(warning: string): string {
   return warning;
 }
 
-export function translationView(found: SentenceTranslation): TranslationView {
+export function conceptTitle(card: Pick<ConceptCard, 'name' | 'nameKo'>): string {
+  const ko = card.nameKo?.trim() ?? '';
+  return ko === '' || ko === card.name ? card.name : `${ko}(${card.name})`;
+}
+
+export function conceptView(
+  card: ConceptCard,
+  all: Readonly<Record<string, ConceptCard>>,
+): ConceptView {
+  const rows: ConceptView['rows'] = [];
+  const add = (label: string, text: string | null): void => {
+    if (text !== null && text.trim() !== '') rows.push({ label, text: text.trim() });
+  };
+  add('뜻', card.definitionKo);
+  add('왜 중요한가', card.whyItMatters);
+  add('사례', card.exampleKo);
+  add(
+    '먼저 알 것',
+    card.prerequisiteConceptIds
+      .map((id) => all[id])
+      .filter((c) => c !== undefined)
+      .map(conceptTitle)
+      .join(', '),
+  );
+  return {
+    id: card.id,
+    title: conceptTitle(card),
+    badge: card.sourced ? null : UNSOURCED_BADGE,
+    rows,
+  };
+}
+
+export function translationView(
+  found: SentenceTranslation,
+  concepts: Readonly<Record<string, ConceptCard>> = {},
+): TranslationView {
+  const explanation = found.explanation ?? null;
   return {
     state: 'complete',
     ko: found.ko,
     note: found.note.trim() === '' ? null : found.note,
+    sections: EXPLANATION_SECTIONS.flatMap((s) => {
+      const text = explanation?.[s.key].trim() ?? '';
+      return text === '' ? [] : [{ ...s, text }];
+    }),
+    concepts: (found.conceptIds ?? [])
+      .map((id) => concepts[id])
+      .filter((c) => c !== undefined)
+      .map((c) => conceptView(c, concepts)),
     warnings: found.warnings.map(warningText),
   };
 }
@@ -60,7 +137,7 @@ export function lookupOf(snapshot: TranslationSnapshot | null): TranslationLooku
   );
   return (sentenceId) => {
     const found = snapshot.results[sentenceId];
-    if (found) return translationView(found);
+    if (found) return translationView(found, snapshot.concepts ?? {});
     if (failed.has(sentenceId)) return { state: 'failed', text: FAILED_TRANSLATION };
     return { state: 'pending', text: PENDING_TRANSLATION };
   };
