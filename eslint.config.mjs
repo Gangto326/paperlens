@@ -33,7 +33,15 @@ export default tseslint.config(
   {
     files: ['scripts/**/*.mjs', 'src/**/__fixtures__/*.mjs'],
     languageOptions: {
-      globals: { process: 'readonly', console: 'readonly', setInterval: 'readonly' },
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        setInterval: 'readonly',
+        fetch: 'readonly',
+        FormData: 'readonly',
+        Blob: 'readonly',
+        Buffer: 'readonly',
+      },
     },
   },
   prettier,

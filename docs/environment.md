@@ -39,3 +39,16 @@ npm run build    # out/ 빌드
 - 로그인은 앱 안의 "ChatGPT 로그인" 버튼으로 시작한다(`account/login/start {type:"chatgpt"}`). App Server가 `localhost:1455` 콜백 서버를 열고 앱이 인증 URL을 기본 브라우저로 연다. 인증 정보는 앱 전용 `CODEX_HOME`에만 저장되므로 전역 `codex login`과 별개다(0.157.1 실측).
 - 한도는 `account/rateLimits/read`로만 조회하고 값이 없으면 "확인 불가"로 표시한다. 미로그인이면 오류(-32600)라 로그인 필요로 구분한다.
 - 구조화 출력 스모크는 한도를 쓰므로 `PAPERLENS_LLM_SMOKE=1`로 앱을 띄웠을 때만 돈다(시작 시 로그인 상태면 바로, 아니면 로그인 완료 직후). 결과는 로그 `[codex] smoke …`와 `userData/llm/structured-smoke.json`(Usage 포함)에 남는다. 미로그인 턴은 401 재시도로 약 17초 뒤에야 실패하므로 턴 전에 계정 상태를 먼저 확인한다(0.157.1 실측). 같은 변수로 `npm test`를 돌리면 실제 app-server 미로그인 턴 테스트가 추가로 돈다(api.openai.com 접속).
+
+## 검증 논문과 정답 매핑 표본
+
+```sh
+npm run fixtures:download            # fixtures/papers.json의 PDF 3편을 받아 sha256 대조
+npm run fixtures:download -- --tei   # GROBID가 떠 있으면 fixtures/tei/<id>.tei.xml도 생성
+npm run eval:mapping                 # 정답 표본 대비 매핑·선택 정확도 출력
+```
+
+- 검증 논문은 2005.11401v4(19쪽)·2312.06718v3(26쪽)·2410.21418v1(52쪽)이다. PDF와 TEI는 커밋하지 않는다. 없으면 실샘플 테스트와 평가는 건너뛴다.
+- 정답 표본은 `fixtures/truth/mapping.<id>.json`이다. 문서 전체에서 문장 글을 전역 검색해 만든 초안을 텍스트로 읽어 검수한 것이며, 사람이 PDF 화면을 보고 표시한 정답은 아니다. 방법과 한계는 파일의 `method`·`limits`에 있다.
+- `verification`이 `read`·`manual`인 240문장이 PLAN 12.3의 표본이다. `auto`는 유일 일치만 확인한 보조 자료로 따로 집계한다.
+- 정답은 텍스트 항목 id에 묶여 있다. PDF.js나 텍스트 추출 규칙이 바뀌면 `itemsDigest`가 어긋나 평가가 실패한다. 그때는 `PAPERLENS_TRUTH_DUMP=<dir> npm run eval:mapping`으로 입력을 다시 만들고 `python3 scripts/mapping-truth/build-truth.py <dir>`로 재생성한 뒤, `--review`가 내는 문장을 읽고 `scripts/mapping-truth/checked.json`에 적는다.

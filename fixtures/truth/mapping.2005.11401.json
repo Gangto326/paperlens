@@ -1,0 +1,2456 @@
+{
+  "schemaVersion": 1,
+  "paper": {
+    "id": "2005.11401",
+    "arxivVersion": "v4",
+    "sha256": "23e3249e9a1e75418d82efecab0ea8c4d033b89c93742f63208d47ce01f21233",
+    "pages": 19
+  },
+  "source": {
+    "pdfjsVersion": "6.3.289",
+    "items": 3154,
+    "itemsDigest": "a4c1f136073e137a3ab7aea6670820df12317a81356c19a5dd5943ead81581f9"
+  },
+  "parser": {
+    "name": "grobid",
+    "version": "0.9.1",
+    "teiSha256": "07d9f1b61eebc158b7a0aa4241e512755bb3bd5f45ade909da8f951ca7ce95f4",
+    "sentences": 269
+  },
+  "method": "문서 전체 텍스트 항목을 (page, index) 순으로 이어 붙여 문자·숫자만 남긴 키 문자열을 만들고, 문장 글(GROBID enRaw)의 키 문자열을 전역 검색했다. 좌표와 매핑 알고리즘 출력은 쓰지 않았다. verification이 read인 항목은 스팬 글·틈·앞뒤 항목을 읽어 문장 글과 대조했고, manual인 항목은 항목 문자열을 읽어 범위를 직접 정했다. auto는 유일 일치만 확인한 보조 자료다.",
+  "limits": [
+    "사람이 PDF 화면을 보고 표시한 정답이 아니다. 자동 초안을 Claude가 텍스트로 읽어 검수했다.",
+    "문장 글은 GROBID 출력이다. 파서가 잘못 자르거나 이어 붙인 문장은 그 글을 기준으로 정답을 만들고 parser_defect로 표시했다.",
+    "비교는 문자·숫자 글자만 한다. 스팬 양끝의 공백·구두점·하이픈 위치는 검증하지 않는다.",
+    "정답과 알고리즘이 모두 문자열 일치에 기대므로 PDF 글자 자체의 오류는 드러나지 않는다."
+  ],
+  "entries": [
+    {
+      "order": 0,
+      "textSha": "a5ef2add1901e05f",
+      "head": "Large pre-trained language models have been show",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_42:0-76 t_0_43:0-81 t_0_44:0-16"
+    },
+    {
+      "order": 1,
+      "textSha": "57eb269bb820d9a3",
+      "head": "However, their ability to access and precisely m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_44:18-81 t_0_45:0-80 t_0_46:0-39"
+    },
+    {
+      "order": 2,
+      "textSha": "d4cfce0d66f64457",
+      "head": "Additionally, providing provenance for their dec",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_46:41-85 t_0_47:0-74"
+    },
+    {
+      "order": 3,
+      "textSha": "b9a1c2e17815904c",
+      "head": "Pretrained models with a differentiable access m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_47:76-79 t_0_48:0-80 t_0_49:0-73"
+    },
+    {
+      "order": 4,
+      "textSha": "c2c8c03c9ec13fdc",
+      "head": "We explore a general-purpose fine-tuning recipe ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_49:75-77 t_0_50:0-79 t_0_51:1-74 t_0_52:0-27"
+    },
+    {
+      "order": 5,
+      "textSha": "a17871ec0e18d9e8",
+      "head": "We introduce RAG models where the parametric mem",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_52:29-73 t_0_53:0-78 t_0_54:0-71"
+    },
+    {
+      "order": 6,
+      "textSha": "725a9d6b2af63fb8",
+      "head": "We compare two RAG formulations, one which condi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_54:73-79 t_0_55:0-78 t_0_56:0-81 t_0_57:0-9"
+    },
+    {
+      "order": 7,
+      "textSha": "53c0a88c6e534e24",
+      "head": "We fine-tune and evaluate our models on a wide r",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_57:11-76 t_0_58:0-78 t_0_59:0-78 t_0_60:0-13"
+    },
+    {
+      "order": 8,
+      "textSha": "de58a565d2604d2d",
+      "head": "For language generation tasks, we find that RAG ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_60:15-78 t_0_61:0-83 t_0_62:0-16"
+    },
+    {
+      "order": 9,
+      "textSha": "62eef006d951b76c",
+      "head": "Pre-trained neural language models have been sho",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_68:0-98 t_0_69:0-18"
+    },
+    {
+      "order": 10,
+      "textSha": "c0580be1bb1ff08d",
+      "head": "They can do so without any access to an external",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_69:21-96 t_0_70:0-31"
+    },
+    {
+      "order": 11,
+      "textSha": "8207dd832090897a",
+      "head": "While this development is exciting, such models ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_70:34-94 t_0_71:0-101 t_0_72:0-55"
+    },
+    {
+      "order": 12,
+      "textSha": "799f8f2f7e500c02",
+      "head": "Hybrid models that combine parametric memory wit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_72:58-95 t_0_73:0-98 t_0_74:0-92 t_0_75:0-25"
+    },
+    {
+      "order": 13,
+      "textSha": "0c36102014ff1848",
+      "head": "REALM [20] and ORQA [31], two recently introduce",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary", "parser_defect"],
+      "spans": "t_0_77:0-61 t_0_78:0-96 t_1_141:0-34",
+      "note": "GROBID가 문장을 promising results,에서 자르고 그림 1 설명을 이어 붙였다."
+    },
+    {
+      "order": 14,
+      "textSha": "088a40c717b5ff15",
+      "head": "We combine a pre-trained retriever (Query Encode",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_141:36-70 t_1_142:0-13 t_1_146:0-8 t_1_147:0-5 t_1_148:2-34 t_1_149:0-9 t_1_150:2-26"
+    },
+    {
+      "order": 15,
+      "textSha": "c5d7ce599581d7a1",
+      "head": "For query x, we use Maximum Inner Product Search",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["script"],
+      "spans": "t_1_150:28-37 t_1_152:0-1 t_1_153:2-8 t_1_154:0-63 t_1_156:0-1 t_1_157:0-1"
+    },
+    {
+      "order": 16,
+      "textSha": "e38e8b77150a07db",
+      "head": "For final prediction y, we treat z as a latent v",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_158:2-22 t_1_160:0-1 t_1_161:2-4 t_1_162:0-5 t_1_164:0-1 t_1_166:0-87"
+    },
+    {
+      "order": 17,
+      "textSha": "475be727d7235ebf",
+      "head": "but have only explored open-domain extractive qu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_167:0-64"
+    },
+    {
+      "order": 18,
+      "textSha": "70162d48a7c7f7c3",
+      "head": "Here, we bring hybrid parametric and non-paramet",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_167:66-98 t_1_168:0-95"
+    },
+    {
+      "order": 19,
+      "textSha": "7ced7e92fa736894",
+      "head": "We endow pre-trained, parametric-memory generati",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_169:0-94 t_1_170:0-95"
+    },
+    {
+      "order": 20,
+      "textSha": "25123e116f644ad3",
+      "head": "We build RAG models where the parametric memory ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_171:0-93 t_1_172:0-94 t_1_173:0-9"
+    },
+    {
+      "order": 21,
+      "textSha": "a8a6e7ee56e88e6f",
+      "head": "We combine these components in a probabilistic m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_173:11-90"
+    },
+    {
+      "order": 22,
+      "textSha": "48726e4880070b12",
+      "head": "The retriever (Dense Passage Retriever [26], hen",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_173:93-96 t_1_174:0-97 t_1_175:0-100 t_1_176:0-32"
+    },
+    {
+      "order": 23,
+      "textSha": "d95ed7944b67f65a",
+      "head": "We marginalize the latent documents with a top-K",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_176:34-96 t_1_177:0-102 t_1_178:0-69"
+    },
+    {
+      "order": 24,
+      "textSha": "e1901ff7f7fad041",
+      "head": "Like T5 [51] or BART, RAG can be fine-tuned on a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_178:72-97 t_1_179:0-99"
+    },
+    {
+      "order": 25,
+      "textSha": "1ae359909d2ea9e1",
+      "head": "There has been extensive previous work proposing",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_180:0-100 t_1_181:0-61"
+    },
+    {
+      "order": 26,
+      "textSha": "f0e2e66bbbc8d6d2",
+      "head": "memory networks [64,55], stackaugmented networks",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_181:63-94 t_1_182:0-45"
+    },
+    {
+      "order": 27,
+      "textSha": "052554580b7550f1",
+      "head": "In contrast, we explore a setting where both par",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_182:48-92 t_1_183:0-93 t_1_184:0-9"
+    },
+    {
+      "order": 28,
+      "textSha": "122ecaed6f5aa727",
+      "head": "Crucially, by using pre-trained access mechanism",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_184:11-96 t_1_185:0-35"
+    },
+    {
+      "order": 29,
+      "textSha": "8d4162b59b07f38b",
+      "head": "Our results highlight the benefits of combining ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_186:0-96 t_1_187:0-8 t_1_189:0-25 t_1_190:1-62 t_1_191:0-46"
+    },
+    {
+      "order": 30,
+      "textSha": "fb1459bd122dc2d8",
+      "head": "Our RAG models achieve state-of-the-art results ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_191:48-95 t_1_192:0-92 t_1_193:0-78"
+    },
+    {
+      "order": 31,
+      "textSha": "9476908664f959ae",
+      "head": "Despite these being extractive tasks, we find th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_193:81-100 t_1_194:0-98"
+    },
+    {
+      "order": 32,
+      "textSha": "d6b9ed16720e11e7",
+      "head": "For knowledge-intensive generation, we experimen",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_195:0-89 t_1_196:0-95 t_1_197:0-28"
+    },
+    {
+      "order": 33,
+      "textSha": "d65544ccaeeaa450",
+      "head": "For FEVER [56] fact verification, we achieve res",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_197:30-97 t_1_198:0-71"
+    },
+    {
+      "order": 34,
+      "textSha": "8fe1c4cfaf807add",
+      "head": "Finally, we demonstrate that the non-parametric ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["script"],
+      "spans": "t_1_198:73-101 t_1_199:0-94 t_1_200:0-1"
+    },
+    {
+      "order": 35,
+      "textSha": "17dfacdd26761d85",
+      "head": "We explore RAG models, which use the input seque",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_206:0-51 t_1_208:0-1 t_1_210:0-26 t_1_212:0-1 t_1_214:0-12 t_1_215:0-57 t_1_217:0-1"
+    },
+    {
+      "order": 36,
+      "textSha": "3936c5d82feedfdd",
+      "head": "As shown in Figure 1, our models leverage two co",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "inline_math", "page_boundary", "script"],
+      "spans": "t_1_218:2-34 t_1_219:0-40 t_1_221:0-1 t_1_222:0-1 t_1_225:0-1 t_1_227:0-1 t_1_230:0-15 t_1_232:0-1 t_1_234:0-29 t_1_235:0-46 t_1_237:0-1 t_1_239:0-20 t_1_241:0-1 t_1_242:0-1 t_1_245:0-1 t_1_246:0-1 t_1_248:0-7 t_1_249:0-1 t_1_250:0-1 t_1_252:0-1 t_1_255:0-12 t_2_0:0-2 t_2_2:0-1 t_2_4:0-65 t_2_6:0-1 t_2_10:0-1 t_2_12:0-6 t_2_14:0-1 t_2_15:0-1 t_2_16:0-1 t_2_18:0-1 t_2_19:2-14 t_2_20:0-5 t_2_22:0-1 t_2_24:0-23 t_2_26:0-1"
+    },
+    {
+      "order": 37,
+      "textSha": "3d5afbe471e954c0",
+      "head": "To train the retriever and generator end-to-end,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_28:0-101"
+    },
+    {
+      "order": 38,
+      "textSha": "d945192fc0fccdfe",
+      "head": "We propose two models that marginalize over the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_29:0-95 t_2_30:0-32"
+    },
+    {
+      "order": 39,
+      "textSha": "70ab9b963be6133d",
+      "head": "In one approach, RAG-Sequence, the model uses th",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_30:34-49 t_2_32:0-12 t_2_33:2-34 t_2_34:0-28"
+    },
+    {
+      "order": 40,
+      "textSha": "bac324e912cce235",
+      "head": "The second approach, RAG-Token, can predict each",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_34:30-49 t_2_36:0-9 t_2_37:2-37 t_2_38:0-23"
+    },
+    {
+      "order": 41,
+      "textSha": "d9ab0afcbbde87ac",
+      "head": "In the following, we formally introduce both mod",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_2_38:25-98 t_2_40:0-1 t_2_41:0-1 t_2_43:0-3 t_2_45:0-1 t_2_46:0-1 t_2_48:0-58"
+    },
+    {
+      "order": 42,
+      "textSha": "84f1a29ca42c1954",
+      "head": "The RAG-Sequence model uses the same retrieved d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_55:0-67 t_2_56:0-12 t_2_58:0-8"
+    },
+    {
+      "order": 43,
+      "textSha": "76fe0987d1bfdb27",
+      "head": "Technically, it treats the retrieved document as",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_59:2-80 t_2_60:0-46 t_2_62:0-1 t_2_64:0-1 t_2_66:0-1 t_2_69:0-25"
+    },
+    {
+      "order": 44,
+      "textSha": "0f19ea97b5f3147a",
+      "head": "Concretely, the top K documents are retrieved us",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_69:27-42 t_2_70:0-97 t_2_71:0-58"
+    },
+    {
+      "order": 45,
+      "textSha": "1bf53e920b647ed8",
+      "head": "In the RAG-Token model we can draw a different l",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_156:0-71 t_2_157:0-6 t_2_159:0-5 t_2_161:0-27"
+    },
+    {
+      "order": 46,
+      "textSha": "681718e31537cb12",
+      "head": "This allows the generator to choose content from",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_161:29-85 t_2_162:0-34"
+    },
+    {
+      "order": 47,
+      "textSha": "cf02026063b441dd",
+      "head": "Concretely, the top K documents are retrieved us",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_162:36-91 t_2_163:0-101 t_2_164:0-100"
+    },
+    {
+      "order": 48,
+      "textSha": "46cd12949307cc3c",
+      "head": "Finally, we note that RAG can be used for sequen",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_216:0-103 t_2_217:0-91"
+    },
+    {
+      "order": 49,
+      "textSha": "139df453bebf4c42",
+      "head": "The retrieval component p η (z|x) is based on DP",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_2_223:0-23 t_2_225:0-1 t_2_226:0-1 t_2_229:0-1 t_2_231:0-1 t_2_234:0-19"
+    },
+    {
+      "order": 50,
+      "textSha": "4214f640d1eca07f",
+      "head": "DPR follows a bi-encoder architecture:",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_234:22-59"
+    },
+    {
+      "order": 51,
+      "textSha": "b15e49ee3e1fcde6",
+      "head": "where d(z) is a dense representation of a docume",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["script"],
+      "spans": "t_2_285:0-5 t_2_287:0-1 t_2_289:0-1 t_2_292:0-58 t_2_293:0-4 t_2_295:0-16 t_2_297:1-2 t_2_298:0-3 t_2_300:0-1 t_2_302:0-1 t_2_305:0-36 t_2_307:0-13 t_2_308:2-20 t_2_309:0-4"
+    },
+    {
+      "order": 52,
+      "textSha": "090295c6cfbee710",
+      "head": "Calculating top-k(p η (•|x)), the list of k docu",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_2_310:2-13 t_2_311:0-5 t_2_313:0-1 t_2_314:0-1 t_2_318:0-1 t_2_320:2-13 t_2_322:0-1 t_2_324:0-9 t_2_326:0-1 t_2_328:0-30 t_2_330:0-1 t_2_331:0-1 t_2_334:0-1 t_2_336:0-1 t_2_338:2-20 t_2_339:0-87"
+    },
+    {
+      "order": 53,
+      "textSha": "319d17abf2cb530b",
+      "head": "We use a pre-trained bi-encoder from DPR to init",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_339:90-96 t_2_340:0-93"
+    },
+    {
+      "order": 54,
+      "textSha": "9d06e5650b9082ba",
+      "head": "This retriever was trained to retrieve documents",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_340:95-99 t_2_341:0-96 t_2_342:0-21"
+    },
+    {
+      "order": 55,
+      "textSha": "043e6b50b5f6fbfd",
+      "head": "We refer to the document index as the non-parame",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_342:24-61 t_2_344:0-21"
+    },
+    {
+      "order": 56,
+      "textSha": "9cca04fee3d891c1",
+      "head": "The generator component p θ (y i |x, z, y 1:i-1 ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_2_351:0-23 t_2_353:0-1 t_2_354:0-1 t_2_357:0-1 t_2_358:0-1 t_2_360:0-7 t_2_361:0-1 t_2_362:0-1 t_2_364:0-1 t_2_367:0-43"
+    },
+    {
+      "order": 57,
+      "textSha": "55ce97538327c4b2",
+      "head": "We use BART-large [32], a pre-trained seq2seq tr",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_367:45-51 t_2_368:0-76"
+    },
+    {
+      "order": 58,
+      "textSha": "6782a04d4957d160",
+      "head": "To combine the input x with the retrieved conten",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_368:78-98 t_2_370:0-1 t_2_372:0-26 t_2_374:0-1 t_2_376:0-53"
+    },
+    {
+      "order": 59,
+      "textSha": "2739761e44a88c8b",
+      "head": "BART was pre-trained using a denoising objective",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_376:55-63 t_2_377:0-84"
+    },
+    {
+      "order": 60,
+      "textSha": "7546bf91cda2da07",
+      "head": "It has obtained state-of-the-art results on a di",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_377:86-101 t_2_378:0-97 t_2_379:0-10"
+    },
+    {
+      "order": 61,
+      "textSha": "843466b7335b5b82",
+      "head": "We refer to the BART generator parameters θ as t",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math"],
+      "spans": "t_2_379:13-54 t_2_381:0-1 t_2_383:0-6 t_2_385:0-17 t_2_387:0-10"
+    },
+    {
+      "order": 62,
+      "textSha": "71720f4e5ead0ba0",
+      "head": "We jointly train the retriever and generator com",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_393:0-94 t_2_394:0-28"
+    },
+    {
+      "order": 63,
+      "textSha": "dcdeb02d5b668a46",
+      "head": "Given a fine-tuning training corpus of input/out",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary", "script"],
+      "spans": "t_2_394:30-87 t_2_397:0-1 t_2_398:0-1 t_2_400:2-3 t_2_401:0-1 t_2_404:2-4 t_3_0:0-60 t_3_4:0-1 t_3_8:0-3 t_3_10:0-1 t_3_12:0-1 t_3_13:0-1 t_3_16:0-1 t_3_17:0-1 t_3_21:0-16 t_3_22:0-30"
+    },
+    {
+      "order": 64,
+      "textSha": "6291a0d2bf9cdea3",
+      "head": "Updating the document encoder BERT d during trai",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["script"],
+      "spans": "t_3_22:33-67 t_3_23:0-1 t_3_25:0-28 t_3_26:0-95"
+    },
+    {
+      "order": 65,
+      "textSha": "56a1a444b701ca1a",
+      "head": "We do not find this step necessary for strong pe",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["script"],
+      "spans": "t_3_27:0-93 t_3_28:0-53 t_3_29:0-1 t_3_31:0-22"
+    },
+    {
+      "order": 66,
+      "textSha": "0568afba2ec97d49",
+      "head": "At test time, RAG-Sequence and RAG-Token require",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["script"],
+      "spans": "t_3_37:0-78 t_3_39:0-7 t_3_40:0-1 t_3_42:0-1 t_3_44:0-1 t_3_46:0-1"
+    },
+    {
+      "order": 67,
+      "textSha": "e6bf7962d369f12a",
+      "head": "The RAG-Token model can be seen as a standard, a",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated", "inline_math", "script"],
+      "spans": "t_3_52:0-76 t_3_53:0-31 t_3_55:0-1 t_3_58:0-1 t_3_61:0-1 t_3_62:0-1 t_3_64:0-4 t_3_65:0-1 t_3_66:0-1 t_3_68:0-1 t_3_73:0-1 t_3_75:0-3 t_3_76:0-1 t_3_78:0-1 t_3_81:0-1 t_3_84:0-1 t_3_85:0-1 t_3_88:0-1 t_3_89:0-1 t_3_91:0-1 t_3_93:0-1 t_3_94:0-1 t_3_97:0-1 t_3_98:0-1 t_3_100:0-4 t_3_101:0-1 t_3_102:2-3 t_3_103:0-1 t_3_104:0-1 t_3_106:0-1 t_3_109:0-2 t_3_110:0-19 t_3_112:0-1 t_3_115:0-1 t_3_118:0-1 t_3_119:0-1 t_3_121:0-4 t_3_122:0-1 t_3_123:0-1 t_3_125:0-1 t_3_128:0-28"
+    },
+    {
+      "order": 68,
+      "textSha": "6b194bd9348d83d7",
+      "head": "RAG-Sequence For RAG-Sequence, the likelihood p(",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_130:0-12 t_3_132:0-32 t_3_134:0-1 t_3_136:0-1 t_3_138:0-1 t_3_141:0-38 t_3_142:0-68"
+    },
+    {
+      "order": 69,
+      "textSha": "0019384fb2fa128a",
+      "head": "Instead, we run beam search for each document z,",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_3_142:70-101 t_3_143:0-13 t_3_145:0-1 t_3_146:2-31 t_3_148:0-1 t_3_149:0-1 t_3_152:0-1 t_3_153:0-1 t_3_155:0-7 t_3_156:0-1 t_3_157:0-1 t_3_159:0-1"
+    },
+    {
+      "order": 70,
+      "textSha": "8894ad7657e46aee",
+      "head": "This yields a set of hypotheses Y , some of whic",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_161:2-33 t_3_163:0-1 t_3_165:2-67"
+    },
+    {
+      "order": 71,
+      "textSha": "b13195ccc5179925",
+      "head": "To estimate the probability of an hypothesis y w",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_3_165:69-96 t_3_166:0-16 t_3_168:0-1 t_3_170:0-51 t_3_172:0-1 t_3_174:0-9 t_3_176:0-1 t_3_178:0-8 t_3_179:0-55 t_3_181:0-1 t_3_182:0-1 t_3_185:0-1 t_3_187:0-1 t_3_190:0-37 t_3_191:0-23"
+    },
+    {
+      "order": 72,
+      "textSha": "938552bf73e6e447",
+      "head": "We refer to this decoding procedure as \"Thorough",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_191:25-82"
+    },
+    {
+      "order": 73,
+      "textSha": "37285a3ab6d568c7",
+      "head": "For longer output sequences, |Y | can become lar",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_191:85-95 t_3_192:0-16 t_3_195:0-1 t_3_199:0-47"
+    },
+    {
+      "order": 74,
+      "textSha": "c195be72b735fa78",
+      "head": "For more efficient decoding, we can make a furth",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "script"],
+      "spans": "t_3_199:49-76 t_3_200:0-40 t_3_202:0-1 t_3_203:0-1 t_3_206:0-1 t_3_208:0-4 t_3_209:0-1 t_3_214:0-1 t_3_216:0-5 t_3_218:0-1 t_3_220:0-29 t_3_221:0-11 t_3_223:0-4 t_3_224:0-1"
+    },
+    {
+      "order": 75,
+      "textSha": "b6bcc7e39980a5e9",
+      "head": "This avoids the need to run additional forward p",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_225:2-78 t_3_227:0-1 t_3_229:0-3 t_3_230:0-14"
+    },
+    {
+      "order": 76,
+      "textSha": "3fc2929a1d6fd72a",
+      "head": "We refer to this decoding procedure as \"Fast Dec",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_230:16-69"
+    },
+    {
+      "order": 77,
+      "textSha": "12f2497e96e11fbd",
+      "head": "We experiment with RAG in a wide range of knowle",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_236:0-67"
+    },
+    {
+      "order": 78,
+      "textSha": "68cc496b81ed8e35",
+      "head": "For all experiments, we use a single Wikipedia d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_236:69-96 t_3_237:0-63"
+    },
+    {
+      "order": 79,
+      "textSha": "b425f34be5930b87",
+      "head": "Following Lee et al. [31] and Karpukhin et al. [",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_237:65-94 t_3_238:0-52"
+    },
+    {
+      "order": 80,
+      "textSha": "94315dc284eef962",
+      "head": "Each Wikipedia article is split into disjoint 10",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_238:54-99 t_3_239:0-49"
+    },
+    {
+      "order": 81,
+      "textSha": "b0b1bffc12560455",
+      "head": "We use the document encoder to compute an embedd",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_239:51-92 t_3_240:0-95 t_3_241:0-58"
+    },
+    {
+      "order": 82,
+      "textSha": "f4668665da110d0b",
+      "head": "During training, we retrieve the top k documents",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_241:61-97 t_3_243:0-1 t_3_245:0-24"
+    },
+    {
+      "order": 83,
+      "textSha": "79d0a4ac1e2d46ee",
+      "head": "We consider k ∈ {5, 10} for training and set k f",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_245:26-37 t_3_247:0-1 t_3_250:0-1 t_3_253:0-2 t_3_256:0-20 t_3_258:0-1 t_3_260:0-23 t_3_261:0-4"
+    },
+    {
+      "order": 84,
+      "textSha": "ae1ab583b015741d",
+      "head": "We now discuss experimental details for each tas",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_261:6-55"
+    },
+    {
+      "order": 85,
+      "textSha": "d6cb31842a0b3aa6",
+      "head": "Open-domain question answering (QA) is an import",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_267:0-93 t_3_268:0-33"
+    },
+    {
+      "order": 86,
+      "textSha": "9ec8a199a1d2b6af",
+      "head": "We treat questions and answers as input-output t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_268:36-93 t_3_271:0-4 t_3_274:0-75"
+    },
+    {
+      "order": 87,
+      "textSha": "090208bf2d0e4b35",
+      "head": "We compare RAG to the popular extractive QA para",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_274:77-94 t_3_275:0-99 t_3_276:0-56"
+    },
+    {
+      "order": 88,
+      "textSha": "aff9e95667663d5e",
+      "head": "We also compare to \"Closed-Book QA\" approaches [",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_276:58-89 t_3_277:0-99 t_3_278:0-38"
+    },
+    {
+      "order": 89,
+      "textSha": "abad7e9e9f3a731a",
+      "head": "We consider four popular open-domain QA datasets",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_278:40-97 t_3_279:0-39"
+    },
+    {
+      "order": 90,
+      "textSha": "906ca223d2e4d252",
+      "head": "WebQuestions (WQ) [3] and CuratedTrec (CT) [2].",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_279:42-87"
+    },
+    {
+      "order": 91,
+      "textSha": "93fbc606eabc53b1",
+      "head": "As CT and WQ are small, we follow DPR [26] by in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_279:90-92 t_3_280:0-88 t_3_281:0-5"
+    },
+    {
+      "order": 92,
+      "textSha": "757f6da069ee7875",
+      "head": "We use the same train/dev/test splits as prior w",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_281:7-94 t_3_282:0-6"
+    },
+    {
+      "order": 93,
+      "textSha": "a05e23a51fecb8f8",
+      "head": "For TQA, to compare with T5 [52], we also evalua",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_282:8-83"
+    },
+    {
+      "order": 94,
+      "textSha": "284f7cc359733d51",
+      "head": "RAG models can go beyond simple extractive QA an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_288:0-94 t_3_289:0-15"
+    },
+    {
+      "order": 95,
+      "textSha": "ffceb3b7d3ef0e29",
+      "head": "To test RAG's natural language generation (NLG) ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_289:17-97 t_3_290:0-36"
+    },
+    {
+      "order": 96,
+      "textSha": "055fc3d5e763112e",
+      "head": "The task consists of questions, ten gold passage",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_290:39-88 t_3_291:0-95 t_3_292:0-18"
+    },
+    {
+      "order": 97,
+      "textSha": "ca9d39b0616b5642",
+      "head": "We do not use the supplied passages, only the qu",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_3_292:20-97 t_4_0:0-45"
+    },
+    {
+      "order": 98,
+      "textSha": "06ab67d56afb00ca",
+      "head": "MSMARCO has some questions that cannot be answer",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_0:47-88 t_4_1:0-96 t_4_2:1-94"
+    },
+    {
+      "order": 99,
+      "textSha": "9d9528c016d57426",
+      "head": "We also note that some MSMARCO questions cannot ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_3:0-81"
+    },
+    {
+      "order": 100,
+      "textSha": "daddfa3457377d03",
+      "head": "Here, RAG can rely on parametric knowledge to ge",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_3:83-87 t_4_4:0-69"
+    },
+    {
+      "order": 101,
+      "textSha": "465518a945084690",
+      "head": "To evaluate RAG's generation abilities in a non-",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_10:0-93 t_4_11:0-7"
+    },
+    {
+      "order": 102,
+      "textSha": "b7ba9749fc335afe",
+      "head": "Rather than use questions from standard open-dom",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_11:9-94 t_4_12:0-95"
+    },
+    {
+      "order": 103,
+      "textSha": "23bef6d078db767d",
+      "head": "Jeopardy is an unusual format that consists of t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_13:0-102"
+    },
+    {
+      "order": 104,
+      "textSha": "6e45079094b3f89c",
+      "head": "For example, \"The World Cup\" is the answer to th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_14:0-94 t_4_15:0-59"
+    },
+    {
+      "order": 105,
+      "textSha": "2f98893a0f793cc1",
+      "head": "As Jeopardy questions are precise, factual state",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_15:62-95 t_4_16:0-100 t_4_17:0-47"
+    },
+    {
+      "order": 106,
+      "textSha": "8a124cc74b5e0f38",
+      "head": "We use the splits from SearchQA [10], with 100K ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_18:0-85"
+    },
+    {
+      "order": 107,
+      "textSha": "50237e097ecbadd3",
+      "head": "As this is a new task, we train a BART model for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_20:0-2 t_4_21:0-56"
+    },
+    {
+      "order": 108,
+      "textSha": "b8f07b510cc1b448",
+      "head": "Following [67], we evaluate using the SQuAD-tune",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_21:58-95 t_4_22:0-31"
+    },
+    {
+      "order": 109,
+      "textSha": "e57540b76421298e",
+      "head": "Q-BLEU is a variant of BLEU with a higher weight",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_22:34-86 t_4_23:0-93 t_4_24:0-16"
+    },
+    {
+      "order": 110,
+      "textSha": "b24405d4a3fa633e",
+      "head": "We also perform two human evaluations, one to as",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_24:18-97 t_4_25:0-19"
+    },
+    {
+      "order": 111,
+      "textSha": "ca9399e310955fb0",
+      "head": "We define factuality as whether a statement can ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_25:21-104 t_4_26:0-83"
+    },
+    {
+      "order": 112,
+      "textSha": "40a0d31946c39e32",
+      "head": "We follow best practice and use pairwise compara",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_26:86-95 t_4_27:0-57"
+    },
+    {
+      "order": 113,
+      "textSha": "190f3b618ebd8ec4",
+      "head": "Evaluators are shown an answer and two generated",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_27:60-98 t_4_28:0-51"
+    },
+    {
+      "order": 114,
+      "textSha": "8e9929d7bb1e6a2a",
+      "head": "They are then asked to pick one of four options-",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_28:53-92 t_4_29:0-86"
+    },
+    {
+      "order": 115,
+      "textSha": "70ca0d629b05fffa",
+      "head": "FEVER [56] requires classifying whether a natura",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_35:0-91 t_4_36:0-63"
+    },
+    {
+      "order": 116,
+      "textSha": "60d3eb1bd7fed961",
+      "head": "The task requires retrieving evidence from Wikip",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_38:0-28 t_4_39:0-95 t_4_40:0-70"
+    },
+    {
+      "order": 117,
+      "textSha": "5edd019644b1a413",
+      "head": "FEVER is a retrieval problem coupled with an cha",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_40:72-100 t_4_41:0-53"
+    },
+    {
+      "order": 118,
+      "textSha": "46d67c6dd84af8f9",
+      "head": "It also provides an appropriate testbed for expl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_41:55-98 t_4_42:0-81"
+    },
+    {
+      "order": 119,
+      "textSha": "7677137395c22e28",
+      "head": "We map FEVER class labels (supports, refutes, or",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_42:83-95 t_4_43:0-100 t_4_44:0-17"
+    },
+    {
+      "order": 120,
+      "textSha": "bedcf073078a7adb",
+      "head": "Crucially, unlike most other approaches to FEVER",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_44:19-97 t_4_45:0-18"
+    },
+    {
+      "order": 121,
+      "textSha": "60086389a0580454",
+      "head": "In many real-world applications, retrieval super",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_45:20-104 t_4_46:0-88"
+    },
+    {
+      "order": 122,
+      "textSha": "8cbb72ebd68b808d",
+      "head": "We explore two variants: the standard 3-way clas",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_46:90-100 t_4_47:0-101 t_4_48:1-57"
+    },
+    {
+      "order": 123,
+      "textSha": "5b385ae826171003",
+      "head": "In both cases we report label accuracy.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_48:60-98"
+    },
+    {
+      "order": 124,
+      "textSha": "22be4246e7dbb946",
+      "head": "Table 1 shows results for RAG along with state-o",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_58:0-64"
+    },
+    {
+      "order": 125,
+      "textSha": "698cf194bb906bb5",
+      "head": "On all four open-domain QA tasks, RAG sets a new",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_58:66-92 t_4_59:0-79"
+    },
+    {
+      "order": 126,
+      "textSha": "298d746697c03e9f",
+      "head": "RAG combines the generation flexibility of the \"",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_59:82-94 t_4_60:0-99 t_4_61:1-38"
+    },
+    {
+      "order": 127,
+      "textSha": "5c0d45734a4673f7",
+      "head": "Unlike REALM and T5+SSM, RAG enjoys strong resul",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_61:40-90 t_4_62:0-70"
+    },
+    {
+      "order": 128,
+      "textSha": "c831ec21a9cf27e5",
+      "head": "It is worth noting that RAG's retriever is initi",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_62:73-102 t_4_63:0-101 t_4_64:0-12"
+    },
+    {
+      "order": 129,
+      "textSha": "dddb79ed6d023188",
+      "head": "RAG compares favourably to the DPR QA system, wh",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_64:14-90 t_4_65:0-62"
+    },
+    {
+      "order": 130,
+      "textSha": "8d6ae1433241f9d1",
+      "head": "RAG demonstrates that neither a re-ranker nor ex",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_65:64-95 t_4_66:0-77"
+    },
+    {
+      "order": 131,
+      "textSha": "e4bd14edbda782b6",
+      "head": "There are several advantages to generating answe",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_67:0-91"
+    },
+    {
+      "order": 132,
+      "textSha": "69bcd7e3defffe75",
+      "head": "Documents with clues about the answer but do not",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_4_67:93-97 t_4_68:0-101 t_4_69:0-100 t_5_161:0-48"
+    },
+    {
+      "order": 133,
+      "textSha": "00840f0842a69224",
+      "head": "Furthermore, RAG can generate correct answers ev",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_161:50-95 t_5_162:0-95 t_5_163:0-53"
+    },
+    {
+      "order": 134,
+      "textSha": "b524f03649432eaa",
+      "head": "As shown in Table 2, RAG-Sequence outperforms BA",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_169:0-83 t_5_170:0-29"
+    },
+    {
+      "order": 135,
+      "textSha": "fa28b36544234fcc",
+      "head": "RAG approaches state-of-the-art model performanc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_172:0-59 t_5_173:0-97 t_5_174:0-99 t_5_175:1-59"
+    },
+    {
+      "order": 136,
+      "textSha": "33a4e65d50ccac55",
+      "head": "Table 3 shows some generated answers from our mo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_175:61-97 t_5_176:0-15"
+    },
+    {
+      "order": 137,
+      "textSha": "b2262056f643e54c",
+      "head": "Qualitatively, we find that RAG models hallucina",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_176:17-95 t_5_177:0-33"
+    },
+    {
+      "order": 138,
+      "textSha": "05a8cae90e9fe9c5",
+      "head": "Later, we also show that RAG generations are mor",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_177:35-97 t_5_178:0-26"
+    },
+    {
+      "order": 139,
+      "textSha": "ad1a64dcb4d70416",
+      "head": "Table 2 shows that RAG-Token performs better tha",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_184:0-94 t_5_185:0-47"
+    },
+    {
+      "order": 140,
+      "textSha": "17405de7d4de6b82",
+      "head": "4 shows human evaluation results, over 452 pairs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_185:49-91 t_5_186:0-44"
+    },
+    {
+      "order": 141,
+      "textSha": "2e7d414a21b5291f",
+      "head": "Evaluators indicated that BART was more factual ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_186:46-93 t_5_187:0-94 t_5_188:0-94 t_5_189:0-49"
+    },
+    {
+      "order": 142,
+      "textSha": "9e0bd4676776a170",
+      "head": "Evaluators also find RAG generations to be more ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_189:51-98 t_5_190:0-26"
+    },
+    {
+      "order": 143,
+      "textSha": "79b090ca65753a51",
+      "head": "Table 3 shows typical generations from each mode",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_190:28-77"
+    },
+    {
+      "order": 144,
+      "textSha": "1c6d92f8ca60f2fa",
+      "head": "Jeopardy questions often contain two separate pi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_191:0-94 t_5_192:0-82"
+    },
+    {
+      "order": 145,
+      "textSha": "362581fae548ca92",
+      "head": "Figure 2 shows an example.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_192:84-98 t_5_193:0-10"
+    },
+    {
+      "order": 146,
+      "textSha": "476539991278bd1e",
+      "head": "When generating \"Sun\", the posterior is high for",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_193:12-91 t_5_194:0-14"
+    },
+    {
+      "order": 147,
+      "textSha": "452c4765b3e5d271",
+      "head": "Similarly, document 1 dominates the posterior wh",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_194:17-91 t_5_195:0-9"
+    },
+    {
+      "order": 148,
+      "textSha": "16abde63d3baac95",
+      "head": "Intriguingly, after the first token of each book",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_195:11-105"
+    },
+    {
+      "order": 149,
+      "textSha": "cb78db3f13c3a8d7",
+      "head": "This observation suggests that the generator can",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_196:0-98 t_5_197:0-9"
+    },
+    {
+      "order": 150,
+      "textSha": "f9f1f932e023da31",
+      "head": "In other words, the model's parametric knowledge",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_197:11-96"
+    },
+    {
+      "order": 151,
+      "textSha": "8d78414fbf6f8cd4",
+      "head": "We find evidence for this hypothesis by feeding ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect"],
+      "spans": "t_5_197:98-100 t_5_198:0-93 t_5_200:1-4 t_5_201:0-3",
+      "note": "GROBID가 인용 부호 안의 마침표에서 문장을 잘랐다."
+    },
+    {
+      "order": 152,
+      "textSha": "827f58ff122d1524",
+      "head": "BART completes the generation \"The Sun Also Rise",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_202:2-31 t_5_204:1-58 t_5_205:0-10 t_5_207:0-72"
+    },
+    {
+      "order": 153,
+      "textSha": "40a24ad9c5de6b47",
+      "head": "Similarly, BART will complete the partial decodi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_207:74-83 t_5_208:0-39 t_5_210:1-52 t_5_212:0-4 t_5_214:1-69"
+    },
+    {
+      "order": 154,
+      "textSha": "5cec68cca44a9357",
+      "head": "This example shows how parametric and non-parame",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_215:2-20 t_5_216:0-42 t_5_218:0-13 t_5_219:1-35 t_5_220:0-87"
+    },
+    {
+      "order": 155,
+      "textSha": "b636bae4890f72b7",
+      "head": "Table 2 shows our results on FEVER.",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_226:0-34"
+    },
+    {
+      "order": 156,
+      "textSha": "73bf5c75f8f7c9fc",
+      "head": "For 3-way classification, RAG scores are within ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_226:36-91 t_5_227:0-98 t_5_228:0-101"
+    },
+    {
+      "order": 157,
+      "textSha": "dc0cae097a5eb98d",
+      "head": "For 2-way classification, we compare against Tho",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_124:0-91 t_6_125:0-71"
+    },
+    {
+      "order": 158,
+      "textSha": "3e56c97402507681",
+      "head": "RAG achieves an accuracy within 2.7% of this mod",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_125:73-97 t_6_126:0-101"
+    },
+    {
+      "order": 159,
+      "textSha": "b299a623935066c9",
+      "head": "We also analyze whether documents retrieved by R",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_127:0-92 t_6_128:0-17"
+    },
+    {
+      "order": 160,
+      "textSha": "a0061feb3128209d",
+      "head": "We calculate the overlap in article titles betwe",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_128:19-77 t_6_130:0-1 t_6_132:0-19 t_6_133:0-36"
+    },
+    {
+      "order": 161,
+      "textSha": "44dd44facd388358",
+      "head": "We find that the top retrieved document is from ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_133:38-100 t_6_134:0-95"
+    },
+    {
+      "order": 162,
+      "textSha": "8285d3bac28735fa",
+      "head": "Generation Diversity Section 4.3 shows that RAG ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_139:0-20 t_6_141:0-68 t_6_142:0-37"
+    },
+    {
+      "order": 163,
+      "textSha": "1ffa1d47c6436c01",
+      "head": "Following recent work on diversity-promoting dec",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_142:39-92 t_6_143:1-101 t_6_144:0-42"
+    },
+    {
+      "order": 164,
+      "textSha": "e9ae8caea783a323",
+      "head": "Table 5 shows that RAG-Sequence's generations ar",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_144:44-93 t_6_145:0-96 t_6_146:0-32"
+    },
+    {
+      "order": 165,
+      "textSha": "b8b8dc0c72a40d7c",
+      "head": "A key feature of RAG is learning to retrieve rel",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_150:0-78"
+    },
+    {
+      "order": 166,
+      "textSha": "02989b350cfd10e1",
+      "head": "To assess the effectiveness of the retrieval mec",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_151:0-102 t_6_152:0-15"
+    },
+    {
+      "order": 167,
+      "textSha": "d952fa3043e02757",
+      "head": "As shown in Table 6, learned retrieval improves ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_152:17-86"
+    },
+    {
+      "order": 168,
+      "textSha": "674d52e05187f45e",
+      "head": "We compare RAG's dense retriever to a word overl",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_153:0-75"
+    },
+    {
+      "order": 169,
+      "textSha": "d4932cdf1f2ddebe",
+      "head": "Here, we replace RAG's retriever with a fixed BM",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_153:78-94 t_6_154:0-98 t_6_156:0-1 t_6_158:0-1 t_6_160:0-1"
+    },
+    {
+      "order": 170,
+      "textSha": "e4b04189e2c177c8",
+      "head": "Table 6 shows the results.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_162:2-27"
+    },
+    {
+      "order": 171,
+      "textSha": "632861359b0604ff",
+      "head": "For FEVER, BM25 performs best, perhaps since FEV",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_162:29-90 t_6_163:0-76"
+    },
+    {
+      "order": 172,
+      "textSha": "4ba061a0d990c8bd",
+      "head": "Differentiable retrieval improves results on all",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_163:78-102 t_6_164:0-87"
+    },
+    {
+      "order": 173,
+      "textSha": "ae98b93493256560",
+      "head": "An advantage of non-parametric memory models lik",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_168:0-71 t_6_169:0-34"
+    },
+    {
+      "order": 174,
+      "textSha": "485a1d91b53cd3d3",
+      "head": "Parametric-only models like T5 or BART need furt",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_169:36-99 t_6_170:0-42"
+    },
+    {
+      "order": 175,
+      "textSha": "ef77699cfc4f9280",
+      "head": "To demonstrate, we build an index using the DrQA",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_170:44-95 t_6_171:0-92 t_6_172:0-42"
+    },
+    {
+      "order": 176,
+      "textSha": "e4d752d2ef13b98c",
+      "head": "We prepare a list of 82 world leaders who had ch",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary", "parser_defect"],
+      "spans": "t_6_172:45-98 t_7_206:0-64",
+      "note": "GROBID가 e.g. 뒤에서 문장을 잘랐다."
+    },
+    {
+      "order": 177,
+      "textSha": "bdead8772a08ff34",
+      "head": "\"Who is the President of Peru?\") to query our NQ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_206:67-95 t_7_207:0-41"
+    },
+    {
+      "order": 178,
+      "textSha": "383f9ac2f6ea93a9",
+      "head": "RAG answers 70% correctly using the 2016 index f",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_207:43-93 t_7_208:0-70"
+    },
+    {
+      "order": 179,
+      "textSha": "f9618756c15af5e1",
+      "head": "Accuracy with mismatched indices is low (12% wit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_208:72-96 t_7_209:0-97"
+    },
+    {
+      "order": 180,
+      "textSha": "1daab6d8f56c9c42",
+      "head": "This shows we can update RAG's world knowledge b",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_210:0-92"
+    },
+    {
+      "order": 181,
+      "textSha": "88c930605f68578d",
+      "head": "Effect of Retrieving more documents Models are t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_212:0-35 t_7_214:0-55 t_7_215:0-84"
+    },
+    {
+      "order": 182,
+      "textSha": "044ab157f0d05dfb",
+      "head": "We have the flexibility to adjust the number of ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_215:86-97 t_7_216:0-102 t_7_217:0-7"
+    },
+    {
+      "order": 183,
+      "textSha": "8c88a2f6e289d17b",
+      "head": "Figure 3 (left) shows that retrieving more docum",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_217:9-97 t_7_218:0-92 t_7_219:0-9"
+    },
+    {
+      "order": 184,
+      "textSha": "aa92ae30d6f32e44",
+      "head": "Figure 3 (right) shows that retrieving more docu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_219:11-92 t_7_220:0-86"
+    },
+    {
+      "order": 185,
+      "textSha": "2e87444c143f8c52",
+      "head": "Single-Task Retrieval Prior work has shown that ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_288:0-21 t_7_290:0-76 t_7_291:0-38"
+    },
+    {
+      "order": 186,
+      "textSha": "fc944656b6d3c2e8",
+      "head": "Such tasks include open-domain question answerin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_291:40-96 t_7_292:0-94 t_7_293:0-90"
+    },
+    {
+      "order": 187,
+      "textSha": "eadcd58829cad5da",
+      "head": "Our work unifies previous successes in incorpora",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_293:93-96 t_7_294:0-103 t_7_295:0-92"
+    },
+    {
+      "order": 188,
+      "textSha": "cd34272c746d8afd",
+      "head": "Prior work on general-purpose architectures for ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_2:0-51 t_8_3:0-58"
+    },
+    {
+      "order": 189,
+      "textSha": "a350870eb600f7db",
+      "head": "A single, pre-trained language model has been sh",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_3:60-96 t_8_4:0-94 t_8_5:0-39"
+    },
+    {
+      "order": 190,
+      "textSha": "102fe3501d390009",
+      "head": "GPT-2 [50] later showed that a single, left-to-r",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_5:42-107 t_8_6:0-95"
+    },
+    {
+      "order": 191,
+      "textSha": "7251555115a0f1e3",
+      "head": "For further improvement, BART [32] and T5 [51,52",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_7:0-96 t_8_8:0-95 t_8_9:0-20"
+    },
+    {
+      "order": 192,
+      "textSha": "28deeb7232b91ad5",
+      "head": "Our work aims to expand the space of possible ta",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_9:22-96 t_8_10:0-95"
+    },
+    {
+      "order": 193,
+      "textSha": "5185f985d181bf2c",
+      "head": "Learned Retrieval There is significant work on l",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_12:0-17 t_8_14:0-74 t_8_15:0-90"
+    },
+    {
+      "order": 194,
+      "textSha": "4e363f333ca60e8e",
+      "head": "Some work optimizes the retrieval module to aid ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_15:92-96 t_8_16:0-100 t_8_17:0-103 t_8_18:0-4"
+    },
+    {
+      "order": 195,
+      "textSha": "f74ddad84fec0b65",
+      "head": "These successes leverage different retrieval-bas",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_18:6-101 t_8_19:0-101 t_8_20:0-62"
+    },
+    {
+      "order": 196,
+      "textSha": "ab765fdae8f5c247",
+      "head": "Our document index can be seen as a large extern",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_24:0-61 t_8_25:0-66"
+    },
+    {
+      "order": 197,
+      "textSha": "49f0c6e8c0425449",
+      "head": "Concurrent work [14] learns to retrieve a traine",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_25:69-96 t_8_26:0-104 t_8_27:0-4"
+    },
+    {
+      "order": 198,
+      "textSha": "b223d93c59961158",
+      "head": "Other work improves the ability of dialog models",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_27:6-97 t_8_28:0-23"
+    },
+    {
+      "order": 199,
+      "textSha": "f44fd4f504f37f82",
+      "head": "A key feature of our memory is that it is compri",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_28:26-96 t_8_29:0-94 t_8_30:0-101 t_8_31:0-36"
+    },
+    {
+      "order": 200,
+      "textSha": "89bac853366e7f3e",
+      "head": "This approach has also been used in knowledge-in",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_31:38-93 t_8_32:0-101 t_8_33:0-42"
+    },
+    {
+      "order": 201,
+      "textSha": "bdb9fff7a909a333",
+      "head": "Our method shares some similarities with retriev",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_37:0-64 t_8_38:0-102 t_8_39:0-25"
+    },
+    {
+      "order": 202,
+      "textSha": "7bd73fc16d3eb602",
+      "head": "These approaches have proved successful in a num",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_39:27-99 t_8_40:0-53"
+    },
+    {
+      "order": 203,
+      "textSha": "c3cf38ede7b4735c",
+      "head": "Our approach does have several differences, incl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_40:56-98 t_8_41:0-103 t_8_42:0-100 t_8_43:0-34"
+    },
+    {
+      "order": 204,
+      "textSha": "5446effa36eb8661",
+      "head": "This said, RAG techniques may work well in these",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_43:36-98 t_8_44:0-37"
+    },
+    {
+      "order": 205,
+      "textSha": "1b66008acd18ba1a",
+      "head": "In this work, we presented hybrid generation mod",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_50:0-96 t_8_51:0-6"
+    },
+    {
+      "order": 206,
+      "textSha": "402ad9a11a86dbb6",
+      "head": "We showed that our RAG models obtain state of th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_51:8-87"
+    },
+    {
+      "order": 207,
+      "textSha": "5eb80d08725cb049",
+      "head": "We found that people prefer RAG's generation ove",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_51:89-91 t_8_52:0-95 t_8_53:0-12"
+    },
+    {
+      "order": 208,
+      "textSha": "500272a281866fa7",
+      "head": "We conducted an thorough investigation of the le",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_53:14-99 t_8_54:0-100 t_8_55:0-32"
+    },
+    {
+      "order": 209,
+      "textSha": "e6eca7cd64797d72",
+      "head": "In future work, it may be fruitful to investigat",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_55:34-105 t_8_56:0-98 t_8_57:0-17"
+    },
+    {
+      "order": 210,
+      "textSha": "5151a2a55bf3c008",
+      "head": "Our work opens up new research directions on how",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_57:19-97 t_8_58:0-97 t_8_59:0-25"
+    },
+    {
+      "order": 211,
+      "textSha": "38078d2eba0de923",
+      "head": "This work offers several positive societal benef",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_2:0-96 t_9_3:0-96 t_9_4:0-84"
+    },
+    {
+      "order": 212,
+      "textSha": "bb522a7d517b19c8",
+      "head": "RAG could be employed in a wide variety of scena",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_4:86-98 t_9_5:0-98 t_9_6:0-100 t_9_7:0-23"
+    },
+    {
+      "order": 213,
+      "textSha": "25c2638dc957a5dd",
+      "head": "With these advantages also come potential downsi",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_8:0-99 t_9_9:0-77"
+    },
+    {
+      "order": 214,
+      "textSha": "78b927ae1617eac3",
+      "head": "Since RAG can be employed as a language model, s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_9:79-95 t_9_10:0-98 t_9_11:0-101 t_9_12:0-98 t_9_13:0-11"
+    },
+    {
+      "order": 215,
+      "textSha": "b071f0a20d672f4c",
+      "head": "Advanced language models may also lead to the au",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_13:14-93 t_9_14:0-18"
+    },
+    {
+      "order": 216,
+      "textSha": "12a70f80cfb7036b",
+      "head": "In order to mitigate these risks, AI systems cou",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_14:21-100 t_9_15:0-46"
+    },
+    {
+      "order": 217,
+      "textSha": "c9c4b92241fe72a6",
+      "head": "For Open-domain QA we report test numbers using ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_9:0-91"
+    },
+    {
+      "order": 218,
+      "textSha": "1901356d76f63724",
+      "head": "For RAG-Sequence models, we report test results ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_10:0-92 t_16_11:0-60"
+    },
+    {
+      "order": 219,
+      "textSha": "7e1256cdd59274ab",
+      "head": "We use greedy decoding for QA as we did not find",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_11:62-94 t_16_12:0-44"
+    },
+    {
+      "order": 220,
+      "textSha": "67367b392e0d9a79",
+      "head": "For Open-MSMarco and Jeopardy question generatio",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_12:46-95 t_16_13:0-88 t_16_14:0-50"
+    },
+    {
+      "order": 221,
+      "textSha": "2304d594a0f51fef",
+      "head": "We use a beam size of four, and use the Fast Dec",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_14:52-96 t_16_15:0-91"
+    },
+    {
+      "order": 222,
+      "textSha": "a02be67f32548b4e",
+      "head": "Figure 4 shows the user interface for human eval",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_23:0-54"
+    },
+    {
+      "order": 223,
+      "textSha": "97b9626d5892a9aa",
+      "head": "To avoid any biases for screen position, which m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_23:56-95 t_16_24:0-92"
+    },
+    {
+      "order": 224,
+      "textSha": "caa21265a6bab44e",
+      "head": "Annotators were encouraged to research the topic",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_16_25:0-100 t_16_26:0-52"
+    },
+    {
+      "order": 225,
+      "textSha": "04abd5edd0158313",
+      "head": "We included some gold sentences in order to asse",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_26:54-97 t_16_27:0-37"
+    },
+    {
+      "order": 226,
+      "textSha": "ba574552efbfbcfe",
+      "head": "Two annotators did not perform well on these exa",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_27:39-96 t_16_28:0-47"
+    },
+    {
+      "order": 227,
+      "textSha": "d3679d0f8ffc64bf",
+      "head": "We train all RAG models and BART baselines using",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_16_34:0-60 t_16_35:0-1 t_16_37:0-29 t_16_38:0-93 t_16_39:0-44",
+      "note": "GROBID가 각주 표시 2와 다음 문장을 한 문장으로 이어 붙였다."
+    },
+    {
+      "order": 228,
+      "textSha": "7da849555fd371d0",
+      "head": "We find that doing Maximum Inner Product Search ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_39:46-93 t_16_40:0-92 t_16_44:0-3 t_16_46:0-37"
+    },
+    {
+      "order": 229,
+      "textSha": "fd315f338491edaf",
+      "head": "After submission, We have ported our code to Hug",
+      "verification": "manual",
+      "how": "manual",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_16_46:39-95 t_16_47:0-16 t_16_49:2-80 t_16_50:0-32",
+      "optional": "t_16_48:0-1",
+      "note": "GROBID가 각주 표시 3을 foot_2라는 글로 바꿨다. 각주 표시는 있어도 없어도 맞는 것으로 본다."
+    },
+    {
+      "order": 230,
+      "textSha": "a83c05a41cf68031",
+      "head": "This version is also open-sourced.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_50:34-67"
+    },
+    {
+      "order": 231,
+      "textSha": "079db324904e9be9",
+      "head": "We also compress the document index using FAISS'",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_50:69-98 t_16_51:0-82"
+    },
+    {
+      "order": 232,
+      "textSha": "b7b94b3450b342b5",
+      "head": "Scripts to run experiments with RAG can be found",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["url"],
+      "spans": "t_16_51:84-94 t_16_52:0-40 t_16_54:0-43 t_16_55:0-34 t_16_57:0-51 t_16_58:0-2 t_16_60:0-26"
+    },
+    {
+      "order": 233,
+      "textSha": "9b46c06ea517c979",
+      "head": "For open-domain QA, multiple answer annotations ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_4:0-88"
+    },
+    {
+      "order": 234,
+      "textSha": "13d710c32fe385fe",
+      "head": "These answer annotations are exploited by extrac",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_4:90-95 t_17_5:0-97 t_17_6:0-82"
+    },
+    {
+      "order": 235,
+      "textSha": "d42685f473ee3cc1",
+      "head": "For RAG, we also make use of multiple annotation",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_6:84-95 t_17_7:0-96 t_17_8:0-19 t_17_11:0-4 t_17_14:0-56"
+    },
+    {
+      "order": 236,
+      "textSha": "3a7f337b2672286d",
+      "head": "For TriviaQA, there are often many valid answers",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_14:58-70 t_17_15:0-103 t_17_16:0-34"
+    },
+    {
+      "order": 237,
+      "textSha": "284a3d6dc9074b6b",
+      "head": "For TriviaQA, we filter out answer candidates if",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_16:36-102 t_17_17:0-35"
+    },
+    {
+      "order": 238,
+      "textSha": "0ae966a83d6fa4bf",
+      "head": "The answers for CuratedTrec are given in the for",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_17_21:0-67 t_17_22:0-97"
+    },
+    {
+      "order": 239,
+      "textSha": "9b9ba94742783095",
+      "head": "To overcome this, we use a pre-processing step w",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_23:0-97 t_17_24:0-96 t_17_25:0-6"
+    },
+    {
+      "order": 240,
+      "textSha": "b7bceb2f465bedfd",
+      "head": "If no matches are found, we resort to a simple h",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_25:8-104 t_17_26:0-100"
+    },
+    {
+      "order": 241,
+      "textSha": "d279a54cebda7552",
+      "head": "The open-domain QA community customarily uses pu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_17_30:0-60 t_17_31:0-105 t_17_32:0-21"
+    },
+    {
+      "order": 242,
+      "textSha": "4ce77d2716805229",
+      "head": "We report our results using the datasets splits ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_32:23-98 t_17_33:0-49"
+    },
+    {
+      "order": 243,
+      "textSha": "2b9ec05042005ed3",
+      "head": "For TriviaQA, this test dataset is the public Tr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_33:51-96 t_17_34:0-30"
+    },
+    {
+      "order": 244,
+      "textSha": "646c55a1c8d0e1eb",
+      "head": "Roberts et al. [52] used the TriviaQA official W",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_34:32-97 t_17_35:0-7"
+    },
+    {
+      "order": 245,
+      "textSha": "841d2ffc5a04695f",
+      "head": "Févry et al. [14] follow this convention in orde",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_35:9-99 t_17_36:0-15"
+    },
+    {
+      "order": 246,
+      "textSha": "46192d12d54c70c5",
+      "head": "We report results on both test sets to enable fa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_36:19-99"
+    },
+    {
+      "order": 247,
+      "textSha": "52ae58006a240483",
+      "head": "We find that our performance is much higher usin",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_37:0-98 t_17_38:0-99 t_17_39:0-32"
+    },
+    {
+      "order": 248,
+      "textSha": "639f91f21144bc59",
+      "head": "For FEVER classification, we follow the practice",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_45:0-96 t_17_46:0-101 t_17_47:0-43"
+    },
+    {
+      "order": 249,
+      "textSha": "b8d22a51d8d3a2fa",
+      "head": "The FEVER task traditionally has two sub-tasks.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_47:45-91"
+    },
+    {
+      "order": 250,
+      "textSha": "983c5e58e2fdf1f2",
+      "head": "The first is to classify the claim as either \"Su",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_47:93-96 t_17_48:0-103 t_17_49:0-28"
+    },
+    {
+      "order": 251,
+      "textSha": "6a562203e019800e",
+      "head": "FEVER's other sub-task involves extracting sente",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_49:30-97 t_17_50:0-52"
+    },
+    {
+      "order": 252,
+      "textSha": "0acabd5703960ce8",
+      "head": "As FEVER uses a different Wikipedia dump to us, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_50:54-97 t_17_51:0-54"
+    },
+    {
+      "order": 253,
+      "textSha": "29501d39a4aa3225",
+      "head": "We hope to address this in future work.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_51:56-94"
+    },
+    {
+      "order": 254,
+      "textSha": "ba4ed4860f79402a",
+      "head": "We experimented with adding \"Null document\" mech",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_57:0-92 t_17_58:0-79"
+    },
+    {
+      "order": 255,
+      "textSha": "afcc648495f2cf4c",
+      "head": "Here, if k documents were retrieved, we would ad",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_58:81-89 t_17_60:0-1 t_17_62:0-9 t_17_63:0-99 t_17_64:0-35 t_17_66:0-1 t_17_68:2-3 t_17_70:0-11"
+    },
+    {
+      "order": 256,
+      "textSha": "3ff72da3af8c7a1c",
+      "head": "We explored modelling this null document logit b",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_70:13-53 t_17_71:0-100 t_17_72:1-43"
+    },
+    {
+      "order": 257,
+      "textSha": "c9660fc8bead242f",
+      "head": "We did not find that these improved performance,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_72:45-99 t_17_73:0-41"
+    },
+    {
+      "order": 258,
+      "textSha": "3181fcf873b5dd6c",
+      "head": "For Open MS-MARCO, where useful retrieved docume",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_73:43-94 t_17_74:0-99 t_17_75:0-101 t_17_76:0-39"
+    },
+    {
+      "order": 259,
+      "textSha": "80ea07b190f2f66a",
+      "head": "Our RAG models contain the trainable parameters ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_82:0-95 t_17_83:0-92 t_17_84:0-92"
+    },
+    {
+      "order": 260,
+      "textSha": "f41ed01c85722ae1",
+      "head": "In preliminary experiments, we observed that for",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_79:0-94 t_18_80:0-95 t_18_81:0-5"
+    },
+    {
+      "order": 261,
+      "textSha": "0282d582f5aa7ffc",
+      "head": "In these cases, once retrieval had collapsed, th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_81:7-102 t_18_82:0-52"
+    },
+    {
+      "order": 262,
+      "textSha": "a39ee67baf6f722c",
+      "head": "The collapse could be due to a less-explicit req",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_82:54-98 t_18_83:0-99 t_18_84:0-47"
+    },
+    {
+      "order": 263,
+      "textSha": "a67720d61e0e70c3",
+      "head": "Perez et al. [46] also found spurious retrieval ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_84:49-104 t_18_85:0-89"
+    },
+    {
+      "order": 264,
+      "textSha": "1cdb737bff40ff4b",
+      "head": "The number of training, development and test dat",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_91:0-99"
+    },
+    {
+      "order": 265,
+      "textSha": "bbaf3789e88ac4dc",
+      "head": "The authors would like to thank the reviewers fo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_19:0-100 t_9_20:0-84"
+    },
+    {
+      "order": 266,
+      "textSha": "f1a7fc3cf5775c47",
+      "head": "The authors would also like to thank Kyunghyun C",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_20:86-97 t_9_21:0-90"
+    },
+    {
+      "order": 267,
+      "textSha": "5ab5b27cfe7b6870",
+      "head": "EP thanks supports from the NSF Graduate Researc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_21:92-94 t_9_22:0-57"
+    },
+    {
+      "order": 268,
+      "textSha": "8fcb0f9ea247c231",
+      "head": "PL is supported by the FAIR PhD program.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_22:59-90 t_9_23:0-7"
+    }
+  ]
+}

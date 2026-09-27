@@ -1,0 +1,3839 @@
+{
+  "schemaVersion": 1,
+  "paper": {
+    "id": "2312.06718",
+    "arxivVersion": "v3",
+    "sha256": "b48110f4907771f92e5b78230cb4dfdb62e508caea8c7d0cc2635e92b67134a3",
+    "pages": 26
+  },
+  "source": {
+    "pdfjsVersion": "6.3.289",
+    "items": 7951,
+    "itemsDigest": "d678b92dd56a2369a63df6a96b3931888d3016e62c59de012d5bc7c09d6a32ca"
+  },
+  "parser": {
+    "name": "grobid",
+    "version": "0.9.1",
+    "teiSha256": "9b705a2c726b49ed900f6dacecca018bdb130bc4fa5eabe5e40a23f21d849ef2",
+    "sentences": 422
+  },
+  "method": "문서 전체 텍스트 항목을 (page, index) 순으로 이어 붙여 문자·숫자만 남긴 키 문자열을 만들고, 문장 글(GROBID enRaw)의 키 문자열을 전역 검색했다. 좌표와 매핑 알고리즘 출력은 쓰지 않았다. verification이 read인 항목은 스팬 글·틈·앞뒤 항목을 읽어 문장 글과 대조했고, manual인 항목은 항목 문자열을 읽어 범위를 직접 정했다. auto는 유일 일치만 확인한 보조 자료다.",
+  "limits": [
+    "사람이 PDF 화면을 보고 표시한 정답이 아니다. 자동 초안을 Claude가 텍스트로 읽어 검수했다.",
+    "문장 글은 GROBID 출력이다. 파서가 잘못 자르거나 이어 붙인 문장은 그 글을 기준으로 정답을 만들고 parser_defect로 표시했다.",
+    "비교는 문자·숫자 글자만 한다. 스팬 양끝의 공백·구두점·하이픈 위치는 검증하지 않는다.",
+    "정답과 알고리즘이 모두 문자열 일치에 기대므로 PDF 글자 자체의 오류는 드러나지 않는다."
+  ],
+  "entries": [
+    {
+      "order": 0,
+      "textSha": "93e381cd631af5a8",
+      "head": "Although the applications of artificial intellig",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_12:1-53 t_0_13:0-61 t_0_14:0-65 t_0_15:0-63 t_0_16:0-63 t_0_17:0-36"
+    },
+    {
+      "order": 1,
+      "textSha": "e3a3a2711581e34a",
+      "head": "The emergence of large scale foundational models",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_17:38-60 t_0_18:0-60 t_0_19:0-68 t_0_20:0-62 t_0_21:0-59 t_0_22:0-16"
+    },
+    {
+      "order": 2,
+      "textSha": "59af97ecb631cbd9",
+      "head": "Although LSFMs had demonstrated powerful general",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_22:18-55 t_0_23:0-64 t_0_24:0-7 t_0_26:0-10 t_0_28:0-3 t_0_30:0-8 t_0_32:0-11 t_0_34:0-6 t_0_36:0-7 t_0_37:0-59 t_0_38:0-4 t_0_40:0-5 t_0_42:0-2 t_0_44:0-5 t_0_46:0-7 t_0_48:0-5"
+    },
+    {
+      "order": 3,
+      "textSha": "b98b8b228a761605",
+      "head": "A systematic overview of this topic was lacking,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_50:0-1 t_0_52:0-10 t_0_54:0-8 t_0_56:0-2 t_0_57:0-61 t_0_58:0-56 t_0_59:0-40"
+    },
+    {
+      "order": 4,
+      "textSha": "77e6185d611f51e2",
+      "head": "To fill this gap, this paper systematically expo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_59:42-64 t_0_60:0-58 t_0_61:0-60"
+    },
+    {
+      "order": 5,
+      "textSha": "e3b5b626ba7d9da3",
+      "head": "and compared comprehensively with the challenges",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_61:62-65 t_0_62:0-61 t_0_63:0-60 t_0_64:0-10"
+    },
+    {
+      "order": 6,
+      "textSha": "cb4c054da29b6e5d",
+      "head": "We also outlined the roadmaps for utilizing LSFM",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_64:12-61 t_0_65:0-27"
+    },
+    {
+      "order": 7,
+      "textSha": "f76776aa17da8644",
+      "head": "Finally, case studies of applications of LSFMs i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_65:29-66 t_0_66:0-63 t_0_67:0-64 t_0_68:0-16"
+    },
+    {
+      "order": 8,
+      "textSha": "1c01711ccf1a3d8e",
+      "head": "M ANUFACTURING industries are mainstays of a na-",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["column_boundary", "gapped", "hyphenated"],
+      "spans": "t_0_87:0-1 t_0_88:0-45 t_0_89:0-51 t_0_90:0-60 t_0_91:0-61 t_0_148:0-57 t_0_149:0-57 t_0_150:0-14"
+    },
+    {
+      "order": 9,
+      "textSha": "bcf5f4eff9e22301",
+      "head": "Over the past several decades, manufacturing was",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_150:17-61 t_0_151:0-58 t_0_152:0-60 t_0_153:0-58 t_0_154:0-56 t_0_155:0-53"
+    },
+    {
+      "order": 10,
+      "textSha": "00b04dfb85d6eee3",
+      "head": "Therefore, optimal data-processing algorithms we",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_155:55-60 t_0_156:0-60 t_0_157:0-63 t_0_158:0-60 t_0_159:0-4 t_0_161:0-5 t_0_163:0-5 t_0_165:0-16 t_0_167:0-6 t_0_169:0-3 t_0_171:0-11 t_0_172:0-22"
+    },
+    {
+      "order": 11,
+      "textSha": "b1c320e910650c3a",
+      "head": "Statistics showed that 82% of the industrial act",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_172:25-58 t_0_173:0-62 t_0_174:0-59 t_0_175:0-55 t_0_176:0-61 t_0_177:0-60 t_0_178:0-58 t_0_179:0-60 t_0_180:0-59 t_0_181:0-61 t_0_182:0-59 t_0_183:0-10"
+    },
+    {
+      "order": 12,
+      "textSha": "5e3ed24570512b55",
+      "head": "Table 1 listed some review papers in this area [",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_183:12-62 t_0_184:1-3"
+    },
+    {
+      "order": 13,
+      "textSha": "40e21a4a0e8391c4",
+      "head": "Traditional machine learning methods, such as su",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_185:0-11 t_0_187:0-7 t_0_189:0-8 t_0_191:0-7 t_0_193:0-4 t_0_195:0-2 t_0_197:0-7 t_0_198:0-6 t_0_200:0-8 t_0_202:0-9 t_0_204:0-9"
+    },
+    {
+      "order": 14,
+      "textSha": "c187901150b8e3dd",
+      "head": "Naive Bayes, etc., could improve performance of ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_206:0-5 t_0_208:0-5 t_0_210:0-3 t_0_211:0-5 t_0_213:0-7 t_0_215:0-11 t_0_217:0-2 t_0_219:0-15 t_0_221:1-8 t_0_222:0-56 t_0_223:0-62 t_0_224:0-59 t_0_225:0-32"
+    },
+    {
+      "order": 15,
+      "textSha": "1c1a0fd5c018eb34",
+      "head": "However, they relied heavily on handcrafting fea",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_225:34-62 t_0_226:0-61 t_0_227:0-61 t_0_228:0-63 t_0_229:0-53"
+    },
+    {
+      "order": 16,
+      "textSha": "2c140024908aa961",
+      "head": "Deep learning, as one of the advanced machine le",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_230:0-54 t_0_231:0-59 t_0_232:0-57 t_0_233:0-58 t_0_234:0-60 t_0_235:0-28"
+    },
+    {
+      "order": 17,
+      "textSha": "051464062e03eaef",
+      "head": "ln the last decade, deep learning methods was th",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_235:30-63 t_0_236:0-54 t_0_237:0-61 t_0_238:0-56 t_0_239:0-7 t_0_241:1-10 t_0_243:0-3 t_0_245:0-5 t_0_247:0-8 t_0_249:0-11 t_0_251:1-3 t_0_252:1-10"
+    },
+    {
+      "order": 18,
+      "textSha": "8948c03e265bcda0",
+      "head": "Intelligent manufacturing areas Method List of s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_61:0-31 t_1_63:0-6 t_1_65:0-21 t_1_66:0-38 t_1_68:0-16 t_1_70:1-8 t_1_71:0-13 t_1_73:1-20 t_1_74:0-15 t_1_76:0-16 t_1_78:1-26 t_1_79:0-13 t_1_81:1-19 t_1_82:0-24 t_1_84:0-16 t_1_86:1-14 t_1_87:0-13 t_1_89:1-14 t_1_90:0-8 t_1_92:0-16 t_1_94:1-14 t_1_95:0-13 t_1_97:1-14 t_1_98:0-5"
+    },
+    {
+      "order": 19,
+      "textSha": "5c1d4184e04e5daa",
+      "head": "Although deep learning showed high level abstrac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_99:0-55 t_1_100:0-62 t_1_101:0-59 t_1_102:0-62 t_1_103:0-66 t_1_104:0-49"
+    },
+    {
+      "order": 20,
+      "textSha": "e22f08a29fe30fe2",
+      "head": "Firstly, the performance of small customized dee",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_104:52-59 t_1_105:0-56 t_1_106:0-57"
+    },
+    {
+      "order": 21,
+      "textSha": "dfd4fc35fe390bea",
+      "head": "These models suffered from issues like limited g",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_106:59-64 t_1_107:0-61 t_1_108:0-62 t_1_109:0-62 t_1_110:0-57 t_1_111:1-10"
+    },
+    {
+      "order": 22,
+      "textSha": "7f0a033cd3a4913e",
+      "head": "In addition, they could only handle individual t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_111:14-60 t_1_112:0-57"
+    },
+    {
+      "order": 23,
+      "textSha": "6e18601b9ac19901",
+      "head": "Secondly, growing requirements of data scale and",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_113:0-56 t_1_114:0-60 t_1_115:0-10"
+    },
+    {
+      "order": 24,
+      "textSha": "de1504ae743df034",
+      "head": "As a data-driven approach, deep learning models ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_115:12-59 t_1_116:0-60 t_1_117:0-60 t_1_118:0-19"
+    },
+    {
+      "order": 25,
+      "textSha": "f67cbe5588224102",
+      "head": "Although the use of new technologies like sensor",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_118:22-58 t_1_119:0-60 t_1_120:0-58 t_1_121:0-61 t_1_122:0-58 t_1_123:0-4"
+    },
+    {
+      "order": 26,
+      "textSha": "022ab2cae3548f34",
+      "head": "As a result, these data were inadequate for trai",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_123:6-63 t_1_124:0-20"
+    },
+    {
+      "order": 27,
+      "textSha": "8aaf2315dcd31563",
+      "head": "Meanwhile, deep learning models were insufficien",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["column_boundary"],
+      "spans": "t_1_124:22-58 t_1_125:0-60"
+    },
+    {
+      "order": 28,
+      "textSha": "357b3256551dff2d",
+      "head": "Recent emergence of large scale foundation model",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_126:0-54 t_1_127:1-61 t_1_128:0-59 t_1_129:0-6 t_1_131:0-9 t_1_133:0-11 t_1_135:0-3 t_1_137:0-10 t_1_139:0-11 t_1_140:0-59 t_1_141:0-56 t_1_142:0-33"
+    },
+    {
+      "order": 29,
+      "textSha": "862244d4aa4af953",
+      "head": "Although the endeavor of using LSFMs to tackle c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_142:36-60 t_1_143:0-61 t_1_144:0-55 t_1_145:0-9"
+    },
+    {
+      "order": 30,
+      "textSha": "eb2ec4c668e46ccb",
+      "head": "[197], [198] discussed the potential application",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_145:12-60 t_1_146:0-61 t_1_147:0-33"
+    },
+    {
+      "order": 31,
+      "textSha": "f4e448ca724cf668",
+      "head": "Ji et al. [199] presented a quantitative compari",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_147:35-62 t_1_148:0-59 t_1_149:0-63 t_1_150:0-15"
+    },
+    {
+      "order": 32,
+      "textSha": "26a34b79394d92d5",
+      "head": "Ogundare et al. [200] proposed a study on the re",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_150:17-62 t_1_151:0-62 t_1_152:0-48"
+    },
+    {
+      "order": 33,
+      "textSha": "ebbf786b50e779da",
+      "head": "Although LSFMs showed great potentials in intell",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_153:0-8 t_1_155:0-5 t_1_157:0-6 t_1_159:0-5 t_1_161:0-10 t_1_163:0-2 t_1_165:0-11 t_1_166:0-58 t_1_167:0-61 t_1_168:0-63 t_1_169:0-56 t_1_170:0-61"
+    },
+    {
+      "order": 34,
+      "textSha": "3ec966c3dff95e77",
+      "head": "This paper presented technical roadmaps for usin",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_1_171:0-58 t_1_172:0-57 t_2_2:0-15"
+    },
+    {
+      "order": 35,
+      "textSha": "b9bc8a9d19887538",
+      "head": "Our work aimed to provide guiding directions and",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_2:17-61 t_2_3:0-56 t_2_4:0-25"
+    },
+    {
+      "order": 36,
+      "textSha": "8edaaed2e60b9082",
+      "head": "The rest of this paper was organized as follows.",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_5:0-47"
+    },
+    {
+      "order": 37,
+      "textSha": "71fdbbb9b9d50b89",
+      "head": "Section II described the challenges encountered ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_5:49-59 t_2_6:0-60 t_2_7:0-28"
+    },
+    {
+      "order": 38,
+      "textSha": "a2ab7f89087ec1b8",
+      "head": "In Section III, we initially provided a brief ov",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_7:30-62 t_2_8:0-62 t_2_9:0-59 t_2_10:0-2 t_2_12:0-11 t_2_14:0-13 t_2_16:0-4 t_2_18:0-9 t_2_20:0-3 t_2_22:0-10 t_2_23:0-22"
+    },
+    {
+      "order": 39,
+      "textSha": "229bdc23c9093122",
+      "head": "Section IV delineated the roadmaps of applying L",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_23:24-58 t_2_24:0-46"
+    },
+    {
+      "order": 40,
+      "textSha": "572bd8729e03b0d2",
+      "head": "Finally, in Section V, we illustrated how LSFMs ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_24:48-59 t_2_25:0-57 t_2_26:0-61 t_2_27:0-28"
+    },
+    {
+      "order": 41,
+      "textSha": "8b3e623f0701415d",
+      "head": "Pioneering work of artificial neural network sta",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_43:0-59 t_2_44:0-54 t_2_45:0-6 t_2_47:0-3 t_2_49:0-11 t_2_51:0-2 t_2_53:0-7 t_2_55:0-8 t_2_57:0-4 t_2_59:0-4 t_2_60:0-58 t_2_61:0-56 t_2_62:0-57 t_2_63:0-62 t_2_64:0-16"
+    },
+    {
+      "order": 42,
+      "textSha": "96c37685162c8f4c",
+      "head": "The couple of decades around AD 2000 saw the evo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_65:0-54 t_2_66:0-58 t_2_67:0-57 t_2_68:0-55 t_2_69:0-8"
+    },
+    {
+      "order": 43,
+      "textSha": "a32bbd4dd7409aa5",
+      "head": "Popular deep learning algorithms such as recurre",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_69:10-60 t_2_70:0-55 t_2_71:1-57 t_2_72:0-59 t_2_73:0-62 t_2_74:0-56 t_2_75:0-51"
+    },
+    {
+      "order": 44,
+      "textSha": "ca5da3560d0aa71c",
+      "head": "A. Progresses of deep learning in Intelligent Ma",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_77:0-59 t_2_78:0-41 t_2_80:0-6 t_2_81:0-57 t_2_82:0-57 t_2_83:0-10"
+    },
+    {
+      "order": 45,
+      "textSha": "f06c6ac93cd105fd",
+      "head": "The implementation of PHM aimed to avoid equipme",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_83:12-52 t_2_84:0-58 t_2_85:0-57"
+    },
+    {
+      "order": 46,
+      "textSha": "3e2c637081524940",
+      "head": "Traditional PHM methods primarily relied on mach",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_86:0-57 t_2_87:0-56 t_2_88:1-57 t_2_89:1-56 t_2_90:0-17"
+    },
+    {
+      "order": 47,
+      "textSha": "7563a779f6ad2829",
+      "head": "These machine learning technologies often relied",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_90:20-55 t_2_91:0-58 t_2_92:0-46"
+    },
+    {
+      "order": 48,
+      "textSha": "1dfe1ef39e1fff72",
+      "head": "Nevertheless, with the manufacturing industry's ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_93:0-59 t_2_94:0-63 t_2_95:0-58 t_2_96:0-57 t_2_97:0-50"
+    },
+    {
+      "order": 49,
+      "textSha": "bfc76790d6c907b5",
+      "head": "In this context, deep learning methods, specific",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_98:0-58 t_2_99:0-55 t_2_100:1-54 t_2_101:0-19"
+    },
+    {
+      "order": 50,
+      "textSha": "174aa6a62a7d7200",
+      "head": "For instance, Belmiloud et al. [221] utilized Wa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_101:21-56 t_2_102:0-58 t_2_103:0-59 t_2_104:0-38"
+    },
+    {
+      "order": 51,
+      "textSha": "ce48fd9863f811a5",
+      "head": "Li et al. [222] and Zhu et al. [223] investigate",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_104:40-59 t_2_105:0-60 t_2_106:0-58 t_2_107:0-59 t_2_108:0-27"
+    },
+    {
+      "order": 52,
+      "textSha": "f4b2d53c1b829c2b",
+      "head": "Furthermore, some methods have enhanced PHM perf",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_108:29-59 t_2_109:0-8 t_2_111:0-3 t_2_113:0-11 t_2_115:0-2 t_2_117:0-9 t_2_119:0-9 t_2_121:0-4 t_2_122:0-19"
+    },
+    {
+      "order": 53,
+      "textSha": "ccf5122778bbd6dc",
+      "head": "For example, the CNN-LSTM model applied by Yue e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_122:21-52 t_2_123:0-63 t_2_124:0-14"
+    },
+    {
+      "order": 54,
+      "textSha": "bfd8bc2f289f43e2",
+      "head": "Subsequently, Chen et al. [225] extended its app",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_124:16-60 t_2_125:0-61 t_2_126:0-64 t_2_127:0-12"
+    },
+    {
+      "order": 55,
+      "textSha": "ebf55982f3df2c41",
+      "head": "Although deep learning-based PHM strategies had ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_128:0-56 t_2_129:0-57 t_2_130:0-59 t_2_131:0-59 t_2_132:0-60 t_2_133:0-65 t_2_134:0-14"
+    },
+    {
+      "order": 56,
+      "textSha": "71a673fb6c79206b",
+      "head": "These identified challenges not only delineated ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_134:17-59 t_2_135:0-65 t_2_136:0-60 t_2_137:0-36"
+    },
+    {
+      "order": 57,
+      "textSha": "7f9f03d50a78ae31",
+      "head": "2) Quality control: The core logics of tradition",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_139:0-18 t_2_141:0-38 t_2_142:0-65 t_2_143:0-59 t_2_144:0-41"
+    },
+    {
+      "order": 58,
+      "textSha": "1f17494fa683cee2",
+      "head": "In the early stages of development, Shewhart [22",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_144:43-62 t_2_145:0-57 t_2_146:0-60 t_2_147:0-44"
+    },
+    {
+      "order": 59,
+      "textSha": "24aba8517b5ce08c",
+      "head": "The subsequent adoption of Six Sigma markedly re",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_147:46-60 t_2_148:0-58 t_2_149:0-62 t_2_150:0-35"
+    },
+    {
+      "order": 60,
+      "textSha": "0c1795ffb9f06629",
+      "head": "However, these conventional methods harbored inh",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_150:38-59 t_2_151:0-6 t_2_153:0-7 t_2_155:0-8 t_2_157:0-8 t_2_159:0-11"
+    },
+    {
+      "order": 61,
+      "textSha": "859fea205dd376f0",
+      "head": "Firstly their static nature rendered them ineffe",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_161:0-7 t_2_163:0-5 t_2_164:0-62 t_2_165:0-58 t_2_166:0-59"
+    },
+    {
+      "order": 62,
+      "textSha": "c57af379ee252c2e",
+      "head": "Additionally, their reliance on predefined rules",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_167:0-59 t_2_168:0-60 t_2_169:0-62 t_2_170:0-60"
+    },
+    {
+      "order": 63,
+      "textSha": "fd9ededcaaafbd4a",
+      "head": "Furthermore, their capacity to process unstructu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_171:0-61 t_2_172:0-39"
+    },
+    {
+      "order": 64,
+      "textSha": "1bc46f2d90eaea4c",
+      "head": "In recent years, the focal point of research in ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_173:0-59 t_2_174:0-58 t_2_175:0-39"
+    },
+    {
+      "order": 65,
+      "textSha": "d2b84003bc41592e",
+      "head": "Deep learning models demonstrated exceptional ca",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_175:41-58 t_2_176:0-61 t_2_177:0-59 t_2_178:0-61 t_2_179:0-36"
+    },
+    {
+      "order": 66,
+      "textSha": "179c772f4ecf5664",
+      "head": "Moreover, the profound feature learning ability ",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_2_179:39-61 t_2_180:0-63 t_2_181:0-61 t_2_182:0-59 t_3_2:0-28"
+    },
+    {
+      "order": 67,
+      "textSha": "ffebc3c26059a1c4",
+      "head": "For instance, Zhang et al. [236] developed an ef",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_2:31-62 t_3_3:0-61 t_3_4:0-57 t_3_5:1-4"
+    },
+    {
+      "order": 68,
+      "textSha": "5d9e5306a6f72c0a",
+      "head": "In a similar vein, Essien et al. [237] employed ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_5:7-59 t_3_6:0-58 t_3_7:0-64 t_3_8:0-8"
+    },
+    {
+      "order": 69,
+      "textSha": "3da54546e6c591c6",
+      "head": "Concurrently, Stricker et al. [238] proposed an ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_8:10-57 t_3_9:0-56 t_3_10:0-58 t_3_11:0-62 t_3_12:0-57"
+    },
+    {
+      "order": 70,
+      "textSha": "654387695ba3c666",
+      "head": "In summary, deep learning has achieved significa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_13:0-55 t_3_14:0-38"
+    },
+    {
+      "order": 71,
+      "textSha": "c84a09cb61f605bb",
+      "head": "It has not only enhanced the accuracy of product",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_14:40-64 t_3_15:0-58 t_3_16:0-52"
+    },
+    {
+      "order": 72,
+      "textSha": "0fc6f67e0e0cea6c",
+      "head": "These advancements have introduced novel tools a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_16:54-59 t_3_17:0-58 t_3_18:0-59 t_3_19:0-7 t_3_21:0-7 t_3_23:0-3 t_3_25:0-10 t_3_27:0-2 t_3_29:0-10 t_3_31:0-5 t_3_33:1-4 t_3_34:1-11"
+    },
+    {
+      "order": 73,
+      "textSha": "f97a2d8ddbfe57a0",
+      "head": "3) Human action recognition(HAR): In intelligent",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_36:0-31 t_3_38:0-18 t_3_39:0-10 t_3_41:0-3 t_3_43:0-8 t_3_45:0-2 t_3_47:0-3 t_3_49:0-11 t_3_51:0-2 t_3_53:0-10 t_3_54:0-59 t_3_55:0-55 t_3_56:0-7 t_3_58:0-2 t_3_60:0-7 t_3_62:0-6 t_3_64:0-7 t_3_66:0-7 t_3_68:0-10 t_3_70:0-3 t_3_71:0-12"
+    },
+    {
+      "order": 74,
+      "textSha": "8e24c7cb3bfe6445",
+      "head": "In recent years, deep learning technology had ma",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_71:14-59 t_3_72:0-62 t_3_73:0-24"
+    },
+    {
+      "order": 75,
+      "textSha": "c1f6bdd787a36bd6",
+      "head": "This progress was largely due to its potent feat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_73:27-56 t_3_74:0-62 t_3_75:0-29"
+    },
+    {
+      "order": 76,
+      "textSha": "85fb87b9427ddfc1",
+      "head": "Manufacturers collected motion data from various",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_75:31-61 t_3_76:0-59 t_3_77:0-53 t_3_78:1-4 t_3_80:0-2 t_3_82:0-7 t_3_84:0-3 t_3_86:0-7 t_3_88:0-7 t_3_90:0-10 t_3_92:0-2 t_3_94:0-4 t_3_95:0-4"
+    },
+    {
+      "order": 77,
+      "textSha": "1ca3e9b9dd351c1f",
+      "head": "These HAR systems were capable of identifying un",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_95:6-58 t_3_96:0-57 t_3_97:0-61 t_3_98:0-11"
+    },
+    {
+      "order": 78,
+      "textSha": "70a0244313088bfb",
+      "head": "For quality control, HAR helped in detecting and",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_98:13-61 t_3_99:0-59 t_3_100:0-61 t_3_101:0-10"
+    },
+    {
+      "order": 79,
+      "textSha": "e27f74dfdb424e10",
+      "head": "Additionally, by analyzing workers' workflows, H",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_101:12-57 t_3_102:0-59 t_3_103:0-63 t_3_104:0-36"
+    },
+    {
+      "order": 80,
+      "textSha": "72c1001062c5ccec",
+      "head": "In terms of equipment maintenance, HARs were mon",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_104:38-59 t_3_105:0-53 t_3_106:0-30"
+    },
+    {
+      "order": 81,
+      "textSha": "9f2c2a72a806f265",
+      "head": "HAR could also be used to identify training need",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_106:32-57 t_3_107:0-61 t_3_108:0-47"
+    },
+    {
+      "order": 82,
+      "textSha": "7c55b818edb3b102",
+      "head": "[250]- [253] On the technical front, multimodal ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_108:50-59 t_3_109:0-54 t_3_110:0-53 t_3_111:0-58 t_3_112:0-17"
+    },
+    {
+      "order": 83,
+      "textSha": "334394790c62e088",
+      "head": "Transfer learning and domain adaptation techniqu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_112:19-58 t_3_113:0-60 t_3_114:0-57 t_3_115:0-55 t_3_116:0-22"
+    },
+    {
+      "order": 84,
+      "textSha": "bc010f7187bccde5",
+      "head": "To address the class imbalance issue, researcher",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_116:24-57 t_3_117:0-62 t_3_118:0-46"
+    },
+    {
+      "order": 85,
+      "textSha": "04952851268ba25f",
+      "head": "Unsupervised and semi-supervised learning method",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_118:48-60 t_3_119:0-60 t_3_120:0-60"
+    },
+    {
+      "order": 86,
+      "textSha": "52389f7f5d39232b",
+      "head": "In summary, deep learning had shown enormous pot",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_121:0-57 t_3_122:0-27"
+    },
+    {
+      "order": 87,
+      "textSha": "4847abfeebc20fea",
+      "head": "However, there was a continuous need to resolve ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_122:29-60 t_3_123:0-59 t_3_124:0-18"
+    },
+    {
+      "order": 88,
+      "textSha": "036b048b41366135",
+      "head": "Future research was expected to focus on develop",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_124:21-58 t_3_125:0-60 t_3_126:0-62 t_3_127:0-12 t_3_129:0-2 t_3_131:0-3 t_3_133:0-10 t_3_135:0-2 t_3_137:0-10 t_3_139:0-10 t_3_140:0-35"
+    },
+    {
+      "order": 89,
+      "textSha": "73e72d4959f1db9d",
+      "head": "4) Industrial Robotics: Industrial robots were a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_142:0-22 t_3_144:0-32 t_3_145:0-60 t_3_146:0-61 t_3_147:0-16"
+    },
+    {
+      "order": 90,
+      "textSha": "e9debc0063dd49e9",
+      "head": "These robots usually had multi-axis motion capab",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_147:18-60 t_3_148:0-62 t_3_149:0-61 t_3_150:0-22"
+    },
+    {
+      "order": 91,
+      "textSha": "9c0683939f149f14",
+      "head": "Deep learning (DL) technology had marked the adv",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_150:24-57 t_3_151:0-60 t_3_152:0-57"
+    },
+    {
+      "order": 92,
+      "textSha": "2364ba487687a164",
+      "head": "The core advantage of deep learning lay in its e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_152:59-62 t_3_153:0-59 t_3_154:0-62 t_3_155:0-56 t_3_156:0-43"
+    },
+    {
+      "order": 93,
+      "textSha": "14e6a5a56b1f3c8a",
+      "head": "For instance, by leveraging CNNs, robots had bee",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_156:46-62 t_3_157:0-54 t_3_158:0-61 t_3_159:0-34"
+    },
+    {
+      "order": 94,
+      "textSha": "203b34509b95dde5",
+      "head": "This automated quality control not only improved",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_159:36-58 t_3_160:0-58 t_3_161:0-50"
+    },
+    {
+      "order": 95,
+      "textSha": "bf366482c6a58a31",
+      "head": "In the realm of predictive maintenance, deep lea",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_161:52-58 t_3_162:0-58 t_3_163:0-63 t_3_164:0-59 t_3_165:0-4"
+    },
+    {
+      "order": 96,
+      "textSha": "372eb3280c40a03a",
+      "head": "This was achieved through Recurrent Neural Netwo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_165:6-57 t_3_166:1-49 t_3_167:0-62 t_3_168:0-4"
+    },
+    {
+      "order": 97,
+      "textSha": "0c5e925fca351cc8",
+      "head": "[265]- [267].",
+      "verification": "read",
+      "how": "unique_short",
+      "tags": ["short"],
+      "spans": "t_3_168:7-16"
+    },
+    {
+      "order": 98,
+      "textSha": "db00e7364388062b",
+      "head": "Moreover, Deep Reinforcement Learning (DRL) tech",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_168:19-56 t_3_169:1-57 t_3_170:0-55 t_3_171:0-58 t_3_172:0-10"
+    },
+    {
+      "order": 99,
+      "textSha": "1d920153d1cb8467",
+      "head": "[268] Deep learning also played a crucial role i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_172:13-61 t_3_173:0-47"
+    },
+    {
+      "order": 100,
+      "textSha": "2d63b38a28065eba",
+      "head": "Through deep learning algorithms, robots had bee",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_173:49-61 t_3_174:0-62 t_3_175:0-58 t_3_176:0-57"
+    },
+    {
+      "order": 101,
+      "textSha": "f7041238687ea2ce",
+      "head": "These technologies were also used to monitor the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_177:0-59 t_3_178:0-64 t_3_179:0-28"
+    },
+    {
+      "order": 102,
+      "textSha": "71c05e236f85beb3",
+      "head": "Despite the significant advantages that deep lea",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_180:0-59 t_3_181:0-63 t_3_182:0-61 t_3_183:0-59 t_3_184:0-5"
+    },
+    {
+      "order": 103,
+      "textSha": "c63befd13d0f7e24",
+      "head": "Deep learning models typically required large am",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_184:7-60 t_3_185:0-58 t_3_186:0-48"
+    },
+    {
+      "order": 104,
+      "textSha": "3dc9378f794b20fd",
+      "head": "Additionally, the decision-making process of dee",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_186:50-62 t_3_187:0-57 t_3_188:0-61 t_3_189:0-43"
+    },
+    {
+      "order": 105,
+      "textSha": "376048a7513b840c",
+      "head": "Moreover, the computational intensity of deep le",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_189:45-58 t_3_190:0-62 t_3_191:0-48"
+    },
+    {
+      "order": 106,
+      "textSha": "b2838cec017f48af",
+      "head": "In conclusion, the application of deep learning ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_191:51-60 t_3_192:0-65 t_3_193:0-62"
+    },
+    {
+      "order": 107,
+      "textSha": "9df43f8cf7151083",
+      "head": "Poor generalization ability Overfitting [131], [",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_4_8:0-27 t_4_9:0-11 t_4_11:1-31 t_4_12:0-33 t_4_14:1-39 t_4_15:0-37 t_4_17:1-44 t_4_18:0-20 t_4_19:0-16 t_4_20:0-25 t_4_22:1-10 t_4_23:0-22 t_4_25:1-4 t_4_26:0-20 t_4_28:1-3 t_4_29:0-26 t_4_31:1-4 t_4_32:0-30 t_4_34:1-4 t_4_35:0-20 t_4_37:1-4 t_4_38:0-26 t_4_40:0-25 t_4_42:1-38 t_4_43:0-23 t_4_45:1-31 t_4_46:0-24 t_4_48:1-17 t_4_49:0-13 t_4_51:1-16 t_4_52:0-85 t_4_53:0-51",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 108,
+      "textSha": "d98d50f7aa57bf13",
+      "head": "However, to realize its full potential, further ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_53:53-60 t_4_54:0-63 t_4_55:0-60 t_4_56:0-42"
+    },
+    {
+      "order": 109,
+      "textSha": "e8ade2ddbc5cc8c1",
+      "head": "Overfitting.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated", "short"],
+      "spans": "t_4_61:0-11"
+    },
+    {
+      "order": 110,
+      "textSha": "d307b3d571eb52b1",
+      "head": "Overfitting refers to the phenomenon where a mod",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_63:0-42 t_4_64:0-57 t_4_65:0-60 t_4_66:0-59 t_4_67:0-3 t_4_69:0-3 t_4_71:0-4"
+    },
+    {
+      "order": 111,
+      "textSha": "cf87ff77eb49253a",
+      "head": "This issue should be particularly noted in the a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_73:0-4 t_4_75:0-5 t_4_77:0-6 t_4_79:0-2 t_4_81:0-12 t_4_83:0-5 t_4_85:0-2 t_4_86:0-62 t_4_87:0-58 t_4_88:0-23"
+    },
+    {
+      "order": 112,
+      "textSha": "ec51f43617ca564d",
+      "head": "Models trained under such conditions, even if th",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_88:25-61 t_4_89:0-58 t_4_90:0-27"
+    },
+    {
+      "order": 113,
+      "textSha": "ddc66d188f95dd9e",
+      "head": "Overfitting severely damages the model's general",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_90:29-61 t_4_91:0-61 t_4_92:0-52"
+    },
+    {
+      "order": 114,
+      "textSha": "593e6508c541352f",
+      "head": "The applications of deep learning algorithms in ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_93:0-55 t_4_94:0-60 t_4_95:0-58"
+    },
+    {
+      "order": 115,
+      "textSha": "75280f7f0995da20",
+      "head": "The intricacies of manufacturing scenes introduc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_96:2-60 t_4_97:0-57 t_4_98:0-7"
+    },
+    {
+      "order": 116,
+      "textSha": "bc242d9392a06637",
+      "head": "These shifts posed hurdles for deep learning app",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_98:9-61 t_4_99:0-64 t_4_100:0-60 t_4_101:0-36"
+    },
+    {
+      "order": 117,
+      "textSha": "2953c31ec85a46a7",
+      "head": "Poor domain knowledge integration.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated"],
+      "spans": "t_4_103:0-33"
+    },
+    {
+      "order": 118,
+      "textSha": "f0119780142acd26",
+      "head": "The challenge of poor domain knowledge integrati",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_105:0-16 t_4_106:0-57 t_4_107:0-62 t_4_108:0-9"
+    },
+    {
+      "order": 119,
+      "textSha": "580a1af88df10d84",
+      "head": "Domain knowledge, include expertise about specif",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_108:11-61 t_4_109:0-61 t_4_110:0-62 t_4_111:0-12"
+    },
+    {
+      "order": 120,
+      "textSha": "63bd178122b877d8",
+      "head": "However, integrating this crucial knowledge into",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_111:14-62 t_4_112:0-56 t_4_113:0-56 t_4_114:0-61 t_4_115:1-59 t_4_116:0-60"
+    },
+    {
+      "order": 121,
+      "textSha": "5c3d793f473cc066",
+      "head": "This inherent complexity hindered the seamless i",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_117:0-61 t_4_118:0-62 t_4_119:0-25"
+    },
+    {
+      "order": 122,
+      "textSha": "b89fb944647a354c",
+      "head": "Interdisciplinary nature of domain knowledge: In",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_120:0-57 t_4_121:0-57 t_4_122:0-58 t_4_123:0-9"
+    },
+    {
+      "order": 123,
+      "textSha": "55b5fc05a5bdbe18",
+      "head": "The integration of expertise from these diverse ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_123:12-59 t_4_124:0-54 t_4_125:0-44"
+    },
+    {
+      "order": 124,
+      "textSha": "4781e463289a1eb4",
+      "head": "Effectively incorporating insights from various ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_125:46-57 t_4_126:0-63 t_4_127:0-65 t_4_128:0-50"
+    },
+    {
+      "order": 125,
+      "textSha": "ded707761f4dae06",
+      "head": "Data-driven approach vs. Knowledge-driven approa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_129:0-56 t_4_130:0-8 t_4_132:0-6 t_4_134:0-13 t_4_136:0-6 t_4_138:0-7 t_4_140:0-2 t_4_142:0-8 t_4_143:0-63 t_4_144:0-57 t_4_145:0-59"
+    },
+    {
+      "order": 126,
+      "textSha": "c27630f21f3d005e",
+      "head": "Striking an effective equilibrium between these ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_146:0-59 t_4_147:0-63 t_4_148:0-58"
+    },
+    {
+      "order": 127,
+      "textSha": "3c2885ff41d6dca5",
+      "head": "Poor unstructured data representation.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated"],
+      "spans": "t_4_150:0-37"
+    },
+    {
+      "order": 128,
+      "textSha": "45827eca972aceb1",
+      "head": "Unstructured data encompassed information lackin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_152:0-17 t_4_153:0-58 t_4_154:0-24"
+    },
+    {
+      "order": 129,
+      "textSha": "b45c4c6179f1fad5",
+      "head": "In manufacturing environments, this category inc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_154:26-61 t_4_155:0-58 t_4_156:0-43"
+    },
+    {
+      "order": 130,
+      "textSha": "d1218354d2854753",
+      "head": "The challenges of using poor unstructured data i",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_156:45-59 t_4_157:0-63 t_4_158:0-50"
+    },
+    {
+      "order": 131,
+      "textSha": "0e111a819ea1deaf",
+      "head": "Lack of standardization: The absence of standard",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_159:0-58 t_4_160:0-59 t_4_161:0-60 t_4_162:0-37"
+    },
+    {
+      "order": 132,
+      "textSha": "9acedbd971eeb64f",
+      "head": "The lack of uniformity across these aspects also",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_162:40-62 t_4_163:0-61 t_4_164:0-63 t_4_165:0-64 t_4_166:0-28"
+    },
+    {
+      "order": 133,
+      "textSha": "8c74ba0eb9ea55c6",
+      "head": "High dimensionality and high heterogeneity: The ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_167:0-55 t_4_168:0-60 t_4_169:0-59 t_4_170:0-60 t_4_171:0-59 t_4_172:1-56"
+    },
+    {
+      "order": 134,
+      "textSha": "f98d2759d46b59d0",
+      "head": "Dealing with these complex datasets in the conte",
+      "verification": "manual",
+      "how": "manual",
+      "tags": ["page_boundary"],
+      "spans": "t_4_172:58-65 t_5_2:0-4 t_5_4:0-5 t_5_6:0-7 t_5_8:0-8 t_5_10:0-2 t_5_12:0-3 t_5_14:0-7 t_5_16:0-2 t_5_18:0-11 t_5_19:0-58 t_5_20:0-28",
+      "note": "쪽 경계 앞 조각이 Dealing 한 단어라 자동 검색이 위치를 정하지 못했다. 쪽 번호 6은 뺐다."
+    },
+    {
+      "order": 135,
+      "textSha": "ab340146ec322437",
+      "head": "Feature extraction: The task of feature extracti",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_21:0-7 t_5_23:0-10 t_5_25:0-3 t_5_27:0-4 t_5_29:0-2 t_5_31:0-7 t_5_33:0-10 t_5_35:0-4 t_5_36:0-61 t_5_37:0-59 t_5_38:0-58 t_5_39:0-13"
+    },
+    {
+      "order": 136,
+      "textSha": "a9f13eb5e96fd911",
+      "head": "This required specialized knowledge to discern a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_39:16-62 t_5_40:0-58 t_5_41:0-61 t_5_42:0-13"
+    },
+    {
+      "order": 137,
+      "textSha": "d3414d06465626d8",
+      "head": "Data volume and storage: The volume of data gene",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_43:0-53 t_5_44:0-58 t_5_45:0-62 t_5_46:0-30"
+    },
+    {
+      "order": 138,
+      "textSha": "9f51441628d7be08",
+      "head": "Dealing with these substantial datasets required",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_46:33-63 t_5_47:0-8 t_5_49:0-8 t_5_51:0-7 t_5_53:0-14 t_5_55:0-2 t_5_57:0-6 t_5_59:0-7 t_5_60:0-43"
+    },
+    {
+      "order": 139,
+      "textSha": "aeb594b480d7a6f6",
+      "head": "2) Limited high-quality training dataset: Limite",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_62:0-40 t_5_64:0-26"
+    },
+    {
+      "order": 140,
+      "textSha": "dc11e5a01cd834f7",
+      "head": "The challenge of limited highquality training da",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_66:0-29 t_5_67:0-63 t_5_68:0-63"
+    },
+    {
+      "order": 141,
+      "textSha": "664218ee57d661a2",
+      "head": "The process of annotating data for training coul",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_69:0-62 t_5_70:0-59 t_5_71:0-59 t_5_72:0-6"
+    },
+    {
+      "order": 142,
+      "textSha": "2760726d7e74987e",
+      "head": "This scarcity in labeling resources imposed sign",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_72:8-63 t_5_73:0-59 t_5_74:0-18"
+    },
+    {
+      "order": 143,
+      "textSha": "281be0eb6f9a6186",
+      "head": "The challenge of a limited highquality training ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_78:0-31 t_5_79:0-60 t_5_80:0-59 t_5_81:0-59 t_5_82:0-63 t_5_83:0-35"
+    },
+    {
+      "order": 144,
+      "textSha": "eaf834dd6834b6cd",
+      "head": "Incorporating this diversity was essential for t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_83:38-66 t_5_84:0-58 t_5_85:0-65 t_5_86:0-35 t_5_88:0-20"
+    },
+    {
+      "order": 145,
+      "textSha": "5c77bba9ef56093a",
+      "head": "The imbalance and rarity of certain faults or de",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_90:0-31 t_5_91:0-4 t_5_93:0-6 t_5_95:0-2 t_5_97:0-7 t_5_99:0-2 t_5_101:0-3 t_5_103:0-13 t_5_105:0-7 t_5_107:0-5 t_5_108:0-63 t_5_109:0-59 t_5_110:0-59 t_5_111:0-24"
+    },
+    {
+      "order": 146,
+      "textSha": "bbfcb01521da4c6e",
+      "head": "Specificity and uniqueness.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated"],
+      "spans": "t_5_113:0-26"
+    },
+    {
+      "order": 147,
+      "textSha": "b1c546634e0c9955",
+      "head": "Some manufacturing processes were highly special",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_115:0-28 t_5_116:0-63 t_5_117:1-4"
+    },
+    {
+      "order": 148,
+      "textSha": "82d8b0cf8ff78212",
+      "head": "Acquiring relevant data for constructing a train",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_119:0-9 t_5_121:0-8 t_5_123:0-4 t_5_125:0-3 t_5_127:0-12 t_5_129:0-1 t_5_131:0-8 t_5_132:0-59 t_5_133:0-9"
+    },
+    {
+      "order": 149,
+      "textSha": "fa7917cf30260b2b",
+      "head": "This specificity and uniqueness presented a barr",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_133:11-62 t_5_134:0-62 t_5_135:0-61 t_5_136:0-36"
+    },
+    {
+      "order": 150,
+      "textSha": "c1040292e4d43108",
+      "head": "Anonymity and privacy concerns.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated"],
+      "spans": "t_5_138:0-30"
+    },
+    {
+      "order": 151,
+      "textSha": "7fea754ec8217ad6",
+      "head": "Anonymity and privacy concerns were significant ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_140:0-17 t_5_141:0-55"
+    },
+    {
+      "order": 152,
+      "textSha": "3217aafc968dde0f",
+      "head": "This restricted special algorithms like federal ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_141:57-61 t_5_142:0-62 t_5_143:0-63 t_5_144:0-66 t_5_145:0-51"
+    },
+    {
+      "order": 153,
+      "textSha": "1786aeab8dc1c641",
+      "head": "Dynamic environments in manufacturing ariseD as ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["column_boundary", "hyphenated"],
+      "spans": "t_5_149:0-28 t_5_150:0-59 t_5_151:0-59 t_5_152:0-21"
+    },
+    {
+      "order": 154,
+      "textSha": "10330de018ba7c7a",
+      "head": "This evolution introduced a mismatch between tra",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_152:23-59 t_5_153:0-58 t_5_154:0-23"
+    },
+    {
+      "order": 155,
+      "textSha": "71617347a0510eb1",
+      "head": "Adapting deep learning models to these dynamic s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_154:26-58 t_5_155:0-58 t_5_156:0-22"
+    },
+    {
+      "order": 156,
+      "textSha": "fe3f5548499fc3d4",
+      "head": "3) Unsatisfactory performance: Single task, sing",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_158:0-29 t_5_160:0-25 t_5_162:0-33 t_5_163:0-61 t_5_164:0-65 t_5_165:0-4"
+    },
+    {
+      "order": 157,
+      "textSha": "76b23e841b2880dd",
+      "head": "When the same algorithm was applied on diffrtrnt",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_165:6-60 t_5_166:0-63 t_5_167:0-54"
+    },
+    {
+      "order": 158,
+      "textSha": "2e39ef96a3f1b740",
+      "head": "This restricted their performance in complex tas",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_167:57-61 t_5_168:0-58 t_5_169:0-56"
+    },
+    {
+      "order": 159,
+      "textSha": "6a31a492899e881f",
+      "head": "Even the deep learning models specifically desig",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_169:58-66 t_5_170:0-59 t_5_171:0-58 t_5_172:1-4"
+    },
+    {
+      "order": 160,
+      "textSha": "269c48fe2493f252",
+      "head": "Unsatisfactory accuracy Accuracy referred to the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_174:0-23 t_5_176:0-32 t_5_177:0-2 t_5_179:0-1 t_5_181:0-5 t_5_183:0-2 t_5_185:0-4 t_5_187:0-7 t_5_189:0-11 t_5_191:0-2 t_5_193:0-9"
+    },
+    {
+      "order": 161,
+      "textSha": "47a697a2e9942867",
+      "head": "In manufacturing environments, accuracy was cruc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_195:0-2 t_5_196:0-58 t_5_197:0-59 t_5_198:0-8"
+    },
+    {
+      "order": 162,
+      "textSha": "62e29af1ab48c25a",
+      "head": "Although deep learning models achieved remarkabl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_198:10-59 t_5_199:0-57 t_5_200:0-53"
+    },
+    {
+      "order": 163,
+      "textSha": "4d437aa628d5361b",
+      "head": "Certain situations still significantly diminishe",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_200:56-63 t_5_201:0-62 t_5_202:0-65 t_5_203:0-59 t_5_204:0-36 t_5_206:0-4 t_5_208:0-2 t_5_210:0-16 t_5_212:0-32 t_5_213:0-57 t_5_214:0-19"
+    },
+    {
+      "order": 164,
+      "textSha": "8052d962f9b03fa9",
+      "head": "In many manufacturing scenarios, it was crucial ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_214:21-60 t_5_215:0-59 t_5_216:0-61 t_5_217:0-59 t_5_218:0-64 t_5_219:0-13"
+    },
+    {
+      "order": 165,
+      "textSha": "42ffb3c6074d602d",
+      "head": "In intelligent manufacturing, employed deep lear",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_223:0-28 t_5_224:0-8 t_5_226:0-4 t_5_228:0-8 t_5_230:0-8 t_5_232:0-5 t_5_234:0-2 t_5_236:0-10 t_5_238:0-2 t_5_239:0-63 t_5_240:0-58 t_5_241:0-61 t_5_242:0-16"
+    },
+    {
+      "order": 166,
+      "textSha": "5f2af073b0a003b2",
+      "head": "This posed challenges for the deployment of deep",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_242:19-62 t_5_243:0-62 t_5_244:0-62 t_5_245:1-4"
+    },
+    {
+      "order": 167,
+      "textSha": "511fa20799751909",
+      "head": "Foundation models were designed to be trained on",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_263:0-54 t_5_264:0-66 t_5_265:0-56"
+    },
+    {
+      "order": 168,
+      "textSha": "a7f9f7fd09f920ab",
+      "head": "These models could have fixed most parameters af",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_265:59-64 t_5_266:0-62 t_5_267:0-58 t_5_268:0-11"
+    },
+    {
+      "order": 169,
+      "textSha": "17f86f36372cd346",
+      "head": "In fact, large scale foundation models(LSFMs) ha",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_268:13-57 t_5_269:0-60 t_5_270:0-52"
+    },
+    {
+      "order": 170,
+      "textSha": "7990ffeafd6b3b1c",
+      "head": "2021 1-4 5-8 9-10 2019 2020 11-12 2023 1-3 4-6 7",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["inline_math", "parser_defect", "script"],
+      "spans": "t_6_1:0-4 t_6_2:0-3 t_6_3:0-3 t_6_4:0-4 t_6_5:0-4 t_6_6:0-4 t_6_8:0-5 t_6_10:0-4 t_6_11:0-3 t_6_13:0-3 t_6_15:0-4 t_6_16:0-5 t_6_17:0-4 t_6_19:0-3 t_6_21:0-4 t_6_23:0-2 t_6_25:0-5 t_6_26:0-6 t_6_28:0-3 t_6_30:0-7 t_6_32:0-7 t_6_34:0-5 t_6_36:0-8 t_6_38:0-10 t_6_40:0-4 t_6_42:0-5 t_6_44:0-7 t_6_46:0-9 t_6_47:0-10 t_6_49:0-5 t_6_51:0-11 t_6_53:0-6 t_6_55:0-9 t_6_57:0-6 t_6_59:0-8",
+      "note": "그림 안의 글(모델 이름 연표)이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 171,
+      "textSha": "104b499f19febe36",
+      "head": "Titan Gopher GLaM Cpm-2 FLAN Yuan 1.0 HyperCLOVA",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["column_boundary", "hyphenated", "parser_defect", "script"],
+      "spans": "t_6_59:9-14 t_6_61:0-6 t_6_63:0-4 t_6_65:0-5 t_6_66:0-4 t_6_68:0-8 t_6_69:0-10 t_6_71:0-4 t_6_73:0-4 t_6_75:0-4 t_6_77:0-8 t_6_79:0-7 t_6_81:0-5 t_6_83:0-3 t_6_85:0-6 t_6_87:0-8 t_6_89:0-7 t_6_91:0-3 t_6_92:0-4 t_6_94:0-4 t_6_96:0-3 t_6_98:0-12 t_6_100:0-11 t_6_102:0-6 t_6_104:0-7 t_6_106:0-9 t_6_108:0-7 t_6_110:0-8 t_6_112:0-4 t_6_114:0-3 t_6_116:0-7 t_6_118:0-4 t_6_120:0-3 t_6_122:0-8 t_6_124:0-7 t_6_126:0-13 t_6_128:0-6 t_6_130:0-4 t_6_132:0-8 t_6_133:0-4 t_6_135:0-5 t_6_137:0-4 t_6_138:0-6 t_6_139:0-5 t_6_141:0-5 t_6_142:0-5 t_6_144:0-9 t_6_145:0-8 t_6_147:0-3 t_6_148:0-6 t_6_150:0-4 t_6_151:0-9 t_6_152:0-9 t_6_153:0-9 t_6_155:0-5 t_6_156:0-4 t_6_158:0-6 t_6_159:0-8 t_6_161:0-14 t_6_162:0-9",
+      "note": "그림 안의 글(모델 이름 연표)이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 172,
+      "textSha": "712b336083e52ae2",
+      "head": "Fig. 2: A timeline of existing large language mo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_164:0-76 t_6_165:0-58 t_6_166:1-56 t_6_167:1-4"
+    },
+    {
+      "order": 173,
+      "textSha": "f0a7e942c8ef80ab",
+      "head": "Among these, the GPT series [291], [293], [297],",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_167:7-60 t_6_168:0-54 t_6_169:0-11"
+    },
+    {
+      "order": 174,
+      "textSha": "3395c15dc3fb0ea0",
+      "head": "The latest version of the GPT series, GPT-4 [291",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_169:13-56 t_6_170:1-61 t_6_171:0-36"
+    },
+    {
+      "order": 175,
+      "textSha": "48f95b4b06f93c63",
+      "head": "It is a Transformer-based model pretrained to pr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_171:38-63 t_6_172:0-55"
+    },
+    {
+      "order": 176,
+      "textSha": "1a3267474d798a20",
+      "head": "Subsequent fine-tuning processes could enhance i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_173:0-58 t_6_174:0-57 t_6_175:0-9"
+    },
+    {
+      "order": 177,
+      "textSha": "a5aac9e1116c9dc5",
+      "head": "In various professional and academic benchmark t",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_175:11-57 t_6_176:0-58 t_6_177:0-61 t_6_178:0-43"
+    },
+    {
+      "order": 178,
+      "textSha": "b870279988de1344",
+      "head": "The LlaMA model [299] was currently the most pop",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_178:45-60 t_6_179:1-4 t_6_181:0-3 t_6_183:0-9 t_6_185:0-3 t_6_187:0-4 t_6_189:0-7 t_6_191:0-11 t_6_193:0-3 t_6_194:0-46"
+    },
+    {
+      "order": 179,
+      "textSha": "1563338133a81905",
+      "head": "As LlaMA was pretrained on English corpora, it o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_194:48-56 t_6_195:0-61 t_6_196:0-62 t_6_197:0-59 t_6_198:0-33"
+    },
+    {
+      "order": 180,
+      "textSha": "a2d911ee2b2d7ac9",
+      "head": "For visual models, the Segment Anything Model (S",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_199:0-50 t_6_200:1-55"
+    },
+    {
+      "order": 181,
+      "textSha": "823ff41621cb3f46",
+      "head": "SAM was composed of three main components: task,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_201:0-54 t_6_202:0-8"
+    },
+    {
+      "order": 182,
+      "textSha": "9aa91bf30156747f",
+      "head": "Firstly, SAM's tasks involved designing a versat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_202:10-61 t_6_203:0-59 t_6_204:0-29"
+    },
+    {
+      "order": 183,
+      "textSha": "f6b4fefcfb9f10e0",
+      "head": "Inspired by ideas from LLMs, segmentation tasks ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_204:31-58 t_6_205:0-60 t_6_206:0-57"
+    },
+    {
+      "order": 184,
+      "textSha": "6d6c1e55a4d197fe",
+      "head": "Secondly, SAM's model framework comprised three ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_207:0-57 t_6_208:0-51"
+    },
+    {
+      "order": 185,
+      "textSha": "6503d13cf27e5371",
+      "head": "The image encoder utilized a ViT [303] based on ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["column_boundary"],
+      "spans": "t_6_208:53-56 t_6_209:0-56 t_6_210:0-58 t_6_211:0-22"
+    },
+    {
+      "order": 186,
+      "textSha": "f2f92048e226fb29",
+      "head": "The prompt encoder handled sparse (points, boxes",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_211:24-57 t_6_212:1-53"
+    },
+    {
+      "order": 187,
+      "textSha": "226c8d193c6b7981",
+      "head": "The mask decoder employed a bidirectional Transf",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_212:55-58 t_6_213:0-57 t_6_214:0-59 t_6_215:0-51 t_6_216:0-38"
+    },
+    {
+      "order": 188,
+      "textSha": "4a6ab1b7765dcb51",
+      "head": "Lastly, recognizing the inadequacy of existing s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_216:40-59 t_6_217:0-61 t_6_218:0-56 t_6_219:0-63 t_6_220:0-48"
+    },
+    {
+      "order": 189,
+      "textSha": "f93154386c0e8ee0",
+      "head": "Establishing the SA-1B dataset, which consisted ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_220:50-62 t_6_221:0-59 t_6_222:0-54 t_6_223:0-61 t_6_224:0-6 t_6_226:0-9"
+    },
+    {
+      "order": 190,
+      "textSha": "a93e2306b83ce153",
+      "head": "Compared to SAM, Segment Everything Everywhere A",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_228:0-8 t_6_230:0-2 t_6_232:0-3 t_6_234:0-7 t_6_236:0-10 t_6_237:0-56 t_6_238:0-39"
+    },
+    {
+      "order": 191,
+      "textSha": "378f04c3626e045a",
+      "head": "It not only facilitated segmentation and categor",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_238:41-64 t_6_239:0-58 t_6_240:0-63 t_6_241:0-59"
+    },
+    {
+      "order": 192,
+      "textSha": "3147b7eeedcb481e",
+      "head": "This attributed to SEEM's utilization of a unifi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_242:0-60 t_6_243:0-58 t_6_244:0-13"
+    },
+    {
+      "order": 193,
+      "textSha": "7aaa7dd6ca69c84c",
+      "head": "For the convenient deployment of visual foundati",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_244:15-59 t_6_245:0-58 t_6_246:1-55 t_6_247:0-60"
+    },
+    {
+      "order": 194,
+      "textSha": "b540222f44a91219",
+      "head": "This approach ensured flexible deployment of the",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_248:0-58 t_6_249:0-52"
+    },
+    {
+      "order": 195,
+      "textSha": "d53c0216da1bbb66",
+      "head": "Multimodal information processing was one of the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_250:0-54 t_6_251:0-57 t_6_252:0-7 t_6_254:0-4 t_6_256:0-8 t_6_258:0-8 t_6_260:0-3 t_6_262:0-7 t_6_264:0-10 t_6_265:0-5"
+    },
+    {
+      "order": 196,
+      "textSha": "6d4ee7c0843f8d1c",
+      "head": "CLIP [307] connected text and images by creating",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_6_265:7-55 t_6_266:0-1 t_6_268:0-12 t_6_270:0-6 t_6_272:0-5 t_6_274:0-3 t_6_276:0-6 t_6_278:0-1 t_6_280:0-11 t_6_282:0-4 t_7_2:0-60"
+    },
+    {
+      "order": 197,
+      "textSha": "eb254838d046a360",
+      "head": "It learned the matching relationship between tex",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_3:0-61 t_7_4:0-61 t_7_5:0-32"
+    },
+    {
+      "order": 198,
+      "textSha": "885a8efc6e782c30",
+      "head": "BLIP [308] and GLIP series [309], [310], made im",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_5:34-53 t_7_6:0-55 t_7_7:0-59 t_7_8:0-31"
+    },
+    {
+      "order": 199,
+      "textSha": "bce52b45eaa1a221",
+      "head": "This approach could generate images from text pr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_8:33-61 t_7_9:0-59 t_7_10:0-6"
+    },
+    {
+      "order": 200,
+      "textSha": "826f6ea7a176726c",
+      "head": "Grounding DINO [311] combined the strengths of C",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_10:8-54 t_7_11:0-60 t_7_12:0-14"
+    },
+    {
+      "order": 201,
+      "textSha": "2cf961024b8bab15",
+      "head": "Diffusion model was also widely used in multimod",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_12:16-55 t_7_13:0-28"
+    },
+    {
+      "order": 202,
+      "textSha": "aa5d1e43188a65d3",
+      "head": "Inspired by non-equilibrium thermodynamics, the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_13:31-58 t_7_14:0-57 t_7_15:0-60 t_7_16:0-59 t_7_17:0-59 t_7_18:0-56 t_7_19:1-63 t_7_20:0-55 t_7_21:0-56 t_7_22:0-19"
+    },
+    {
+      "order": 203,
+      "textSha": "e6940ca12b690a73",
+      "head": "PaLM-E [319] combined language, vision, and robo",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_22:21-59 t_7_23:0-58 t_7_24:0-60 t_7_25:0-59"
+    },
+    {
+      "order": 204,
+      "textSha": "2435202a8675cce6",
+      "head": "1) Powerful generalization ability: Large scale ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_28:0-34 t_7_30:0-53 t_7_31:0-3"
+    },
+    {
+      "order": 205,
+      "textSha": "3bd8b8d960db1c91",
+      "head": "Although traditional deep learning models excell",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_33:0-57 t_7_34:0-61 t_7_35:0-61 t_7_36:0-57 t_7_37:0-47"
+    },
+    {
+      "order": 206,
+      "textSha": "daddac000f788a27",
+      "head": "In contrast, LSFMs, with significantly increased",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_37:49-60 t_7_38:0-61"
+    },
+    {
+      "order": 207,
+      "textSha": "9443b03260c42abb",
+      "head": "ChatGPT with 1.42 trillions of parameters in its",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_39:0-57 t_7_40:0-61 t_7_41:0-61 t_7_42:0-57 t_7_43:0-47"
+    },
+    {
+      "order": 208,
+      "textSha": "83e1632c3bf247fc",
+      "head": "This meant that a single LSFM could adapt well t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_43:50-65 t_7_44:0-58 t_7_45:0-55 t_7_46:0-59 t_7_47:0-33"
+    },
+    {
+      "order": 209,
+      "textSha": "204ff0fdf10a87dc",
+      "head": "Bubeck et al. [273] considered that, given the b",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_47:35-61 t_7_48:0-62 t_7_49:0-65 t_7_50:0-63 t_7_51:0-61 t_7_52:0-60 t_7_53:0-45"
+    },
+    {
+      "order": 210,
+      "textSha": "26dd286ad9c2a301",
+      "head": "Ji et al. [320] investigated the segmentation pe",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_53:47-55 t_7_54:1-57 t_7_55:0-62 t_7_56:0-59 t_7_57:0-61 t_7_58:0-7"
+    },
+    {
+      "order": 211,
+      "textSha": "76994bb9c15cf550",
+      "head": "Superior data human-machine interaction capabili",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_60:0-8 t_7_62:0-4 t_7_64:0-13 t_7_66:0-11 t_7_68:0-10"
+    },
+    {
+      "order": 212,
+      "textSha": "8d5efd6a7dbe7c52",
+      "head": "The emergence of multimodal LSFMs further enhanc",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_70:0-54 t_7_71:0-11 t_7_73:0-12 t_7_75:0-2 t_7_77:0-11 t_7_79:0-6 t_7_81:0-4 t_7_83:0-6 t_7_84:0-58 t_7_85:0-38"
+    },
+    {
+      "order": 213,
+      "textSha": "075580800e643c6b",
+      "head": "SAM [292] was designed and trained to be prompta",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_85:40-53 t_7_86:0-60 t_7_87:0-60 t_7_88:0-63 t_7_89:0-29"
+    },
+    {
+      "order": 214,
+      "textSha": "c63ce355ca2a3174",
+      "head": "It even accepted input prompts from other system",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_89:31-61 t_7_90:0-60 t_7_91:0-41"
+    },
+    {
+      "order": 215,
+      "textSha": "913fa6fc9e8304d5",
+      "head": "The multimodal capability also allowed people to",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_91:43-57 t_7_92:0-63 t_7_93:0-59 t_7_94:1-57 t_7_95:0-15"
+    },
+    {
+      "order": 216,
+      "textSha": "282acd7e58738135",
+      "head": "In the field of robot operation, visual-language",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_95:17-65 t_7_96:0-57 t_7_97:0-56 t_7_98:0-41"
+    },
+    {
+      "order": 217,
+      "textSha": "e27647bdf89a1132",
+      "head": "This led to high cross-task transfer efficiency ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_98:43-59 t_7_99:0-61 t_7_100:0-62 t_7_101:0-61"
+    },
+    {
+      "order": 218,
+      "textSha": "5353de61e3c73dd6",
+      "head": "2) Superior performance: Multi-task, multi-modal",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_103:0-23 t_7_105:0-23"
+    },
+    {
+      "order": 219,
+      "textSha": "823875c629bcfb50",
+      "head": "Compared to deep learning models designed for sp",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_107:0-29 t_7_108:0-59 t_7_109:0-62 t_7_110:0-57"
+    },
+    {
+      "order": 220,
+      "textSha": "93d26d481831508c",
+      "head": "Initially, the multi-task applicability of LSFMs",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_111:0-62 t_7_112:0-60 t_7_113:0-38"
+    },
+    {
+      "order": 221,
+      "textSha": "902efc3f364e8ce0",
+      "head": "Secondly, leveraging multi-modal inputs, which e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_113:40-60 t_7_114:0-59 t_7_115:0-59 t_7_116:0-60 t_7_117:0-55"
+    },
+    {
+      "order": 222,
+      "textSha": "25cf08f9aaf9762e",
+      "head": "Moreover, the multi-task, multi-modal nature bro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_118:0-58 t_7_119:0-60"
+    },
+    {
+      "order": 223,
+      "textSha": "224e244d44355221",
+      "head": "For instance, while traditional object detection",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_120:0-59 t_7_121:0-57 t_7_122:0-58 t_7_123:0-39"
+    },
+    {
+      "order": 224,
+      "textSha": "1e41c21680af9220",
+      "head": "Superior accuracy.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated", "short"],
+      "spans": "t_7_125:0-17"
+    },
+    {
+      "order": 225,
+      "textSha": "1dc5b861d6a2dcad",
+      "head": "The improvements brought by LSFMs were evident i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_126:2-35 t_7_127:0-27"
+    },
+    {
+      "order": 226,
+      "textSha": "3d45b4d4562b19de",
+      "head": "On one hand, pre-trained models themselves alrea",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_127:29-57 t_7_128:0-46"
+    },
+    {
+      "order": 227,
+      "textSha": "df125e67a373aebf",
+      "head": "GPT-4, for example, achieved scores approximatel",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_128:48-58 t_7_129:0-56 t_7_130:0-43"
+    },
+    {
+      "order": 228,
+      "textSha": "7ae0d622b7a81524",
+      "head": "Zero-shot CLIP outperformed fully supervised met",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_130:46-60 t_7_131:0-60 t_7_132:0-13"
+    },
+    {
+      "order": 229,
+      "textSha": "51ebced901cc86e9",
+      "head": "SAM delivered optimal performance in singlepoint",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_132:16-59 t_7_133:0-60 t_7_134:0-61 t_7_135:0-56 t_7_136:0-7"
+    },
+    {
+      "order": 230,
+      "textSha": "7e38af3b01d69d1b",
+      "head": "It only fell short on small and frequent objects",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_136:9-57"
+    },
+    {
+      "order": 231,
+      "textSha": "39bcd54fd180abee",
+      "head": "In edge detection tasks, SAM lagged behind state",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_137:0-59 t_7_138:0-62 t_7_139:0-21"
+    },
+    {
+      "order": 232,
+      "textSha": "f14ade6aa2e3e798",
+      "head": "On the other hand, while directly applying LSFMs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_140:0-56 t_7_141:0-64 t_7_142:0-8 t_7_144:0-3 t_7_146:0-5 t_7_148:0-8 t_7_150:0-11 t_7_152:0-9 t_7_154:0-5 t_7_155:0-59"
+    },
+    {
+      "order": 233,
+      "textSha": "a673ce5acab902d4",
+      "head": "To address SAM's suboptimal performance when seg",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_156:0-55 t_7_157:0-62 t_7_158:0-57 t_7_159:0-45"
+    },
+    {
+      "order": 234,
+      "textSha": "86a7643dfe7a6aff",
+      "head": "They also incorporated a Long Short-Term Memory ",
+      "verification": "manual",
+      "how": "manual",
+      "tags": ["page_boundary"],
+      "spans": "t_7_159:47-56 t_8_2:0-57 t_8_3:0-16 t_8_5:0-10 t_8_7:1-4 t_8_9:0-3 t_8_11:0-9 t_8_13:0-3 t_8_15:0-4 t_8_16:0-53 t_8_17:0-31",
+      "note": "쪽 경계 앞 조각이 They also 두 단어라 자동 검색이 위치를 정하지 못했다. 쪽 번호 9는 뺐다."
+    },
+    {
+      "order": 235,
+      "textSha": "a5a5a523e9b192bf",
+      "head": "For medical images typically characterized by we",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_17:33-56 t_8_18:0-59 t_8_19:0-55 t_8_20:0-57 t_8_21:0-55 t_8_22:0-35"
+    },
+    {
+      "order": 236,
+      "textSha": "9942256bd5a6b268",
+      "head": "It performed on par with state-of-the-art method",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_22:37-61 t_8_23:0-58 t_8_24:0-26"
+    },
+    {
+      "order": 237,
+      "textSha": "d6b65df1801b8a90",
+      "head": "For LSFMs, it was discovered that when model siz",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_32:0-24 t_8_33:0-59 t_8_34:0-59 t_8_35:0-38"
+    },
+    {
+      "order": 238,
+      "textSha": "224057523373186a",
+      "head": "This was referred to as Chain-of-Thought (CoT) [",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_35:40-60 t_8_36:0-59 t_8_37:0-61 t_8_38:0-59 t_8_39:0-27"
+    },
+    {
+      "order": 239,
+      "textSha": "9a60d40c48ad2123",
+      "head": "In essence, LSFMs would break down complex tasks",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_39:29-58 t_8_40:0-58 t_8_41:0-40"
+    },
+    {
+      "order": 240,
+      "textSha": "032e7024afe4636e",
+      "head": "Leveraging this feature, LSFMs could tackle more",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_41:42-61 t_8_42:0-56 t_8_43:0-47"
+    },
+    {
+      "order": 241,
+      "textSha": "74ea137d6525c6aa",
+      "head": "Suzgun et al. [332] selected 23 challenging task",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_43:49-61 t_8_44:1-59 t_8_45:0-61 t_8_46:0-59 t_8_47:0-49"
+    },
+    {
+      "order": 242,
+      "textSha": "010f41276db755dc",
+      "head": "However, when CoT was applied, Pa-LM [319] excee",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_47:51-58 t_8_48:0-56 t_8_49:0-56 t_8_50:0-31"
+    },
+    {
+      "order": 243,
+      "textSha": "5a08f27cf5884231",
+      "head": "In reality, LSFMs could assist humans in perform",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_50:33-63 t_8_51:0-57 t_8_52:0-62 t_8_53:0-56 t_8_54:0-34"
+    },
+    {
+      "order": 244,
+      "textSha": "2ea338e4e44d516a",
+      "head": "Natural language is one of the most common and f",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_58:0-26 t_8_59:0-58 t_8_60:0-12"
+    },
+    {
+      "order": 245,
+      "textSha": "9c0f8b7b9b70b50e",
+      "head": "The powerful natural language capabilities of LL",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_60:14-59 t_8_61:0-50"
+    },
+    {
+      "order": 246,
+      "textSha": "b1c3a83d4b4481d9",
+      "head": "Unlike explicit instructions, natural language c",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_61:52-58 t_8_62:0-60 t_8_63:0-31"
+    },
+    {
+      "order": 247,
+      "textSha": "31a43b74998c3e13",
+      "head": "[273] discovered that LSFMs not only had the abi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_63:34-60 t_8_64:0-59 t_8_65:0-58 t_8_66:0-59 t_8_67:0-19"
+    },
+    {
+      "order": 248,
+      "textSha": "6c9cb97af7beba26",
+      "head": "As a crucial aspect of intelligence, in addition",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_67:21-60 t_8_68:0-58 t_8_69:0-55 t_8_70:0-6"
+    },
+    {
+      "order": 249,
+      "textSha": "e964ed0a7ef3d9a1",
+      "head": "In [273], the quality of explanations was assess",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_70:8-64 t_8_71:0-57 t_8_72:0-60 t_8_73:0-60 t_8_74:0-58 t_8_75:0-23"
+    },
+    {
+      "order": 250,
+      "textSha": "4a8f2ccbb239d9d7",
+      "head": "Semi-supervised / self-supervised.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated"],
+      "spans": "t_8_79:0-33"
+    },
+    {
+      "order": 251,
+      "textSha": "9b07ed5b204ff8a8",
+      "head": "Self-supervised methods had already been used in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_80:2-22 t_8_81:0-56 t_8_82:0-30"
+    },
+    {
+      "order": 252,
+      "textSha": "5945495e123ba6d0",
+      "head": "The self-supervised training mode of LSFMs signi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_82:32-60 t_8_83:0-57 t_8_84:0-4 t_8_86:0-6 t_8_88:0-6 t_8_90:0-2 t_8_92:0-6 t_8_94:0-2 t_8_96:0-6 t_8_98:0-5 t_8_100:0-7 t_8_102:0-2 t_8_103:0-14"
+    },
+    {
+      "order": 253,
+      "textSha": "0c21cb0ce750dfef",
+      "head": "For instance, BERT [336] employed portions of un",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_103:16-58 t_8_104:0-54"
+    },
+    {
+      "order": 254,
+      "textSha": "dd2f261c52e67ef7",
+      "head": "It utilized two self-supervised tasks for traini",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_104:56-58 t_8_105:0-64 t_8_106:0-57 t_8_107:0-19"
+    },
+    {
+      "order": 255,
+      "textSha": "c6b4829fa158e6fa",
+      "head": "CLIP [307] used 400 million \"image-text pairs,\" ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_107:21-60 t_8_108:0-58 t_8_109:0-43"
+    },
+    {
+      "order": 256,
+      "textSha": "605b1cf27c8975d9",
+      "head": "Additionally, the automatically labeled data gen",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_109:45-62 t_8_110:0-59 t_8_111:0-60 t_8_112:0-12"
+    },
+    {
+      "order": 257,
+      "textSha": "034a009745e992f0",
+      "head": "For example, the SAM model [292] built the large",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_112:14-56 t_8_113:0-58 t_8_114:0-58 t_8_115:0-13"
+    },
+    {
+      "order": 258,
+      "textSha": "d37a2bc6c7f1c17f",
+      "head": "In fact, it became a classic dataset for future ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_115:15-62 t_8_116:0-58 t_8_117:0-53 t_8_118:0-58"
+    },
+    {
+      "order": 259,
+      "textSha": "15d6f3ab3fce6bb8",
+      "head": "The generative LSFMs [291], [314] changed the la",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_126:0-20 t_8_127:1-58 t_8_128:0-63 t_8_129:0-25"
+    },
+    {
+      "order": 260,
+      "textSha": "f80f7efeb110a776",
+      "head": "Generative LSFMs were not only used for generati",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_129:28-58 t_8_130:0-55 t_8_131:0-61 t_8_132:0-26"
+    },
+    {
+      "order": 261,
+      "textSha": "1a244b13a68fd5e5",
+      "head": "Whitehouse et al. [338] attempted to expand mult",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_132:28-61 t_8_133:0-59 t_8_134:0-58 t_8_135:0-45"
+    },
+    {
+      "order": 262,
+      "textSha": "f81c78b2f3058475",
+      "head": "Sen et al. [339] utilized LLM to generate Counte",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_135:47-56 t_8_136:1-57 t_8_137:0-56 t_8_138:0-60 t_8_139:0-44"
+    },
+    {
+      "order": 263,
+      "textSha": "71d058ca0987d9a9",
+      "head": "A. Roadmaps for powerful generalization ability ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_147:0-47 t_8_148:0-41 t_8_150:0-11 t_8_151:0-60 t_8_152:0-56 t_8_153:0-62 t_8_154:0-42"
+    },
+    {
+      "order": 264,
+      "textSha": "3b1266d2acb24a04",
+      "head": "The combination of pre-training with fine-tuning",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_154:45-60 t_8_155:0-57 t_8_156:0-64 t_8_157:0-56"
+    },
+    {
+      "order": 265,
+      "textSha": "b424a3571d967975",
+      "head": "LSFMs pre-trained on diverse general datasets re",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_158:0-59 t_8_159:0-61 t_8_160:0-11 t_8_162:0-5 t_8_164:0-7 t_8_166:0-3 t_8_168:0-5 t_8_170:0-9 t_8_172:0-5 t_8_174:0-2 t_8_176:0-3 t_8_177:0-6"
+    },
+    {
+      "order": 266,
+      "textSha": "9b9c0ad678d9b654",
+      "head": "Kahatapitiya et al. [345], acknowledging the lim",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_177:8-60 t_8_178:0-63 t_8_179:0-57 t_8_180:0-36"
+    },
+    {
+      "order": 267,
+      "textSha": "be909f33f7c78f8f",
+      "head": "Additionally, specific fine-tuning strategies co",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_180:38-60 t_8_181:0-60 t_8_182:0-60 t_8_183:0-26"
+    },
+    {
+      "order": 268,
+      "textSha": "7b844447cc231a5b",
+      "head": "Song et al. [346] proposed a fine-tuning method ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_183:28-56 t_8_184:0-56 t_8_185:1-57 t_8_186:0-62 t_8_187:0-60"
+    },
+    {
+      "order": 269,
+      "textSha": "d3c5eb0782fb744d",
+      "head": "The advantages of using LSFM in intelligent manu",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_9_2:0-28 t_9_3:0-28 t_9_5:0-23 t_9_7:0-9 t_9_9:0-11 t_9_10:0-31 t_9_11:0-25 t_9_12:0-30 t_9_13:1-4 t_9_14:0-45 t_9_15:0-92 t_9_16:0-71 t_9_17:1-4 t_9_19:0-89 t_9_20:1-4 t_9_21:0-48 t_9_22:0-39 t_9_23:0-79",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 270,
+      "textSha": "b6f1c62e6e0e7da1",
+      "head": "[341] Using an example to guide the synthesis mo",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_9_24:1-4 t_9_26:0-76 t_9_27:0-90 t_9_28:0-45 t_9_29:1-4 t_9_31:0-89 t_9_32:0-45 t_9_33:1-17 t_9_35:0-67 t_9_36:0-31 t_9_37:0-20 t_9_38:0-10 t_9_39:0-11 t_9_40:1-4 t_9_41:0-49 t_9_42:0-76 t_9_43:0-54 t_9_44:1-4 t_9_46:0-84 t_9_47:0-63 t_9_48:0-17 t_9_49:1-4 t_9_51:0-90 t_9_52:1-4 t_9_54:0-46 t_9_55:0-54 t_9_56:1-4 t_9_58:0-76 t_9_59:0-47 t_9_60:1-4 t_9_62:0-82 t_9_63:0-59",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 271,
+      "textSha": "9db37a9fa79c70f6",
+      "head": "logical reasoning ability [335] Use LLM formulat",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_9_64:0-25 t_9_66:1-4 t_9_68:0-39 t_9_69:0-68 t_9_70:1-4 t_9_72:0-71 t_9_73:0-89",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 272,
+      "textSha": "76907f8e16cf1105",
+      "head": "superior analytical capability [273] LSFM not on",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_9_74:0-30 t_9_76:1-4 t_9_78:0-42 t_9_79:0-67 t_9_80:1-4 t_9_82:0-52 t_9_83:0-42 t_9_84:0-22 t_9_85:0-27 t_9_86:0-33 t_9_87:1-4 t_9_89:0-82 t_9_90:1-4 t_9_92:0-90 t_9_93:1-4 t_9_95:0-80 t_9_96:0-53 t_9_97:0-30 t_9_99:1-4 t_9_101:0-82 t_9_102:1-4 t_9_104:0-78",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 273,
+      "textSha": "b183fa0137f3b020",
+      "head": "2) Building structured data through LSFMs: LSFMs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_107:0-41 t_9_109:0-11 t_9_110:0-61 t_9_111:0-60 t_9_112:0-55"
+    },
+    {
+      "order": 274,
+      "textSha": "51501d7f59056f3d",
+      "head": "Deep Generative Models (DGM) and models like VIT",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_112:58-62 t_9_113:0-54 t_9_114:0-56 t_9_115:0-61 t_9_116:0-23"
+    },
+    {
+      "order": 275,
+      "textSha": "0e5cb9169c175c25",
+      "head": "Oliveira et al. [348] outlined four types of DGM",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_116:25-66 t_9_117:0-54 t_9_118:0-55 t_9_119:0-55 t_9_120:0-12"
+    },
+    {
+      "order": 276,
+      "textSha": "4f64c7837ebcc5a5",
+      "head": "3) Embedding knowledge through prompts: Once exp",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_122:0-38 t_9_124:0-11 t_9_125:0-57 t_9_126:0-56 t_9_127:0-8"
+    },
+    {
+      "order": 277,
+      "textSha": "a7f6969ef4f5b4e6",
+      "head": "Many LSMFs, such as ChatGPT and SAM, inherently ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_127:11-50 t_9_128:0-58 t_9_129:0-55 t_9_130:0-15"
+    },
+    {
+      "order": 278,
+      "textSha": "979bb46ce71210bd",
+      "head": "For example, for abstract human behavior activit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_130:17-54 t_9_131:0-60 t_9_132:0-16"
+    },
+    {
+      "order": 279,
+      "textSha": "e02394a157220940",
+      "head": "Therefore, it could be guided to generate activi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_132:18-59 t_9_133:0-63 t_9_134:0-49"
+    },
+    {
+      "order": 280,
+      "textSha": "b746731c2a02cd2a",
+      "head": "Subsequently, it could identify the activity cla",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_134:51-63 t_9_135:0-62 t_9_136:0-30"
+    },
+    {
+      "order": 281,
+      "textSha": "4b7a83f547af7650",
+      "head": "Furthermore, LSFMs could even gather relevant do",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_136:33-57 t_9_137:0-56 t_9_138:0-28"
+    },
+    {
+      "order": 282,
+      "textSha": "0577786f4299c372",
+      "head": "4) Using multimodal LSFMs: Intelligent manufactu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_140:0-25 t_9_142:0-25 t_9_143:0-59 t_9_144:0-57"
+    },
+    {
+      "order": 283,
+      "textSha": "88c4d95429a8d2cd",
+      "head": "The inherent diversity of these data posed a for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_145:0-3 t_9_147:0-8 t_9_149:0-9 t_9_151:0-2 t_9_153:0-5 t_9_155:0-4 t_9_157:0-5 t_9_159:0-1 t_9_161:0-10 t_9_162:0-58 t_9_163:0-3"
+    },
+    {
+      "order": 284,
+      "textSha": "391c53ae2bb57e13",
+      "head": "LSFMs such as Visual-GPT [352] and ImageBind [31",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_163:5-54 t_9_164:0-31"
+    },
+    {
+      "order": 285,
+      "textSha": "8cf76f4e4f85caa3",
+      "head": "These models exceled in the simultaneous encodin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_164:33-56 t_9_165:0-58 t_9_166:0-62 t_9_167:0-23"
+    },
+    {
+      "order": 286,
+      "textSha": "3c440383ea2a64a1",
+      "head": "This expanded capacity could not only enrich the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_167:26-63 t_9_168:0-62 t_9_169:0-58 t_9_170:0-61 t_9_171:0-40"
+    },
+    {
+      "order": 287,
+      "textSha": "3e5525d5232c9c45",
+      "head": "Leveraging these expansive LSFMs facilitates the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_171:42-58 t_9_172:0-59 t_9_173:0-63"
+    },
+    {
+      "order": 288,
+      "textSha": "d797d0320fd9e9a9",
+      "head": "In complex industrial environments characterized",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_174:0-60 t_9_175:0-56 t_9_176:0-55"
+    },
+    {
+      "order": 289,
+      "textSha": "e09ff102958eba87",
+      "head": "LSFMs can solve overfitting problems through met",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_186:0-5 t_9_188:0-3 t_9_189:0-58 t_9_190:0-30"
+    },
+    {
+      "order": 290,
+      "textSha": "d6b8a35c79bc7ab9",
+      "head": "Regularization can limit the complexity of the m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_190:32-60 t_9_191:0-56 t_9_192:0-56 t_9_193:0-3 t_9_195:0-10 t_9_197:0-7 t_9_199:0-2 t_9_201:0-8 t_9_203:0-6 t_9_205:0-2 t_9_207:0-7 t_9_209:0-3 t_9_210:0-36"
+    },
+    {
+      "order": 291,
+      "textSha": "37fd78bb67836ecd",
+      "head": "Although many LSFMs like GPT-3 and PaLM did not ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_211:0-51 t_9_212:0-64 t_9_213:0-8"
+    },
+    {
+      "order": 292,
+      "textSha": "b280628a811e3786",
+      "head": "For instance, by using dropout during the traini",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_213:10-60 t_9_214:0-56 t_9_215:0-25"
+    },
+    {
+      "order": 293,
+      "textSha": "31ffc4012458d7e8",
+      "head": "Moreover, to alleviated the reduction in trainin",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_9_215:27-60 t_9_216:0-58 t_9_217:0-58 t_10_2:0-58 t_10_3:0-15"
+    },
+    {
+      "order": 294,
+      "textSha": "9e57584389757b35",
+      "head": "6) Continual Learning/Life-Long Learning: Most c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_5:0-12 t_10_7:0-18 t_10_9:0-8 t_10_11:0-4 t_10_13:0-3 t_10_14:0-57 t_10_15:0-45"
+    },
+    {
+      "order": 295,
+      "textSha": "e97dec4fd1d645f0",
+      "head": "However, variations in the manufacturing environ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_15:47-54 t_10_16:0-56 t_10_17:0-61 t_10_18:0-60 t_10_19:0-17"
+    },
+    {
+      "order": 296,
+      "textSha": "e4e6eb46d367a162",
+      "head": "LSFMs possessed robust capabilities for continuo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_19:19-58 t_10_20:0-58 t_10_21:0-8"
+    },
+    {
+      "order": 297,
+      "textSha": "c82f7411f25f5eab",
+      "head": "Through this process, LSFMs continually enhanced",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_21:10-58 t_10_22:0-44"
+    },
+    {
+      "order": 298,
+      "textSha": "f804597d893d6069",
+      "head": "The continual learning feature of LSFMs allowed ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_22:47-60 t_10_23:0-56 t_10_24:0-57 t_10_25:0-59 t_10_26:0-17"
+    },
+    {
+      "order": 299,
+      "textSha": "c49ca4c0b4777ec5",
+      "head": "This ability was beneficial in preventing models",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_26:20-61 t_10_27:0-62"
+    },
+    {
+      "order": 300,
+      "textSha": "8ce19f7651343263",
+      "head": "Applying specific constraints to this process fu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_28:0-62 t_10_29:0-42"
+    },
+    {
+      "order": 301,
+      "textSha": "0768d55abbeee00c",
+      "head": "7) LSFM assisted construction of knowledge graph",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_31:0-7 t_10_33:0-8 t_10_35:0-12 t_10_37:0-2 t_10_39:0-9 t_10_41:0-5 t_10_43:0-9 t_10_45:0-6 t_10_47:0-3 t_10_49:0-5 t_10_51:0-2 t_10_53:0-10 t_10_55:0-4 t_10_57:0-8 t_10_58:0-59 t_10_59:0-6 t_10_61:0-9"
+    },
+    {
+      "order": 302,
+      "textSha": "443120683a3ba277",
+      "head": "However, knowledge Graph Engineering (KGE) requi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_63:0-7 t_10_65:0-9 t_10_67:0-5 t_10_69:0-11 t_10_70:1-55 t_10_71:0-57"
+    },
+    {
+      "order": 303,
+      "textSha": "62f9b3e0b1ab3623",
+      "head": "The contextual comprehension and representation ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_72:0-56 t_10_73:0-58 t_10_74:0-48"
+    },
+    {
+      "order": 304,
+      "textSha": "6277529ef0953c48",
+      "head": "Using the knowledge comprehension abilities and ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_74:50-59 t_10_75:0-56 t_10_76:0-57 t_10_77:0-55 t_10_78:0-57 t_10_79:0-54 t_10_80:0-44"
+    },
+    {
+      "order": 305,
+      "textSha": "6bf0eb838f7e888c",
+      "head": "B. Roadmaps foor automatic high-quality training",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_82:0-56 t_10_83:0-10 t_10_84:0-40 t_10_86:0-14 t_10_87:0-61 t_10_88:0-61 t_10_89:0-27"
+    },
+    {
+      "order": 306,
+      "textSha": "024c0fb3ef049dce",
+      "head": "Using a text-to-image diffusion model could gene",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_89:30-61 t_10_90:0-5 t_10_92:0-5 t_10_94:0-9 t_10_96:0-9 t_10_98:0-5 t_10_100:0-10 t_10_102:0-3 t_10_104:0-4 t_10_105:0-12"
+    },
+    {
+      "order": 307,
+      "textSha": "56b1771ce5d241df",
+      "head": "Unlike simple augmentation methods such as conca",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_105:14-56 t_10_106:0-60 t_10_107:0-60 t_10_108:0-34"
+    },
+    {
+      "order": 308,
+      "textSha": "4f8929aa009abe73",
+      "head": "To addressed the issue of requiring a large amou",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_108:37-59 t_10_109:0-58 t_10_110:0-58 t_10_111:0-61 t_10_112:0-63 t_10_113:1-4"
+    },
+    {
+      "order": 309,
+      "textSha": "d618f59d2b6b56d0",
+      "head": "Moreover, Transform could be used to weighted av",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_113:7-60 t_10_114:0-64 t_10_115:0-61 t_10_116:0-7"
+    },
+    {
+      "order": 310,
+      "textSha": "3883deacb6e085d6",
+      "head": "In Section V, we demonstrated how we used LSFMs ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_117:0-50 t_10_118:0-62 t_10_119:0-30"
+    },
+    {
+      "order": 311,
+      "textSha": "2c4eda2c88982ef6",
+      "head": "2) Improving data quality: High-quality data was",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_121:0-25 t_10_123:0-29 t_10_124:0-58 t_10_125:0-56 t_10_126:0-45"
+    },
+    {
+      "order": 312,
+      "textSha": "fdd7062ff8397ced",
+      "head": "LSFMs could be used to automatically remove impu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_126:47-61 t_10_127:0-61 t_10_128:0-32"
+    },
+    {
+      "order": 313,
+      "textSha": "81f1b7a88224f5a8",
+      "head": "For instance, BLIP [308] relied on intermediate ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_128:34-57 t_10_129:0-62 t_10_130:0-61 t_10_131:0-55"
+    },
+    {
+      "order": 314,
+      "textSha": "d5742dafa373cfef",
+      "head": "Jain et al. [364] using LLM to enhance the struc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_131:57-61 t_10_132:0-61 t_10_133:0-49"
+    },
+    {
+      "order": 315,
+      "textSha": "81f61512da53e871",
+      "head": "Models finetuned on the cleaned data perform sig",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_133:51-62 t_10_134:0-58 t_10_135:0-40"
+    },
+    {
+      "order": 316,
+      "textSha": "d0097332f42f5034",
+      "head": "3) Zero-shot and few-shot: A major challenge in ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_137:0-25 t_10_139:0-31 t_10_140:0-57 t_10_141:0-60 t_10_142:0-17"
+    },
+    {
+      "order": 317,
+      "textSha": "d4e75d502dec90ba",
+      "head": "The LSFM could effectively achieve zero sample d",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_142:19-58 t_10_143:0-40"
+    },
+    {
+      "order": 318,
+      "textSha": "98dd7a70ab115f27",
+      "head": "Gu et al. [324] explored the use of Large Vision",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_143:42-56 t_10_144:0-54 t_10_145:0-59 t_10_146:0-52 t_10_147:0-10"
+    },
+    {
+      "order": 319,
+      "textSha": "6776bb101bc33754",
+      "head": "On the MVTec anomaly detection dataset, AnomalyG",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_149:0-2 t_10_151:0-3 t_10_153:0-5 t_10_155:0-7 t_10_157:0-9 t_10_159:0-7 t_10_160:0-54 t_10_161:0-56 t_10_162:0-35"
+    },
+    {
+      "order": 320,
+      "textSha": "b838dd2e7090605e",
+      "head": "This application method no longer requires to co",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_162:37-60 t_10_163:0-56 t_10_164:0-64 t_10_165:0-56 t_10_166:0-12"
+    },
+    {
+      "order": 321,
+      "textSha": "8c27daedcc36e39b",
+      "head": "In predictive maintenance, for instance, Leite e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_166:14-63 t_10_167:0-62 t_10_168:0-59 t_10_169:0-8"
+    },
+    {
+      "order": 322,
+      "textSha": "cbf3c7a8f6e4ca47",
+      "head": "The LLM-based approach outperformed state-of-the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_169:10-58 t_10_170:0-63 t_10_171:0-27"
+    },
+    {
+      "order": 323,
+      "textSha": "5a98120b6fdcb886",
+      "head": "4) Pre-training combined with fine-tuning: Altou",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_173:0-41 t_10_175:0-12 t_10_176:0-58 t_10_177:0-57 t_10_178:1-59 t_10_179:0-59 t_10_180:0-58"
+    },
+    {
+      "order": 324,
+      "textSha": "7ad90c792e36f772",
+      "head": "LSFMs pre-trained on extensive data could identi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_181:0-58 t_10_182:0-64 t_10_183:0-61 t_10_184:0-33"
+    },
+    {
+      "order": 325,
+      "textSha": "7ff5e7bebd2dcd13",
+      "head": "Pre-trained models trained on large scale data w",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_184:36-62 t_10_185:0-62 t_10_186:0-46"
+    },
+    {
+      "order": 326,
+      "textSha": "0c8c6d93d544c473",
+      "head": "For instance, Sun et al. [374].",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_186:48-60 t_10_187:0-15"
+    },
+    {
+      "order": 327,
+      "textSha": "eb47978d5e3a44c6",
+      "head": "used BERT in medical texts and achieved good per",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_187:18-57 t_10_188:0-58"
+    },
+    {
+      "order": 328,
+      "textSha": "dec25ec4985545d6",
+      "head": "Similarly, Radford et al. [298].",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_189:0-30"
+    },
+    {
+      "order": 329,
+      "textSha": "076d75c193c3f79f",
+      "head": "demonstrated GPT's transfer learning abilities a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_189:33-60 t_10_190:0-39"
+    },
+    {
+      "order": 330,
+      "textSha": "bb4571bddf2a0a97",
+      "head": "C. Roadmaps for superior performance 1) Improvem",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_192:0-36 t_10_193:0-26 t_10_195:0-29 t_10_196:0-56 t_10_197:0-61 t_10_198:0-13"
+    },
+    {
+      "order": 331,
+      "textSha": "d9d515195a5e9e5c",
+      "head": "However, LSFMs had superior data integration cap",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_198:15-59 t_10_199:0-57 t_10_200:0-30"
+    },
+    {
+      "order": 332,
+      "textSha": "3b0c053f0d8c433b",
+      "head": "Ji et al. [320] found that the quality of prompt",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_10_200:32-58 t_11_2:0-59 t_11_3:0-8"
+    },
+    {
+      "order": 333,
+      "textSha": "68247ad9f37b5144",
+      "head": "To address SAM's suboptimal segmentation perform",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_3:10-54 t_11_4:0-59 t_11_5:0-55 t_11_6:0-39"
+    },
+    {
+      "order": 334,
+      "textSha": "6d074aa91ae44bd7",
+      "head": "Specifically, Deng et al. [376] utilized Monte C",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_6:42-60 t_11_7:0-60 t_11_8:0-61"
+    },
+    {
+      "order": 335,
+      "textSha": "370b8a03b5ad89a7",
+      "head": "This approach allowed for estimating arbitrary u",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_9:0-60 t_11_10:0-58"
+    },
+    {
+      "order": 336,
+      "textSha": "debad48796de6ffe",
+      "head": "Alternatively, networks could also be employed t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_11:0-57 t_11_12:0-55 t_11_13:0-8 t_11_15:0-4 t_11_17:0-2 t_11_19:0-5 t_11_21:0-5 t_11_23:0-3 t_11_25:0-12 t_11_27:0-10 t_11_28:0-14"
+    },
+    {
+      "order": 337,
+      "textSha": "042e64960b5c28f9",
+      "head": "By merging these cues as new hints, segmentation",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_28:16-58 t_11_29:0-41"
+    },
+    {
+      "order": 338,
+      "textSha": "d81d93b61e3edca0",
+      "head": "It is also worth carefully handling decoupling m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_29:44-60 t_11_30:0-56 t_11_31:0-58 t_11_32:0-31"
+    },
+    {
+      "order": 339,
+      "textSha": "222f7989a851590e",
+      "head": "2) Enhanced input data: In LSFMs, the term \"foun",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_34:0-22 t_11_36:0-26 t_11_37:0-55 t_11_38:0-43"
+    },
+    {
+      "order": 340,
+      "textSha": "e8b24bb07349851c",
+      "head": "This ensured that even in situations where LSFMs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_38:45-57 t_11_39:0-56 t_11_40:0-58 t_11_41:0-2 t_11_43:0-10 t_11_45:0-2 t_11_47:0-9 t_11_49:0-4 t_11_51:0-4 t_11_53:0-5 t_11_55:0-10"
+    },
+    {
+      "order": 341,
+      "textSha": "e75f7423905423ea",
+      "head": "VLM exhibited strong robustness against various ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_56:0-59 t_11_57:0-57 t_11_58:0-39"
+    },
+    {
+      "order": 342,
+      "textSha": "4e814f50db9c71a8",
+      "head": "Additionally, SAM's performance was proven to be",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_58:42-61 t_11_59:0-56 t_11_60:0-30"
+    },
+    {
+      "order": 343,
+      "textSha": "975010ac98ff4e52",
+      "head": "Fortunately, extensive prior research has been c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_60:33-61 t_11_61:0-57 t_11_62:0-61 t_11_63:0-18"
+    },
+    {
+      "order": 344,
+      "textSha": "b235e506859581ef",
+      "head": "As one of the characteristics and advantages of ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_63:21-57 t_11_64:0-54 t_11_65:0-63 t_11_66:0-54"
+    },
+    {
+      "order": 345,
+      "textSha": "7fd32befa0511284",
+      "head": "3) Cross modal pre-training: LSMFs overcome the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_68:0-27 t_11_70:0-22 t_11_71:0-57 t_11_72:0-57 t_11_73:0-4 t_11_75:0-7 t_11_77:0-5 t_11_79:0-5 t_11_81:0-5 t_11_83:0-5 t_11_85:0-12 t_11_87:1-4"
+    },
+    {
+      "order": 346,
+      "textSha": "6dd6817c723b9eef",
+      "head": "By leveraging contrastive loss during training t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_88:0-59 t_11_89:0-61 t_11_90:0-57 t_11_91:1-4"
+    },
+    {
+      "order": 347,
+      "textSha": "0726c227185b17a7",
+      "head": "This could prevent tasks from being constrained ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_91:7-57 t_11_92:0-34"
+    },
+    {
+      "order": 348,
+      "textSha": "0b26c3ce6116931e",
+      "head": "To achieve satisfactory pretraining performance,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_92:36-63 t_11_93:0-63 t_11_94:0-63 t_11_95:0-24"
+    },
+    {
+      "order": 349,
+      "textSha": "a4492a78aae0552a",
+      "head": "Li et al. [388] employed a pretrained model for ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_95:27-57 t_11_96:0-59 t_11_97:0-58 t_11_98:0-6"
+    },
+    {
+      "order": 350,
+      "textSha": "dc17aec38ceba567",
+      "head": "By incorporating an enhanced cross-modal Transfo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_98:8-54 t_11_99:0-59 t_11_100:0-46"
+    },
+    {
+      "order": 351,
+      "textSha": "cc71e899d7e90165",
+      "head": "4) Pre-training combined with fine-tuning: Compa",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_102:0-41 t_11_104:0-11 t_11_105:0-3 t_11_107:0-14 t_11_109:0-8 t_11_111:0-8 t_11_113:0-2 t_11_115:0-4 t_11_117:0-8 t_11_119:0-2 t_11_120:0-57 t_11_121:0-59 t_11_122:0-61 t_11_123:0-31"
+    },
+    {
+      "order": 352,
+      "textSha": "19f096a0f2cfe785",
+      "head": "While directly using pretrained LSFMs may not al",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["column_boundary", "hyphenated"],
+      "spans": "t_11_123:34-58 t_11_124:0-58 t_11_125:0-58 t_11_126:0-61 t_11_127:0-62 t_11_128:0-27"
+    },
+    {
+      "order": 353,
+      "textSha": "49a2518df6a7b916",
+      "head": "Technologies like P-Tuning [391], Lora [392], QL",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_128:29-60 t_11_129:0-63 t_11_130:0-5"
+    },
+    {
+      "order": 354,
+      "textSha": "77abf7238dddd2c6",
+      "head": "Apart from that, training deep learning models o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_131:0-60 t_11_132:0-51"
+    },
+    {
+      "order": 355,
+      "textSha": "66393ae38d5fcf81",
+      "head": "Using pre-trained LSFMs emerged as a viable solu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_132:53-58 t_11_133:0-57 t_11_134:0-58 t_11_135:0-58"
+    },
+    {
+      "order": 356,
+      "textSha": "818e2032554d21c1",
+      "head": "These pre-trained models could achieve effective",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_136:0-61 t_11_137:0-59 t_11_138:0-4"
+    },
+    {
+      "order": 357,
+      "textSha": "b48007388abcf787",
+      "head": "During the fine-tuning stage, a limited segment ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_138:6-60 t_11_139:0-58 t_11_140:0-18"
+    },
+    {
+      "order": 358,
+      "textSha": "b0cfebdad4346c06",
+      "head": "Specifically, techniques proposed by Abadi et al",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_140:20-62 t_11_141:0-56"
+    },
+    {
+      "order": 359,
+      "textSha": "4c13b94727e88ae0",
+      "head": "These measures could maintain the privacy of the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_141:58-63 t_11_142:0-59 t_11_143:0-57 t_11_144:0-4"
+    },
+    {
+      "order": 360,
+      "textSha": "ded44076a5053332",
+      "head": "5) Adopting distributed learning: Data in manufa",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_146:0-32 t_11_148:0-21 t_11_149:0-3 t_11_151:0-3 t_11_153:0-2 t_11_155:0-7 t_11_157:0-9 t_11_159:0-2 t_11_161:0-5 t_11_163:0-2 t_11_165:0-7 t_11_167:0-8 t_11_168:0-59 t_11_169:0-63 t_11_170:0-59 t_11_171:0-63 t_11_172:0-23"
+    },
+    {
+      "order": 361,
+      "textSha": "684da022b97e5815",
+      "head": "Distributed learning methods, such as federated ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_172:25-62 t_11_173:0-62 t_11_174:0-65 t_11_175:0-28"
+    },
+    {
+      "order": 362,
+      "textSha": "a96699e6db7b77a3",
+      "head": "This enabled clients (devices or organizations) ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_175:30-62 t_11_176:0-60 t_11_177:0-62 t_11_178:0-22"
+    },
+    {
+      "order": 363,
+      "textSha": "c3637eb9a825c1ec",
+      "head": "Combining with such technologies could empower L",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_178:25-57 t_11_179:0-54 t_11_180:0-60 t_11_181:0-59 t_11_182:0-11"
+    },
+    {
+      "order": 364,
+      "textSha": "cce9eb4d90cb616f",
+      "head": "6) Using LSFM's own output for interpretation: D",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_184:0-8 t_11_186:0-6 t_11_188:0-3 t_11_190:0-6 t_11_192:0-3 t_11_194:0-14 t_11_196:0-4 t_11_197:0-61 t_11_198:0-61 t_11_199:0-9"
+    },
+    {
+      "order": 365,
+      "textSha": "b1a451589dac566d",
+      "head": "LSFMs, especially LLMs, demonstrated remarkable ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_199:11-58 t_11_200:0-58 t_11_201:0-49"
+    },
+    {
+      "order": 366,
+      "textSha": "9548d1c9d55da5b2",
+      "head": "In a study by Bubeck et al. [273], it was found ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_201:51-61 t_11_202:0-56 t_11_203:0-61 t_11_204:0-41"
+    },
+    {
+      "order": 367,
+      "textSha": "3f270bd557c360dd",
+      "head": "Therefore, asking questions like \"Please explain",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_204:43-60 t_11_205:0-58 t_11_206:0-59 t_11_207:0-38"
+    },
+    {
+      "order": 368,
+      "textSha": "65ed60bbc21923dc",
+      "head": "This idea could also be applied to models based ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_207:40-60 t_11_208:0-58 t_11_209:0-60 t_11_210:0-56"
+    },
+    {
+      "order": 369,
+      "textSha": "71d3efa47d09c93b",
+      "head": "7) Using LLM to explain other models: LLMs had p",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_212:0-36 t_11_214:0-12 t_11_215:0-62 t_11_216:0-9 t_11_218:0-8 t_11_220:0-4 t_11_222:0-4 t_11_224:0-2 t_11_226:0-9 t_11_228:0-5 t_11_230:0-6 t_11_231:0-8"
+    },
+    {
+      "order": 370,
+      "textSha": "4cd2c4b31525e24e",
+      "head": "To achieve this, LLMs were used to summarize and",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_231:10-54 t_11_232:0-55"
+    },
+    {
+      "order": 371,
+      "textSha": "1efe4accc644fac5",
+      "head": "In addition, LLMs could be employed to generate ",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_11_233:0-56 t_12_2:0-62 t_12_3:0-63 t_12_4:0-13"
+    },
+    {
+      "order": 372,
+      "textSha": "0fac9bf86a721fef",
+      "head": "Alternatively, embedding LLMs directly into the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_4:16-59 t_12_5:0-60 t_12_6:0-36"
+    },
+    {
+      "order": 373,
+      "textSha": "0ebc70747ad38de3",
+      "head": "8) Visualize the running process: Enabling the e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_8:0-32 t_12_10:0-26 t_12_11:0-59 t_12_12:0-59 t_12_13:0-56"
+    },
+    {
+      "order": 374,
+      "textSha": "b96f1160656e718a",
+      "head": "Visualizing attention could provide a more intui",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_13:58-62 t_12_14:0-60 t_12_15:0-56 t_12_16:0-38"
+    },
+    {
+      "order": 375,
+      "textSha": "c5d7a1af6247decb",
+      "head": "The strength of the attention links could intuit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_16:40-59 t_12_17:0-61 t_12_18:0-46"
+    },
+    {
+      "order": 376,
+      "textSha": "4a2546a10d5ae383",
+      "head": "The visualizing attentions aided in understandin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_18:48-63 t_12_19:0-61 t_12_20:0-11"
+    },
+    {
+      "order": 377,
+      "textSha": "cb78ba7817548bab",
+      "head": "Considering that LSFMs are mostly built on trans",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_20:14-56 t_12_21:0-63 t_12_22:0-50"
+    },
+    {
+      "order": 378,
+      "textSha": "c1d46fdfb4d842d5",
+      "head": "Moreover, it was possible to visualize the data ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_23:0-55 t_12_24:0-56 t_12_25:0-14"
+    },
+    {
+      "order": 379,
+      "textSha": "56796557d478ba14",
+      "head": "For intelligent manufacturing LSFMs could integr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_25:17-58 t_12_26:0-61 t_12_27:0-63 t_12_28:0-60 t_12_29:0-48"
+    },
+    {
+      "order": 380,
+      "textSha": "d62a209717831c4f",
+      "head": "9) Using LSFMs detect malicious perturbations: U",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_31:0-45 t_12_33:0-6 t_12_34:0-52 t_12_35:0-61 t_12_36:0-60 t_12_37:0-56 t_12_38:0-41"
+    },
+    {
+      "order": 381,
+      "textSha": "db937df1a0952115",
+      "head": "The emergence of LSFMs brought promising solutio",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_38:44-60 t_12_39:0-53"
+    },
+    {
+      "order": 382,
+      "textSha": "9a4ec97c38676039",
+      "head": "On one hand, relying on superior generative capa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_39:56-58 t_12_40:0-60 t_12_41:0-62 t_12_42:0-58 t_12_43:0-59 t_12_44:0-27"
+    },
+    {
+      "order": 383,
+      "textSha": "5daa6e11f1ee64ca",
+      "head": "Meanwhile, inconsistencies between images contai",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_44:29-63 t_12_45:0-59 t_12_46:0-60 t_12_47:0-63 t_12_48:0-18"
+    },
+    {
+      "order": 384,
+      "textSha": "8325109876d7df9b",
+      "head": "LLMs, a self defense mechanism utilized the LLM ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_48:21-60 t_12_49:0-60 t_12_50:0-7 t_12_52:0-3 t_12_54:0-6 t_12_56:0-7 t_12_58:0-3 t_12_60:0-7 t_12_62:1-4 t_12_64:0-8 t_12_65:0-60 t_12_66:0-59 t_12_67:0-28"
+    },
+    {
+      "order": 385,
+      "textSha": "dea6dfdc5517626b",
+      "head": "In practice, Mireshghallah et al. [412] combined",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_67:31-60 t_12_68:0-56 t_12_69:0-62 t_12_70:0-15"
+    },
+    {
+      "order": 386,
+      "textSha": "4c896355d2cbf705",
+      "head": "Eventhough LSFMs have intrinsic advantages in te",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_78:0-54 t_12_79:0-61 t_12_80:0-61 t_12_81:0-57 t_12_82:0-20"
+    },
+    {
+      "order": 387,
+      "textSha": "d8e5a24b5f1646a5",
+      "head": "Researchers need to work closely with big manufa",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["column_boundary"],
+      "spans": "t_12_82:22-59 t_12_83:0-61 t_12_84:0-62 t_12_85:0-37"
+    },
+    {
+      "order": 388,
+      "textSha": "bf6accc584a7ed35",
+      "head": "Moreover, issues like transferabilities, costs, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_85:39-60 t_12_86:0-67 t_12_87:0-56 t_12_88:0-44"
+    },
+    {
+      "order": 389,
+      "textSha": "4370fdaded5a0c2d",
+      "head": "In this section, we elucidated a couple of real ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_89:0-63 t_12_90:0-55 t_12_91:0-60 t_12_92:0-15"
+    },
+    {
+      "order": 390,
+      "textSha": "7a7eae2dffdef4d6",
+      "head": "As an implementation form of intelligent manufac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_96:0-58 t_12_97:0-61 t_12_98:0-60 t_12_99:0-57 t_12_100:0-53"
+    },
+    {
+      "order": 391,
+      "textSha": "ae852953cf52c823",
+      "head": "This technology can effectively integrate and an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_100:55-59 t_12_101:0-62 t_12_102:0-61 t_12_103:0-60 t_12_104:0-35"
+    },
+    {
+      "order": 392,
+      "textSha": "3a1896dfcd0297d8",
+      "head": "On this basis, by applying complex algorithms an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_104:37-63 t_12_105:0-60 t_12_106:0-61 t_12_107:0-62 t_12_108:0-62 t_12_109:0-31"
+    },
+    {
+      "order": 393,
+      "textSha": "3f61e8bab624cdd0",
+      "head": "In addition, this technology can also support ra",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_109:33-61 t_12_110:0-57 t_12_111:0-62 t_12_112:0-29"
+    },
+    {
+      "order": 394,
+      "textSha": "6e05641382b29176",
+      "head": "Traditional methods only achieved a recognition ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_113:0-56 t_12_114:0-57 t_12_115:0-12"
+    },
+    {
+      "order": 395,
+      "textSha": "79e3fad84d5444d3",
+      "head": "Furthermore, direct applications of SAM could in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_117:0-11 t_12_119:0-6 t_12_121:0-12 t_12_123:0-2 t_12_125:0-3 t_12_126:0-5 t_12_128:0-9 t_12_130:0-6 t_12_132:0-4 t_12_134:0-2 t_12_136:0-10 t_12_138:0-9 t_12_139:0-20 t_12_141:0-13 t_12_143:0-19 t_12_144:0-12 t_12_146:0-3 t_12_148:0-17"
+    },
+    {
+      "order": 396,
+      "textSha": "1f2b5e31728aba98",
+      "head": "In reality, we significantly enhance the accurac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_150:0-2 t_12_152:0-7 t_12_154:0-2 t_12_155:0-57 t_12_156:0-55 t_12_157:0-31"
+    },
+    {
+      "order": 397,
+      "textSha": "3d80145da59ec4db",
+      "head": "This improvement had the potential to reduce 200",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_157:33-57 t_12_158:0-59 t_12_159:0-57"
+    },
+    {
+      "order": 398,
+      "textSha": "cd36dd877455aa1f",
+      "head": "With the rapid development of intelligent manufa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_163:0-55 t_12_164:0-60 t_12_165:0-61 t_12_166:0-65 t_12_167:1-36"
+    },
+    {
+      "order": 399,
+      "textSha": "0771ba2e04ee0b9d",
+      "head": "Nevertheless, as IHAR scale increased in practic",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_167:39-60 t_12_168:0-64 t_12_169:0-61 t_12_170:0-61"
+    },
+    {
+      "order": 400,
+      "textSha": "3fc173c9163ce1fa",
+      "head": "Constructing a generic industrial dataset for IH",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_171:0-56 t_12_172:0-64 t_12_173:0-60 t_12_174:0-61 t_12_175:0-40"
+    },
+    {
+      "order": 401,
+      "textSha": "856ecc97548267d1",
+      "head": "These made it very costly to employ conventional",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_175:42-55 t_12_176:0-56 t_12_177:0-56"
+    },
+    {
+      "order": 402,
+      "textSha": "e4839acb5efe4443",
+      "head": "The technical advantages of solving this problem",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_13_7:0-27 t_13_8:0-33 t_13_10:0-40 t_13_12:0-13",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 403,
+      "textSha": "7600e518ff72a9de",
+      "head": "Pre-training combined with fine-tuning [346], [3",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect", "script"],
+      "spans": "t_13_16:0-38 t_13_18:1-11 t_13_19:0-14 t_13_21:1-11 t_13_22:0-37 t_13_24:1-18 t_13_25:0-44 t_13_27:0-31 t_13_29:0-37 t_13_31:1-18 t_13_32:0-22 t_13_34:1-17 t_13_35:0-31 t_13_36:0-26 t_13_37:0-35 t_13_39:1-10 t_13_40:0-45 t_13_42:1-11 t_13_43:0-20 t_13_44:0-16 t_13_45:0-49 t_13_46:0-48 t_13_47:0-30 t_13_48:0-20 t_13_49:0-22 t_13_50:0-27 t_13_51:0-37 t_13_53:1-18 t_13_54:0-22 t_13_56:1-11 t_13_57:0-22 t_13_59:1-11 t_13_60:0-38 t_13_62:1-18 t_13_63:0-26",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 404,
+      "textSha": "70e9dd0baecfa239",
+      "head": "Improvement by prompts [320], [376], [377] Enhan",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["parser_defect"],
+      "spans": "t_13_65:0-22 t_13_67:1-18 t_13_68:0-19 t_13_70:1-17 t_13_71:0-38 t_13_73:1-24 t_13_74:0-25 t_13_76:0-24 t_13_78:1-10 t_13_79:0-24 t_13_80:0-20 t_13_82:0-42 t_13_84:1-11 t_13_85:0-33 t_13_87:1-10 t_13_88:0-29 t_13_90:1-17 t_13_91:0-13 t_13_92:0-38 t_13_94:1-4 t_13_95:0-29 t_13_97:1-11 t_13_98:0-26 t_13_100:1-17 t_13_101:0-49 t_13_103:0-67",
+      "note": "표 안의 글이 본문 문장으로 들어왔다."
+    },
+    {
+      "order": 405,
+      "textSha": "6561f9731bcef7f1",
+      "head": "In this work, we proposed a LSFM-based low-cost ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_104:0-56 t_13_105:0-55 t_13_106:0-33"
+    },
+    {
+      "order": 406,
+      "textSha": "6e57ce297838f69b",
+      "head": "Grounding DINO [311] and BLIP2 [418] were used f",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_106:35-54 t_13_107:0-56 t_13_108:0-60"
+    },
+    {
+      "order": 407,
+      "textSha": "7b846ca8387024a8",
+      "head": "After obtaining sufficient boxed action pictures",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_109:0-60 t_13_110:0-43"
+    },
+    {
+      "order": 408,
+      "textSha": "ea7b8a5c68d6875f",
+      "head": "In order to get high accuracy, we trained ViT-L ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_110:45-60 t_13_111:0-60 t_13_112:0-46"
+    },
+    {
+      "order": 409,
+      "textSha": "9a76a79f0762875c",
+      "head": "Finally, knowledge distillation (KD) [419] was u",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_112:49-56 t_13_113:0-57 t_13_114:0-58 t_13_115:0-35"
+    },
+    {
+      "order": 410,
+      "textSha": "2459811d594dff68",
+      "head": "To summarize, our main contributions were:",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_115:37-59 t_13_116:0-18"
+    },
+    {
+      "order": 411,
+      "textSha": "9d238dd51326f2eb",
+      "head": "(1)Grounding DINO and BLIP2 was jointly used to ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_117:1-54 t_13_118:0-63 t_13_119:0-56 t_13_120:0-63 t_13_121:0-36"
+    },
+    {
+      "order": 412,
+      "textSha": "d3f6112880ef9f6f",
+      "head": "(2)LoRA and KD was used to reduce time for train",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_122:1-55 t_13_123:0-62 t_13_124:0-58 t_13_125:0-62"
+    },
+    {
+      "order": 413,
+      "textSha": "368dbae7cbeafa0b",
+      "head": "(3)Comprehensive experiments on large scale indu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_126:1-59 t_13_127:0-56 t_13_128:0-57 t_13_129:0-58 t_13_130:0-13"
+    },
+    {
+      "order": 414,
+      "textSha": "74799446d9a8dc62",
+      "head": "Moreover, the LRIHAR showed superior AC cost sav",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_130:15-54 t_13_131:0-62 t_13_132:0-67 t_13_133:0-20"
+    },
+    {
+      "order": 415,
+      "textSha": "3373f16e512451f1",
+      "head": "LSFMs demonstrated powerful generalization capab",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_137:0-55 t_13_138:0-3 t_13_140:0-7 t_13_142:0-2 t_13_144:0-13 t_13_146:0-8 t_13_148:0-12 t_13_150:0-8 t_13_151:0-61 t_13_152:0-61 t_13_153:0-58 t_13_154:0-57 t_13_155:0-57 t_13_156:0-25"
+    },
+    {
+      "order": 416,
+      "textSha": "8334ae9f494b0190",
+      "head": "Since research on applying LSFMs on intelligent ",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_13_157:0-55 t_13_158:0-66 t_13_159:0-11 t_13_161:0-8 t_13_163:0-2 t_13_165:0-4 t_13_167:0-5 t_13_169:0-4 t_13_171:0-5 t_13_173:0-10 t_13_174:0-61 t_14_47:0-17 t_14_48:0-11 t_14_49:0-14 t_14_51:0-14 t_14_52:0-19 t_14_53:0-15 t_14_55:0-18 t_14_57:0-91 t_14_58:0-59 t_14_59:0-62"
+    },
+    {
+      "order": 417,
+      "textSha": "737d2645119de2c9",
+      "head": "Accordingly, this paper comprehensively discusse",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_60:0-56 t_14_61:0-57 t_14_62:0-57 t_14_63:0-61 t_14_64:0-58 t_14_65:0-59 t_14_66:0-38"
+    },
+    {
+      "order": 418,
+      "textSha": "ddc0278bc3af5fdf",
+      "head": "We would like to thank to Midea Group for provid",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_70:0-54 t_14_71:0-59"
+    },
+    {
+      "order": 419,
+      "textSha": "dcc174974ed0ddf1",
+      "head": "We appreciate Zhenrui Wu for completing the draw",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_72:0-54 t_14_73:0-37"
+    },
+    {
+      "order": 420,
+      "textSha": "c78b627aad30e635",
+      "head": "We also thank Shuai Li, Wensheng Liang, Liu Junw",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_73:39-61 t_14_74:0-56 t_14_75:0-40"
+    },
+    {
+      "order": 421,
+      "textSha": "3ece537192c1fd52",
+      "head": "This work was supported in part by the Guangdong",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_93:0-66 t_0_94:0-71 t_0_95:0-76 t_0_96:0-35"
+    }
+  ]
+}

@@ -1,0 +1,6030 @@
+{
+  "schemaVersion": 1,
+  "paper": {
+    "id": "2410.21418",
+    "arxivVersion": "v1",
+    "sha256": "b15069c9e4a6467aded5956c6ea838b645ac5ff5080fc6c9e92ac9dd09ffa198",
+    "pages": 52
+  },
+  "source": {
+    "pdfjsVersion": "6.3.289",
+    "items": 5085,
+    "itemsDigest": "5a70a81d8dd726e57ae78ba18900c57eeabba7cfcc18aeb4eb5aa7c3604894d1"
+  },
+  "parser": {
+    "name": "grobid",
+    "version": "0.9.1",
+    "teiSha256": "c9ba84459af41a0badd734b1b515a3d12c5d0ab6c16741dba77988657bad668e",
+    "sentences": 666
+  },
+  "method": "문서 전체 텍스트 항목을 (page, index) 순으로 이어 붙여 문자·숫자만 남긴 키 문자열을 만들고, 문장 글(GROBID enRaw)의 키 문자열을 전역 검색했다. 좌표와 매핑 알고리즘 출력은 쓰지 않았다. verification이 read인 항목은 스팬 글·틈·앞뒤 항목을 읽어 문장 글과 대조했고, manual인 항목은 항목 문자열을 읽어 범위를 직접 정했다. auto는 유일 일치만 확인한 보조 자료다.",
+  "limits": [
+    "사람이 PDF 화면을 보고 표시한 정답이 아니다. 자동 초안을 Claude가 텍스트로 읽어 검수했다.",
+    "문장 글은 GROBID 출력이다. 파서가 잘못 자르거나 이어 붙인 문장은 그 글을 기준으로 정답을 만들고 parser_defect로 표시했다.",
+    "비교는 문자·숫자 글자만 한다. 스팬 양끝의 공백·구두점·하이픈 위치는 검증하지 않는다.",
+    "정답과 알고리즘이 모두 문자열 일치에 기대므로 PDF 글자 자체의 오류는 드러나지 않는다."
+  ],
+  "entries": [
+    {
+      "order": 0,
+      "textSha": "257261a595e91cac",
+      "head": "The rapid advances in Large Language Models (LLM",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_105:0-87 t_0_106:0-99 t_0_107:0-10"
+    },
+    {
+      "order": 1,
+      "textSha": "ae6b592a12a66a8b",
+      "head": "This paper provides a comprehensive exploration ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_109:0-79 t_0_110:0-93 t_0_111:0-91 t_0_112:0-31"
+    },
+    {
+      "order": 2,
+      "textSha": "5a67eebffffd7cb7",
+      "head": "Through extensive evaluations across multiple ma",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_112:33-92 t_0_113:0-94 t_0_114:0-96 t_0_115:0-43"
+    },
+    {
+      "order": 3,
+      "textSha": "1790b008250c4871",
+      "head": "We also delve into the transformative potential ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_117:0-50 t_0_118:0-91 t_0_119:0-96 t_0_120:0-20"
+    },
+    {
+      "order": 4,
+      "textSha": "99e8f7e66e771b9c",
+      "head": "By highlighting the practical applications and e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_0_120:22-95 t_0_121:0-95 t_0_122:0-97 t_0_123:0-98 t_0_124:0-9"
+    },
+    {
+      "order": 5,
+      "textSha": "8720a98901670a6d",
+      "head": "In recent years, the advent of Large Language Mo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_130:0-92 t_0_131:0-87"
+    },
+    {
+      "order": 6,
+      "textSha": "8943ee94712f003c",
+      "head": "These developments represent a pivotal milestone",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_131:90-95 t_0_132:0-103 t_0_133:0-29"
+    },
+    {
+      "order": 7,
+      "textSha": "2342ac65ef4ff46f",
+      "head": "Bolstered by enhanced computational resources an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_133:31-99 t_0_134:0-95 t_0_135:0-18"
+    },
+    {
+      "order": 8,
+      "textSha": "4f3523dea27c9c32",
+      "head": "Notably, within the domain of manufacturing, the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_0_135:20-101 t_0_136:0-38 t_0_138:0-7 t_0_140:0-7 t_0_142:0-2"
+    },
+    {
+      "order": 9,
+      "textSha": "8634d69e4b66b171",
+      "head": "Manufacturing, as an extremely technical field, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_38:0-99 t_1_39:0-43"
+    },
+    {
+      "order": 10,
+      "textSha": "01a8d390f84fa605",
+      "head": "For example, advanced manufacturing technologies",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_41:0-51 t_1_42:0-99 t_1_43:0-50"
+    },
+    {
+      "order": 11,
+      "textSha": "a69cff502ee79432",
+      "head": "Digital manufacturing uses the industrial Intern",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_43:53-103 t_1_44:0-100 t_1_45:0-30 t_1_47:0-2"
+    },
+    {
+      "order": 12,
+      "textSha": "a97a505b07e0b6a4",
+      "head": "Virtual simulation technology optimizes and veri",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_49:0-60 t_1_50:0-96"
+    },
+    {
+      "order": 13,
+      "textSha": "a505dccf2dd9a447",
+      "head": "There are also manufacturing sectors that requir",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_51:0-104 t_1_52:0-69"
+    },
+    {
+      "order": 14,
+      "textSha": "989ab19dcf1f31a8",
+      "head": "Now the implementation of these technologies can",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_53:0-91 t_1_54:0-29"
+    },
+    {
+      "order": 15,
+      "textSha": "6d7b229d98f9fe25",
+      "head": "LLM has the potential to bring huge changes to t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_54:31-97 t_1_55:0-95"
+    },
+    {
+      "order": 16,
+      "textSha": "ee56a3ee0a88957e",
+      "head": "The deployment of LLMs within the manufacturing ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_56:0-90 t_1_57:0-11 t_1_59:0-7 t_1_61:0-7 t_1_63:0-7 t_1_65:0-7 t_1_67:0-2"
+    },
+    {
+      "order": 17,
+      "textSha": "eb851868416ee524",
+      "head": "Firstly, the manufacturing domain encompasses hi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_67:5-44 t_1_68:0-49 t_1_70:0-50 t_1_71:0-53 t_1_73:0-2"
+    },
+    {
+      "order": 18,
+      "textSha": "8e1015b4ef32e2cb",
+      "head": "These aspects demand sophisticated comprehension",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_75:0-34 t_1_76:0-42"
+    },
+    {
+      "order": 19,
+      "textSha": "8012064204d63265",
+      "head": "Given the proximity of manufacturing to engineer",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_78:0-51 t_1_79:0-96 t_1_81:0-2"
+    },
+    {
+      "order": 20,
+      "textSha": "4f3018a3d43cfd13",
+      "head": "While it is widely acknowledged that LLMs posses",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_82:0-100 t_1_83:0-14 t_1_85:0-88 t_1_86:0-83"
+    },
+    {
+      "order": 21,
+      "textSha": "57cd60c7b3921110",
+      "head": "To mitigate these challenges, ongoing efforts ar",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_87:0-94 t_1_88:0-97 t_1_89:0-9 t_1_91:0-7 t_1_93:0-2"
+    },
+    {
+      "order": 22,
+      "textSha": "9e62e4e02345ee0f",
+      "head": "By training these models on a substantial corpus",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_95:0-72 t_1_96:0-99 t_1_97:0-29"
+    },
+    {
+      "order": 23,
+      "textSha": "16ef9fabe324c7f8",
+      "head": "Moreover, integrating expert systems and impleme",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_97:31-98 t_1_98:0-99"
+    },
+    {
+      "order": 24,
+      "textSha": "3b2809c02025a331",
+      "head": "In summary, while there are inherent challenges ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_99:0-94 t_1_100:1-103 t_1_101:0-59"
+    },
+    {
+      "order": 25,
+      "textSha": "5c23730749305988",
+      "head": "Despite the hurdles, continual technological adv",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_1_101:61-98 t_1_102:0-73"
+    },
+    {
+      "order": 26,
+      "textSha": "84ba5b5527d61bff",
+      "head": "The future application of LLMs in manufacturing ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_1_102:75-100 t_1_103:0-82"
+    },
+    {
+      "order": 27,
+      "textSha": "9f2faae0ea25842e",
+      "head": "The manufacturing sector is experiencing a profo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_21:0-96 t_2_22:0-101 t_2_23:0-14"
+    },
+    {
+      "order": 28,
+      "textSha": "603ac3259a04044e",
+      "head": "This section examines the primary trends and inn",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_23:16-99 t_2_24:0-99 t_2_25:0-92"
+    },
+    {
+      "order": 29,
+      "textSha": "177bd54a2ed89a47",
+      "head": "In October 2022, the Subcommittee on Advanced Ma",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_31:0-93 t_2_32:0-58 t_2_34:0-35 t_2_35:0-9 t_2_37:1-2 t_2_39:0-2"
+    },
+    {
+      "order": 30,
+      "textSha": "3f9835866e351315",
+      "head": "This strategy presents a roadmap for enhancing U",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_39:5-84 t_2_40:0-102 t_2_41:0-98"
+    },
+    {
+      "order": 31,
+      "textSha": "f0ecbf387513e4fa",
+      "head": "The strategy outlines three key goals to realize",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_42:0-60"
+    },
+    {
+      "order": 32,
+      "textSha": "ca9dd2cfdc5933d2",
+      "head": "1. Advance and implement cutting-edge manufactur",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_43:0-1 t_2_45:0-61 t_2_47:0-1 t_2_49:0-58"
+    },
+    {
+      "order": 33,
+      "textSha": "f7d57d3823e63647",
+      "head": "For each goal, the strategy outlines several str",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_55:0-98 t_2_56:0-32"
+    },
+    {
+      "order": 34,
+      "textSha": "7d67d625c8cdfcca",
+      "head": "Key areas of focus include enabling clean and su",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_56:34-99 t_2_57:0-100 t_2_58:0-97 t_2_59:0-102 t_2_60:0-51"
+    },
+    {
+      "order": 35,
+      "textSha": "cd15924a7c3d7aa1",
+      "head": "The strategy emphasizes the importance of public",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_61:0-91 t_2_62:0-96 t_2_63:0-46"
+    },
+    {
+      "order": 36,
+      "textSha": "48353f25c6ec8a3c",
+      "head": "The strategy aims to enhance coordination across",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_2_65:0-48 t_2_66:0-101 t_2_67:0-15"
+    },
+    {
+      "order": 37,
+      "textSha": "6d95d0f0e7012f1c",
+      "head": "This national strategy provides a comprehensive ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_68:0-93 t_2_69:0-30"
+    },
+    {
+      "order": 38,
+      "textSha": "6744dc0eecab307a",
+      "head": "It recognizes the critical role of technology an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_2_69:32-103 t_2_70:0-101 t_2_71:0-9"
+    },
+    {
+      "order": 39,
+      "textSha": "ff7ec7e205ec74ea",
+      "head": "The strategy's emphasis on advancing manufacturi",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_2_71:11-99 t_3_0:0-101 t_3_1:0-80"
+    },
+    {
+      "order": 40,
+      "textSha": "fa471114377bd423",
+      "head": "The Rise of Smart Factories and Industry 4.0 and",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_5:0-52 t_3_7:0-97 t_3_8:0-92"
+    },
+    {
+      "order": 41,
+      "textSha": "e21c0c0925284ce9",
+      "head": "By integrating these technologies, manufacturers",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_8:95-97 t_3_9:0-103 t_3_10:0-96 t_3_11:0-11"
+    },
+    {
+      "order": 42,
+      "textSha": "69016aeba1d0a432",
+      "head": "Smart factories enable real-time data collection",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_11:13-102 t_3_12:0-94 t_3_13:0-7"
+    },
+    {
+      "order": 43,
+      "textSha": "4d26b649909be635",
+      "head": "The transition to smart manufacturing is expecte",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_13:9-99 t_3_14:0-61"
+    },
+    {
+      "order": 44,
+      "textSha": "e81ae10b4b8b7dfc",
+      "head": "As manufacturing becomes increasingly technology",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_20:0-101 t_3_21:0-21 t_3_23:0-2"
+    },
+    {
+      "order": 45,
+      "textSha": "ad5f2f3d1eda5986",
+      "head": "However, many manufacturers face significant cha",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_23:5-74 t_3_24:0-94"
+    },
+    {
+      "order": 46,
+      "textSha": "d651df011561dd7c",
+      "head": "To address these challenges, companies are adopt",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_24:96-106 t_3_25:0-103 t_3_26:0-104 t_3_27:0-76"
+    },
+    {
+      "order": 47,
+      "textSha": "6105ca03fbda6108",
+      "head": "By prioritizing talent development, manufacturer",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_29:0-22 t_3_30:0-101 t_3_31:0-13"
+    },
+    {
+      "order": 48,
+      "textSha": "3fada8245a3f5271",
+      "head": "The COVID-19 pandemic has accelerated the digita",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_37:0-98 t_3_38:0-98 t_3_39:0-24"
+    },
+    {
+      "order": 49,
+      "textSha": "497e1d633ddf945b",
+      "head": "Despite the challenges posed by the pandemic, ma",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_39:27-96 t_3_40:0-102 t_3_41:0-54"
+    },
+    {
+      "order": 50,
+      "textSha": "b3a9779d9effb7ca",
+      "head": "As the industry recovers from the pandemic, manu",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_41:56-98 t_3_42:0-104 t_3_43:0-49"
+    },
+    {
+      "order": 51,
+      "textSha": "33d51b5fa95d1c7e",
+      "head": "Large language models like GPT-4V can provide NL",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_49:0-93 t_3_50:0-93"
+    },
+    {
+      "order": 52,
+      "textSha": "f0fb32f46a663869",
+      "head": "documentation, and knowledge management across d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_50:95-99 t_3_51:0-78"
+    },
+    {
+      "order": 53,
+      "textSha": "3004b06766490aff",
+      "head": "These models can automate the generation of repo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_51:80-96 t_3_52:0-99 t_3_53:0-76"
+    },
+    {
+      "order": 54,
+      "textSha": "743a83d2dbde985a",
+      "head": "Furthermore, GenAI can analyze vast amounts of d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_53:78-100 t_3_54:0-98 t_3_55:0-52"
+    },
+    {
+      "order": 55,
+      "textSha": "dc79cb3e83c20963",
+      "head": "By integrating these advanced AI capabilities, m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_55:54-99 t_3_56:0-97 t_3_57:0-46"
+    },
+    {
+      "order": 56,
+      "textSha": "bfc5c5f5365fd38a",
+      "head": "• Significant application of GenAI for developin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_60:0-77 t_3_61:0-10 t_3_63:0-12 t_3_65:0-61 t_3_66:0-57"
+    },
+    {
+      "order": 57,
+      "textSha": "6a44702d955bf2f1",
+      "head": "Generative AI, particularly large language model",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_3_66:59-92 t_3_67:0-92 t_3_68:0-72"
+    },
+    {
+      "order": 58,
+      "textSha": "563c312ce6788c6f",
+      "head": "LLMs can analyze vast amounts of data to identif",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_70:0-12 t_3_71:0-92 t_3_72:0-23"
+    },
+    {
+      "order": 59,
+      "textSha": "b3a2ad25440d7f54",
+      "head": "Additionally, various AI models can accelerate i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_3_74:0-66 t_3_75:0-29 t_3_77:0-7 t_3_79:0-30 t_3_81:0-7 t_3_83:0-2 t_3_84:0-89 t_3_85:0-11 t_3_87:0-21 t_3_89:0-2"
+    },
+    {
+      "order": 60,
+      "textSha": "ff59ec964cd26a10",
+      "head": "• Significant application of GenAI for growing t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_2:0-81 t_4_4:0-93 t_4_5:0-51"
+    },
+    {
+      "order": 61,
+      "textSha": "8eb6ee3e725c48b1",
+      "head": "Transformer-based [VSP + 17, LHM + 23] and diffu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_5:53-75 t_4_7:0-7 t_4_9:0-7 t_4_10:0-20 t_4_12:0-70 t_4_13:0-80 t_4_15:0-2 t_4_16:0-95 t_4_17:0-6"
+    },
+    {
+      "order": 62,
+      "textSha": "13f7d9c28c915135",
+      "head": "Furthermore, LLMs can help match job seekers wit",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_17:8-92 t_4_18:0-51"
+    },
+    {
+      "order": 63,
+      "textSha": "4cbc666205855fd6",
+      "head": "• Significant applications of GenAI for building",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_21:0-83 t_4_22:0-6 t_4_24:0-84 t_4_25:0-93 t_4_26:0-80"
+    },
+    {
+      "order": 64,
+      "textSha": "23d746aaa1edaee2",
+      "head": "GenAI can help identify potential disruptions an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_26:82-91 t_4_27:0-86"
+    },
+    {
+      "order": 65,
+      "textSha": "4da606e42341b3e4",
+      "head": "Moreover, LLMs can facilitate collaboration and ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_27:88-92 t_4_28:0-95 t_4_29:0-80"
+    },
+    {
+      "order": 66,
+      "textSha": "842357e275195d42",
+      "head": "• Significant applications of GenAI for smart fa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_32:0-70 t_4_34:0-14 t_4_35:0-89 t_4_36:0-42"
+    },
+    {
+      "order": 67,
+      "textSha": "6cdc5b7c357dab2c",
+      "head": "IoT devices gather diverse data types from equip",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_36:44-96 t_4_37:0-72"
+    },
+    {
+      "order": 68,
+      "textSha": "8cf1d0f2cf3cd74d",
+      "head": "Multimodal models, which combine data from text,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_37:74-91 t_4_38:0-95 t_4_39:0-62"
+    },
+    {
+      "order": 69,
+      "textSha": "bc5158b474d8c84e",
+      "head": "Language models can interpret maintenance logs, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_41:0-29 t_4_42:0-94 t_4_43:0-23"
+    },
+    {
+      "order": 70,
+      "textSha": "6f40a6021726d4c4",
+      "head": "This integrated approach can provide a seamless ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_45:0-63 t_4_46:0-92"
+    },
+    {
+      "order": 71,
+      "textSha": "99b1266a9221c487",
+      "head": "Large language models can also assist HR departm",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_47:0-92 t_4_48:0-22"
+    },
+    {
+      "order": 72,
+      "textSha": "5f1b60928d0ce696",
+      "head": "The integration of LLMs into smart manufacturing",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_58:0-98 t_4_59:0-48"
+    },
+    {
+      "order": 73,
+      "textSha": "35088ad09449e6e6",
+      "head": "Traditional methods often struggled with scalabi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_59:50-102 t_4_60:0-69"
+    },
+    {
+      "order": 74,
+      "textSha": "9171090f320c1962",
+      "head": "In contrast, LLMs stand out by delivering robust",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_60:71-98 t_4_61:0-101 t_4_62:0-83 t_4_64:0-2"
+    },
+    {
+      "order": 75,
+      "textSha": "18cbfa5c1c4dfbb9",
+      "head": "More importantly, the advanced manufacturing rev",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_66:0-4 t_4_67:0-98 t_4_68:1-103 t_4_69:0-26"
+    },
+    {
+      "order": 76,
+      "textSha": "f468782018b37d9a",
+      "head": "This enhances computing hardware, improving both",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_69:28-97 t_4_70:0-11"
+    },
+    {
+      "order": 77,
+      "textSha": "d126ffd826549986",
+      "head": "Furthermore, these advancements can be reinveste",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_70:13-95 t_4_71:0-43 t_4_73:0-2"
+    },
+    {
+      "order": 78,
+      "textSha": "3d4f2e24ce58ac42",
+      "head": "It can be foreseen that the integration of LLMs ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_73:5-55 t_4_74:0-97 t_4_75:0-56"
+    },
+    {
+      "order": 79,
+      "textSha": "ebe4dfb59dc55019",
+      "head": "In the following, we summarize three key innovat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_4_76:0-98 t_4_77:0-95 t_4_78:1-4"
+    },
+    {
+      "order": 80,
+      "textSha": "f9d06fc2c3e4c84a",
+      "head": "• Data Generation and Generalization Enhancement",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_81:0-46 t_4_84:0-33 t_4_85:0-94 t_4_86:0-64"
+    },
+    {
+      "order": 81,
+      "textSha": "5606464fcbb2c21d",
+      "head": "This pivotal capability substantially cuts costs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_4_86:66-97 t_4_87:0-89 t_4_88:0-93 t_4_89:0-15 t_4_91:0-2"
+    },
+    {
+      "order": 82,
+      "textSha": "8ef0a1bc2a82601f",
+      "head": "• Text-Grounding 3D Content Generation: LLMs rev",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_4_94:0-36 t_4_95:2-45 t_4_96:0-95 t_5_1:0-50 t_5_3:2-5 t_5_5:0-2"
+    },
+    {
+      "order": 83,
+      "textSha": "88ede58a168ed356",
+      "head": "These models, trained on foundational language m",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_7:0-24 t_5_8:0-94 t_5_9:0-99 t_5_10:0-24"
+    },
+    {
+      "order": 84,
+      "textSha": "c39dfb99ea747c10",
+      "head": "• 3D World Understanding and Reasoning: Enhancin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_13:0-36 t_5_14:2-46 t_5_15:0-88 t_5_17:0-2"
+    },
+    {
+      "order": 85,
+      "textSha": "86acda8b5b5eb791",
+      "head": "This integration enables sophisticated spatial r",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_18:0-100 t_5_19:0-59"
+    },
+    {
+      "order": 86,
+      "textSha": "2fc42aa6ff9a9ca0",
+      "head": "These technological advancements not only stream",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_20:0-93 t_5_21:0-100 t_5_22:0-7"
+    },
+    {
+      "order": 87,
+      "textSha": "bdc6fe1961f93066",
+      "head": "Despite the initial hesitance due to LLMs' perce",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_5_28:0-95 t_5_29:0-80"
+    },
+    {
+      "order": 88,
+      "textSha": "c5a4ed6b24a91f79",
+      "head": "Acting as a crucial link between idea, design, a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_29:82-106 t_5_30:0-100 t_5_31:0-102 t_5_32:0-20"
+    },
+    {
+      "order": 89,
+      "textSha": "93ffb4cae6f2c79d",
+      "head": "The definition of \"design\" varies widely within ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_38:0-80 t_5_40:0-15 t_5_41:0-31"
+    },
+    {
+      "order": 90,
+      "textSha": "90730bcbb4bc74b0",
+      "head": "For instance, designing a steel car frame (examp",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_43:0-66 t_5_44:0-96 t_5_45:0-95 t_5_46:0-34"
+    },
+    {
+      "order": 91,
+      "textSha": "2cb668770c4fb45f",
+      "head": "This section explores how LLMs contribute to inn",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_48:0-61 t_5_49:0-23"
+    },
+    {
+      "order": 92,
+      "textSha": "bd5eb2b726a3eef1",
+      "head": "Traditionally, human-centric design processes ha",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_51:0-75 t_5_52:0-91"
+    },
+    {
+      "order": 93,
+      "textSha": "9828891fba3c5b8e",
+      "head": "Such visualization is integral to the design pro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_54:0-4 t_5_55:0-97 t_5_56:0-7"
+    },
+    {
+      "order": 94,
+      "textSha": "4785ef938c44e7c8",
+      "head": "Understanding the design space is crucial for ac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_58:0-71"
+    },
+    {
+      "order": 95,
+      "textSha": "954376879acfa3c7",
+      "head": "The initial step involves visualizing this space",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_60:0-16 t_5_61:0-103 t_5_62:0-101 t_5_63:0-22"
+    },
+    {
+      "order": 96,
+      "textSha": "870177e01a8ec485",
+      "head": "Conversely, for more nebulous concepts, LLMs can",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_63:24-101 t_5_64:0-19"
+    },
+    {
+      "order": 97,
+      "textSha": "c5e17ddde3b1eafe",
+      "head": "Additionally, workflow enhancement tools such as",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_64:21-102 t_5_65:0-101 t_5_66:0-20"
+    },
+    {
+      "order": 98,
+      "textSha": "929bc60061e8fe20",
+      "head": "Advances in technology now allow for the quick c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_5_68:0-74 t_5_69:0-14 t_5_71:0-82 t_5_72:0-76"
+    },
+    {
+      "order": 99,
+      "textSha": "bd6da57740643070",
+      "head": "Computer-Aided Design (CAD), exemplified here [F",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_8:0-26 t_6_9:2-23 t_6_11:0-7 t_6_13:0-29 t_6_14:0-36 t_6_16:0-50"
+    },
+    {
+      "order": 100,
+      "textSha": "e24da0c3bdfddc22",
+      "head": "Presentday CAD software typically features APIs ",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_16:52-59 t_6_17:0-85"
+    },
+    {
+      "order": 101,
+      "textSha": "bec633f250142e98",
+      "head": "Language models interpret textual inputs to gene",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_19:0-8 t_6_20:0-70 t_6_22:0-33 t_6_23:0-25"
+    },
+    {
+      "order": 102,
+      "textSha": "5d0ebaad03a045f3",
+      "head": "This function promotes rapid design iterations a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_23:27-100 t_6_24:0-33"
+    },
+    {
+      "order": 103,
+      "textSha": "4fb3ffd18ae0a399",
+      "head": "Moreover, these models streamline the CAD workfl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_26:0-56 t_6_27:0-96 t_6_28:0-54"
+    },
+    {
+      "order": 104,
+      "textSha": "efe8a506bd34711e",
+      "head": "They also optimize the design-to-manufacturing s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_28:56-102 t_6_29:0-100 t_6_30:0-40 t_6_32:0-9"
+    },
+    {
+      "order": 105,
+      "textSha": "4d14e2221ace7358",
+      "head": "This application can be succinctly termed GPT-CA",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_32:12-53 t_6_33:0-7"
+    },
+    {
+      "order": 106,
+      "textSha": "6dfab02032e08a3e",
+      "head": "For instance, upon receiving a command such as \"",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_34:0-91 t_6_35:0-98 t_6_36:0-48"
+    },
+    {
+      "order": 107,
+      "textSha": "5bbe37308c6fe13e",
+      "head": "GPT-CAD shows promising educational applications",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_38:0-38 t_6_39:0-102 t_6_40:0-30"
+    },
+    {
+      "order": 108,
+      "textSha": "ddc2d7c46f253b8b",
+      "head": "By responding to natural language inputs, GPT-CA",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_40:32-95 t_6_41:0-95"
+    },
+    {
+      "order": 109,
+      "textSha": "fb6d57e71a703f65",
+      "head": "This adaptability is particularly beneficial for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_43:0-4 t_6_44:0-105 t_6_45:0-54"
+    },
+    {
+      "order": 110,
+      "textSha": "33a1d1721c88f6e5",
+      "head": "Beyond educational applications, GPT-CAD proves ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_45:56-96 t_6_46:0-86"
+    },
+    {
+      "order": 111,
+      "textSha": "aaf6245c36696e8c",
+      "head": "This advancement may redefine the role of design",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_46:88-104 t_6_47:0-105 t_6_48:0-37"
+    },
+    {
+      "order": 112,
+      "textSha": "4e93169c4768ffc3",
+      "head": "Computer-Aided Equipments (CAE), as referenced i",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_50:0-30 t_6_51:2-56 t_6_52:0-103 t_6_53:0-86"
+    },
+    {
+      "order": 113,
+      "textSha": "22d09580479bfeb5",
+      "head": "Additionally, the implementation of Retrieval-Au",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_53:89-101 t_6_54:0-63 t_6_56:0-7 t_6_58:0-7 t_6_60:0-11 t_6_61:0-98"
+    },
+    {
+      "order": 114,
+      "textSha": "e687aa067323f49f",
+      "head": "In industries such as automotive or construction",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_62:0-106 t_6_63:0-100 t_6_64:0-25"
+    },
+    {
+      "order": 115,
+      "textSha": "4a9ba48361ea0d4c",
+      "head": "Multimodal LLMs, like the state-of-the-art GPT-4",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_64:27-101 t_6_65:0-21"
+    },
+    {
+      "order": 116,
+      "textSha": "bc8aa4c6691bd214",
+      "head": "For instance, in mechanical engineering, identif",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_6_65:23-101 t_6_66:0-97"
+    },
+    {
+      "order": 117,
+      "textSha": "240fb067ebe1daad",
+      "head": "GPT-4V can pinpoint potential failure locations ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_6_66:99-102 t_6_67:0-64"
+    },
+    {
+      "order": 118,
+      "textSha": "3f8a5768c2f341aa",
+      "head": "Due to the high cost and current unavailability ",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_6_69:0-32 t_6_70:0-99 t_7_8:0-97 t_7_9:0-8"
+    },
+    {
+      "order": 119,
+      "textSha": "f01503b992191f78",
+      "head": "Discussing CAE leads to the consideration of rea",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_9:10-101 t_7_10:0-47 t_7_12:0-2"
+    },
+    {
+      "order": 120,
+      "textSha": "3e172ea0265b0475",
+      "head": "One of the primary objectives of CAE is optimiza",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_13:0-92 t_7_14:0-26"
+    },
+    {
+      "order": 121,
+      "textSha": "d2c89d55cd614450",
+      "head": "GPTs can play a pivotal role in this context by ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_14:28-101 t_7_15:0-48"
+    },
+    {
+      "order": 122,
+      "textSha": "d86ac6d98254b74c",
+      "head": "With GPT assistance, a variety of strategies can",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_15:50-101 t_7_16:0-63"
+    },
+    {
+      "order": 123,
+      "textSha": "3a166c866b3b8991",
+      "head": "Based on the outcomes, LLMs can act as agents, s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_16:65-96 t_7_17:0-99 t_7_18:0-73"
+    },
+    {
+      "order": 124,
+      "textSha": "b1c6d3bc1ba8ab69",
+      "head": "Due to the advanced capabilities of GPT-4V, it c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_20:0-19 t_7_21:0-99 t_7_22:0-29"
+    },
+    {
+      "order": 125,
+      "textSha": "6b625edf69907af1",
+      "head": "Current pre-trained models, though advanced, are",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_28:0-100 t_7_29:0-30"
+    },
+    {
+      "order": 126,
+      "textSha": "9695428f401af4fa",
+      "head": "Multi-agent frameworks represent a strategy for ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_29:32-100 t_7_30:0-27"
+    },
+    {
+      "order": 127,
+      "textSha": "b57616e69326e080",
+      "head": "The core concept involves treating multiple mach",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_30:29-99 t_7_31:0-80"
+    },
+    {
+      "order": 128,
+      "textSha": "7996c3aa9e9439da",
+      "head": "While LLMs are not essential in this setup, we s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_33:0-14 t_7_34:0-78"
+    },
+    {
+      "order": 129,
+      "textSha": "3a968a442b581153",
+      "head": "Human assistant strategies rooted in the agent c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_36:0-15 t_7_38:0-78 t_7_39:0-73"
+    },
+    {
+      "order": 130,
+      "textSha": "7b9cdcbba821d7bc",
+      "head": "For example, AI-driven sensors [Ray23] enhance t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_41:0-22 t_7_42:0-104 t_7_43:0-65"
+    },
+    {
+      "order": 131,
+      "textSha": "c0ecc78945826e14",
+      "head": "By combining AI's computational power with human",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_43:68-99 t_7_44:0-100 t_7_45:0-40"
+    },
+    {
+      "order": 132,
+      "textSha": "cc52b67ca9ea48c8",
+      "head": "This collaboration between AI and human insights",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_7_45:42-100 t_7_46:0-96 t_7_47:0-6"
+    },
+    {
+      "order": 133,
+      "textSha": "5e7088e128513725",
+      "head": "In this setting, GPT-4V serves as a crucial virt",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_7_49:0-94 t_7_50:0-61"
+    },
+    {
+      "order": 134,
+      "textSha": "c612907d22e154e9",
+      "head": "Its predictive capabilities enable researchers t",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_7_52:0-37 t_7_53:0-101 t_8_2:0-24"
+    },
+    {
+      "order": 135,
+      "textSha": "936d2b060d87e4da",
+      "head": "Optimization and similar tasks are often highlig",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_4:0-12 t_8_6:0-85 t_8_7:0-14 t_8_9:0-2"
+    },
+    {
+      "order": 136,
+      "textSha": "ef5ce3e4a81d981a",
+      "head": "Typically, a multi-agent team comprises a manage",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_9:5-81 t_8_10:0-36"
+    },
+    {
+      "order": 137,
+      "textSha": "d1c7f17f02223271",
+      "head": "The manager divides the task into manageable seg",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_10:39-97 t_8_11:0-97 t_8_12:0-83"
+    },
+    {
+      "order": 138,
+      "textSha": "c89d926208c76490",
+      "head": "Consider the design of a desk: the manager speci",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_12:85-97 t_8_13:0-100 t_8_14:0-101 t_8_15:0-48"
+    },
+    {
+      "order": 139,
+      "textSha": "907e5ded0ecae07d",
+      "head": "LLMs offer substantial support in the domain of ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_25:0-96 t_8_26:0-62"
+    },
+    {
+      "order": 140,
+      "textSha": "49e581b53fd3858f",
+      "head": "• Innovative Design Conceptualization: LLMs poss",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_27:2-96 t_8_28:0-54"
+    },
+    {
+      "order": 141,
+      "textSha": "96cff5513fe2e944",
+      "head": "This analytical prowess aids designers in the ge",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_28:56-97 t_8_29:0-55"
+    },
+    {
+      "order": 142,
+      "textSha": "751653a84bac49c2",
+      "head": "By engaging with LLMs, designers can acquire ins",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_8_29:57-93 t_8_30:0-99 t_8_31:0-59"
+    },
+    {
+      "order": 143,
+      "textSha": "966c35a7e59f8bfd",
+      "head": "• Enhanced Decision-Making Through NLP: LLMs exc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_32:2-88 t_8_33:0-91 t_8_34:0-5"
+    },
+    {
+      "order": 144,
+      "textSha": "897cb89ada378947",
+      "head": "This facilitates informed decision-making among ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_34:7-90 t_8_35:0-96"
+    },
+    {
+      "order": 145,
+      "textSha": "c29f759dcdf35d26",
+      "head": "• Document Workflow Automation: The automobile d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_8_36:2-89 t_8_37:0-53"
+    },
+    {
+      "order": 146,
+      "textSha": "9d2dd3ef4567ab20",
+      "head": "LLMs can automate the processes of generation, r",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_8_39:0-34 t_9_6:0-90 t_9_7:0-30"
+    },
+    {
+      "order": 147,
+      "textSha": "3d3c4e4bb5bfc2b2",
+      "head": "• Simulation of Customer Feedback and Market Ana",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_8:2-91 t_9_9:0-92 t_9_10:0-7"
+    },
+    {
+      "order": 148,
+      "textSha": "bf29f8253963541b",
+      "head": "This simulation assists designers in refining th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_12:0-83 t_9_13:0-35"
+    },
+    {
+      "order": 149,
+      "textSha": "a0a8f5becfbee48a",
+      "head": "• Educational and Training Utility: LLMs serve a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_14:2-98 t_9_15:0-83"
+    },
+    {
+      "order": 150,
+      "textSha": "f10d39552f07fe59",
+      "head": "Through interactive learning modalities, practit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_17:0-7 t_9_18:0-100 t_9_19:0-11"
+    },
+    {
+      "order": 151,
+      "textSha": "a133271230bdb8f1",
+      "head": "• Technical Support and Clarification: In instan",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_9_20:2-99 t_9_21:0-92 t_9_22:0-80"
+    },
+    {
+      "order": 152,
+      "textSha": "b998a11a502a2508",
+      "head": "These capabilities render LLMs a formidable tool",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_23:0-95 t_9_24:0-99 t_9_25:0-45"
+    },
+    {
+      "order": 153,
+      "textSha": "e3b5ecf597c44b1d",
+      "head": "The introduction of LLMs in aerospace can help r",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_31:0-92 t_9_32:0-27"
+    },
+    {
+      "order": 154,
+      "textSha": "1608080a4701b56d",
+      "head": "Traditional optimization processes involve creat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_32:29-97 t_9_33:0-97 t_9_34:0-67"
+    },
+    {
+      "order": 155,
+      "textSha": "79fefd1af666f7dd",
+      "head": "The process is repeated until the results produc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_34:69-98 t_9_35:0-46"
+    },
+    {
+      "order": 156,
+      "textSha": "367465042e544c07",
+      "head": "In the traditional process, one of the largest t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_9_37:0-51 t_9_38:0-77"
+    },
+    {
+      "order": 157,
+      "textSha": "504cb6869c134eff",
+      "head": "The ability to quickly generate designs has the ",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_9_38:79-101 t_10_1:0-101"
+    },
+    {
+      "order": 158,
+      "textSha": "f174591cca301036",
+      "head": "Through the use of LLMs, the turnover time from ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_2:0-101 t_10_3:0-7"
+    },
+    {
+      "order": 159,
+      "textSha": "7aba7dd336fa292c",
+      "head": "In addition to potential time savings in updatin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_3:9-95 t_10_4:0-99"
+    },
+    {
+      "order": 160,
+      "textSha": "1538f1387aba4e72",
+      "head": "Computational Fluid Dynamic (CFD) simulations ou",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_5:0-92 t_10_6:0-95"
+    },
+    {
+      "order": 161,
+      "textSha": "4c8a7884f0fc4807",
+      "head": "The proven ability of ChatGPT-4o to analyze data",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_6:97-100 t_10_7:0-99 t_10_8:0-36"
+    },
+    {
+      "order": 162,
+      "textSha": "a2ab1aab15e0f8f1",
+      "head": "Using LLMs, the overall design process for any a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_9:0-97 t_10_10:0-82"
+    },
+    {
+      "order": 163,
+      "textSha": "9e8f9a21149d296c",
+      "head": "By asking for a general design and the key varia",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_12:0-13 t_10_13:0-98 t_10_14:0-102 t_10_15:0-7"
+    },
+    {
+      "order": 164,
+      "textSha": "9cc76175aa54b463",
+      "head": "The LLM was able to utilize key aerospace engine",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_15:9-101 t_10_16:0-98 t_10_17:0-25"
+    },
+    {
+      "order": 165,
+      "textSha": "3a5bff7a3d37c99e",
+      "head": "It was then able to generate what this aircraft ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_19:0-70 t_10_20:0-42"
+    },
+    {
+      "order": 166,
+      "textSha": "fa6c5ef045b5ade5",
+      "head": "The ability of the LLM to recognize the importan",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_20:45-98 t_10_21:0-103 t_10_22:0-96 t_10_23:0-16"
+    },
+    {
+      "order": 167,
+      "textSha": "dfdbd69b6d257369",
+      "head": "Over the last few decades, the evolution of chip",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_29:0-98 t_10_30:0-102 t_10_31:0-99 t_10_32:0-9"
+    },
+    {
+      "order": 168,
+      "textSha": "af3426e8dffdf344",
+      "head": "As electronic technologies rapidly advance, the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_10_32:11-100 t_10_33:0-41"
+    },
+    {
+      "order": 169,
+      "textSha": "90ac5aef1ffc01da",
+      "head": "According to the address in the research report ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_10_33:43-100 t_10_34:0-98 t_10_35:0-95 t_10_36:0-50"
+    },
+    {
+      "order": 170,
+      "textSha": "6b83647f8ae4d213",
+      "head": "Broad utilization of AI techniques has facilitat",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_10_36:52-102 t_11_7:0-98 t_11_8:0-97"
+    },
+    {
+      "order": 171,
+      "textSha": "4586f87aae439439",
+      "head": "This progress in AI applications not only suppor",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_9:0-101 t_11_10:0-100 t_11_11:0-55"
+    },
+    {
+      "order": 172,
+      "textSha": "6bbe8ebc1e7267d5",
+      "head": "This is also particularly evident in the current",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_13:0-44 t_11_14:0-99 t_11_15:0-24"
+    },
+    {
+      "order": 173,
+      "textSha": "c76018e53964af21",
+      "head": "The CHIPS Act, aimed at revitalizing the U.S. ec",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_16:0-94 t_11_17:0-99"
+    },
+    {
+      "order": 174,
+      "textSha": "1c0a3f4711a10c8e",
+      "head": "A substantial investment, highlighted by Preside",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_18:0-96 t_11_19:0-60"
+    },
+    {
+      "order": 175,
+      "textSha": "c5dacc1b1916f13a",
+      "head": "This funding is part of an expansive effort unde",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_19:62-98 t_11_20:0-98 t_11_21:0-71"
+    },
+    {
+      "order": 176,
+      "textSha": "c8c57f0cda606284",
+      "head": "By fostering an environment conducive to growth,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_22:0-99 t_11_23:0-82"
+    },
+    {
+      "order": 177,
+      "textSha": "4a7e2bdefa4caff4",
+      "head": "This strategic expansion is not only crucial for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_23:84-98 t_11_24:0-101 t_11_25:0-98"
+    },
+    {
+      "order": 178,
+      "textSha": "5e977199377f6cdc",
+      "head": "In this context, the application of LLMs in semi",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_26:0-95 t_11_27:0-75"
+    },
+    {
+      "order": 179,
+      "textSha": "5b6cba3f61ead178",
+      "head": "Leveraging advanced deep learning and NLP capabi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_11_27:78-97 t_11_28:0-98 t_11_29:0-59"
+    },
+    {
+      "order": 180,
+      "textSha": "e578f2305536e333",
+      "head": "The synergy between federal initiatives and cutt",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_31:0-39 t_11_32:0-99 t_11_33:0-82"
+    },
+    {
+      "order": 181,
+      "textSha": "14a1d99922811454",
+      "head": "This alignment highlights not only the increased",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_11_35:0-14 t_11_36:0-100 t_11_37:0-100 t_11_38:0-46"
+    },
+    {
+      "order": 182,
+      "textSha": "7af25c8d914b8c2d",
+      "head": "4.4.4",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["repeated", "short"],
+      "spans": "t_12_4:0-5"
+    },
+    {
+      "order": 183,
+      "textSha": "7e9f1b8502039f75",
+      "head": "LLMs for Biomanufacturing LLMs for Bio-Economy L",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_6:0-25 t_12_7:0-20 t_12_9:0-72 t_12_10:0-107 t_12_12:0-2 t_12_13:0-102 t_12_14:0-103 t_12_15:0-37"
+    },
+    {
+      "order": 184,
+      "textSha": "63018a16ce9fb5d5",
+      "head": "This is because LLMs can process vast amounts of",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_17:0-59 t_12_18:0-103 t_12_19:0-56"
+    },
+    {
+      "order": 185,
+      "textSha": "7526e4864a25fecc",
+      "head": "These models aid in the development of genetic a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_19:58-99 t_12_20:0-100 t_12_21:0-83"
+    },
+    {
+      "order": 186,
+      "textSha": "1f5efb2d24ef361e",
+      "head": "Additionally, LLMs can contribute to workforce e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_21:86-104 t_12_22:0-97 t_12_23:0-86"
+    },
+    {
+      "order": 187,
+      "textSha": "197de05a0ebe2b87",
+      "head": "Through these capabilities, LLMs strengthen the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_23:88-101 t_12_24:0-97 t_12_26:0-18 t_12_28:0-69 t_12_29:0-67"
+    },
+    {
+      "order": 188,
+      "textSha": "9fb67ba48553bee3",
+      "head": "These models utilize the chemical language syste",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_29:69-98 t_12_30:0-94 t_12_31:0-14"
+    },
+    {
+      "order": 189,
+      "textSha": "55e504c96f6438b7",
+      "head": "By representing molecules through SMILES strings",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_12_31:17-97 t_12_32:0-98 t_12_33:0-47"
+    },
+    {
+      "order": 190,
+      "textSha": "505c60aff72d830f",
+      "head": "Similar to applications in natural language proc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_34:0-100 t_12_35:0-78"
+    },
+    {
+      "order": 191,
+      "textSha": "efd549908ffc7d51",
+      "head": "For example, GPT has significantly impacted mole",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_12_37:0-11 t_12_38:0-70"
+    },
+    {
+      "order": 192,
+      "textSha": "935b64248fdde3c5",
+      "head": "Mol-LLMs, including Mol- GPT [BAVP21], SMILESGPT",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_12_38:72-95 t_13_2:0-88 t_13_3:0-82"
+    },
+    {
+      "order": 193,
+      "textSha": "1d3a6d9baa58ddb8",
+      "head": "These pre-trained chemical models not only enhan",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_3:84-101 t_13_4:0-100 t_13_5:0-38"
+    },
+    {
+      "order": 194,
+      "textSha": "deea5411b94352e1",
+      "head": "Fundamental Chemical Molecular Tasks One of the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_7:0-36 t_13_9:0-48 t_13_10:0-34"
+    },
+    {
+      "order": 195,
+      "textSha": "e6101b7c9436f3ac",
+      "head": "This includes forecasting key characteristics su",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_12:0-64 t_13_13:0-107 t_13_14:0-49"
+    },
+    {
+      "order": 196,
+      "textSha": "815a396a643d08a3",
+      "head": "Typically, models in this domain are pre-trained",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_14:51-102 t_13_15:0-100"
+    },
+    {
+      "order": 197,
+      "textSha": "06cffb10fae2a50b",
+      "head": "Notable BERT-based models used in this field inc",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "parser_defect"],
+      "spans": "t_13_16:0-62 t_13_22:0-97 t_13_23:0-31",
+      "note": "GROBID가 인용 목록을 빼고 다음 문단의 문장을 이어 붙였다."
+    },
+    {
+      "order": 198,
+      "textSha": "f074a8cbfc697f35",
+      "head": "DDI prediction involves assessing potential inte",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_25:0-65 t_13_26:0-51"
+    },
+    {
+      "order": 199,
+      "textSha": "3279245d082e68fc",
+      "head": "This is vital for understanding how various phar",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_28:0-43 t_13_29:0-89"
+    },
+    {
+      "order": 200,
+      "textSha": "f426181a0f4a3121",
+      "head": "X-Mol [XZX + 20] stands out as a prominent model",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_31:0-1 t_13_32:0-8 t_13_34:0-90 t_13_35:0-30"
+    },
+    {
+      "order": 201,
+      "textSha": "fe0ecd353f430660",
+      "head": "Design Molecular generation has emerged as a key",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_37:10-16 t_13_39:0-69 t_13_40:0-101 t_13_41:0-10"
+    },
+    {
+      "order": 202,
+      "textSha": "23d6788c286bed46",
+      "head": "This is particularly valuable in the development",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_41:12-103 t_13_42:0-82"
+    },
+    {
+      "order": 203,
+      "textSha": "ab6d7f0f009a66dc",
+      "head": "Molecular generation generally follows two appro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_42:84-100 t_13_43:0-79"
+    },
+    {
+      "order": 204,
+      "textSha": "40c03133b3d929fa",
+      "head": "The template-based method involves starting with",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_43:81-99 t_13_44:0-97 t_13_45:0-49"
+    },
+    {
+      "order": 205,
+      "textSha": "5dbaa0016c88da84",
+      "head": "In contrast, de novo design creates entirely new",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_47:0-48 t_13_48:0-72"
+    },
+    {
+      "order": 206,
+      "textSha": "dcd8b72ab2d82e65",
+      "head": "This approach is especially useful for discoveri",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_48:74-101 t_13_49:0-91"
+    },
+    {
+      "order": 207,
+      "textSha": "225092104b862f9e",
+      "head": "It requires computational models capable of expl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_13_51:0-5 t_13_52:0-98 t_13_53:0-38"
+    },
+    {
+      "order": 208,
+      "textSha": "302115f8c08ce2d1",
+      "head": "To support these goals, various large molecular ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_54:0-94"
+    },
+    {
+      "order": 209,
+      "textSha": "0e7af66a93d549a6",
+      "head": "MolGPT and SMILESGPT, for example, have proven t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_55:0-90"
+    },
+    {
+      "order": 210,
+      "textSha": "d3195df0cf2d1639",
+      "head": "MolGPT, one of the pioneers in using GPT for mol",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_56:0-96 t_13_57:0-100 t_13_58:0-9"
+    },
+    {
+      "order": 211,
+      "textSha": "0c6ecac7b9ee24e1",
+      "head": "Its ability to control multiple properties allow",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_13_58:11-92"
+    },
+    {
+      "order": 212,
+      "textSha": "dffa86333f8393d6",
+      "head": "SMILES- GPT, built on the GPT-2 architecture, le",
+      "verification": "manual",
+      "how": "manual",
+      "tags": ["hyphenated", "page_boundary"],
+      "spans": "t_13_58:94-100 t_14_6:0-99 t_14_7:0-29",
+      "note": "쪽 경계 앞 조각이 SMILES- 한 단어다. 사이의 쪽 번호 14와 그림 11 설명은 뺐다."
+    },
+    {
+      "order": 213,
+      "textSha": "8bfa1b015ef61849",
+      "head": "Another example is BARTSmiles [CTT + 22], a powe",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_9:0-34 t_14_11:0-26 t_14_12:0-50"
+    },
+    {
+      "order": 214,
+      "textSha": "d60b2e8abf7d119c",
+      "head": "It utilizes extensive self-supervised pre-traini",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_12:52-102 t_14_13:0-100 t_14_14:0-5"
+    },
+    {
+      "order": 215,
+      "textSha": "5fe9a6d80d2f04e6",
+      "head": "There are also research works[LJL + 24, KR23, XW",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_15:0-33 t_14_17:0-58 t_14_18:0-93 t_14_19:0-5"
+    },
+    {
+      "order": 216,
+      "textSha": "110ed71034a4d1b0",
+      "head": "Demonstrated through polymer flammability metric",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_21:0-87 t_14_22:0-101 t_14_23:0-22"
+    },
+    {
+      "order": 217,
+      "textSha": "950dad6e111a6453",
+      "head": "These models collectively represent the forefron",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_24:0-96 t_14_25:0-100 t_14_26:0-11"
+    },
+    {
+      "order": 218,
+      "textSha": "080ed10d67872812",
+      "head": "Their ability to generate novel molecules with t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_26:13-102 t_14_27:0-102 t_14_28:0-6"
+    },
+    {
+      "order": 219,
+      "textSha": "18bfef3d5854c934",
+      "head": "Protein structure prediction: This task involves",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_43:0-28 t_14_45:0-62 t_14_46:0-41 t_14_48:0-56 t_14_49:0-25"
+    },
+    {
+      "order": 220,
+      "textSha": "f0b6864c80d57e06",
+      "head": "Predicting protein structures is essential for u",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_49:27-100 t_14_50:0-13 t_14_52:0-82 t_14_53:0-58"
+    },
+    {
+      "order": 221,
+      "textSha": "3c8f7feecb2b950a",
+      "head": "Many of these models leverage encoderbased Prot-",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_53:61-98 t_14_54:0-97 t_14_55:0-15 t_14_57:0-2"
+    },
+    {
+      "order": 222,
+      "textSha": "77288edbe1a408ff",
+      "head": "Advances in technology have also led to solution",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_59:0-76 t_14_60:0-11 t_14_62:0-2"
+    },
+    {
+      "order": 223,
+      "textSha": "1b45493b49b59658",
+      "head": "Protein function prediction: This area focuses o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_14_64:0-27 t_14_66:0-65 t_14_67:0-83"
+    },
+    {
+      "order": 224,
+      "textSha": "bd5131ac967073aa",
+      "head": "Functional predictions encompass various tasks, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_14_67:85-102 t_14_68:0-104 t_14_69:0-103 t_14_70:0-102 t_14_71:0-6"
+    },
+    {
+      "order": 225,
+      "textSha": "a686314d287431e4",
+      "head": "Protein sequence generation: This process involv",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_14_73:0-27 t_14_75:0-62 t_15_3:0-102 t_15_4:0-38"
+    },
+    {
+      "order": 226,
+      "textSha": "0d9a934a6171cb35",
+      "head": "Protein sequence generation typically falls into",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_4:40-103 t_15_5:0-61"
+    },
+    {
+      "order": 227,
+      "textSha": "0abae5d8649338b2",
+      "head": "Autoregressive models, such as the ProGen series",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_7:0-34 t_15_8:0-81"
+    },
+    {
+      "order": 228,
+      "textSha": "4feeed0e8dad2c64",
+      "head": "In summary, LLM applications in protein research",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_9:0-97 t_15_10:0-61"
+    },
+    {
+      "order": 229,
+      "textSha": "3333b6fac1456f56",
+      "head": "These tools provide researchers with invaluable ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_12:0-36 t_15_13:0-99 t_15_14:0-5"
+    },
+    {
+      "order": 230,
+      "textSha": "179d345ff2b13ca5",
+      "head": "The swift evolution of LLMs has significantly in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_20:0-74 t_15_22:0-7 t_15_24:0-7 t_15_26:0-2 t_15_27:0-3 t_15_29:0-7 t_15_31:0-87"
+    },
+    {
+      "order": 231,
+      "textSha": "8dbc09b40dbcd0b5",
+      "head": "Presently, robotics stands as the foremost field",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_32:0-102 t_15_33:0-6"
+    },
+    {
+      "order": 232,
+      "textSha": "9605f50124cefbb4",
+      "head": "Initially, LLMs facilitate the seamless integrat",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_34:0-95"
+    },
+    {
+      "order": 233,
+      "textSha": "07d25a7c45932c8b",
+      "head": "Traditional methodologies necessitated the suppl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_35:0-98 t_15_36:0-42"
+    },
+    {
+      "order": 234,
+      "textSha": "9617e3759ace0841",
+      "head": "This approach was commonly employed in various d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_36:44-93 t_15_37:0-56"
+    },
+    {
+      "order": 235,
+      "textSha": "da22a9afe7547530",
+      "head": "Conventional NLP techniques constrained robots t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_37:58-97 t_15_38:0-94 t_15_39:0-25"
+    },
+    {
+      "order": 236,
+      "textSha": "4600730b45bdea42",
+      "head": "Furthermore, these systems exhibited limitations",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_39:27-98 t_15_40:0-83"
+    },
+    {
+      "order": 237,
+      "textSha": "e8cf0d4361069413",
+      "head": "However, with the advent of LLMs, such as GPT-4,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_42:0-13 t_15_43:0-93 t_15_44:0-100 t_15_45:0-72"
+    },
+    {
+      "order": 238,
+      "textSha": "c18a91360c22b92a",
+      "head": "The advent of LLMs marked a transformative phase",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_46:0-92 t_15_47:0-7"
+    },
+    {
+      "order": 239,
+      "textSha": "8402713cd4373954",
+      "head": "The advanced generative capabilities of these mo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_47:9-98 t_15_48:0-33"
+    },
+    {
+      "order": 240,
+      "textSha": "3e635e5b1a34a14c",
+      "head": "Contemporary robotic systems are now equipped wi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_15_50:0-57 t_15_51:0-104 t_15_52:0-11"
+    },
+    {
+      "order": 241,
+      "textSha": "4d4d773c9a96bbb1",
+      "head": "LLMs like GPT-4 possess extensive retained knowl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_15_54:0-80 t_15_55:0-99 t_15_56:0-25"
+    },
+    {
+      "order": 242,
+      "textSha": "efb6dc1aac53b042",
+      "head": "A comprehensive study by Jiaqi the importance of",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary", "parser_defect"],
+      "spans": "t_15_57:0-30 t_16_4:0-98 t_16_5:0-13",
+      "note": "GROBID가 문장 가운데를 빼고 떨어진 두 조각을 이어 붙였다."
+    },
+    {
+      "order": 243,
+      "textSha": "7ad3341ebb4e88e4",
+      "head": "They present a framework using multimodal GPT-4V",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_7:0-79 t_16_8:0-96"
+    },
+    {
+      "order": 244,
+      "textSha": "a7dca15d09651f21",
+      "head": "This multimodal approach enables robots to under",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_9:0-100 t_16_10:0-26"
+    },
+    {
+      "order": 245,
+      "textSha": "f0af6d40b66dca84",
+      "head": "The study also addresses the significant challen",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_10:28-100 t_16_11:0-101 t_16_12:0-25"
+    },
+    {
+      "order": 246,
+      "textSha": "52b0350df1ffef37",
+      "head": "To overcome these challenges, the authors sugges",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_12:27-103 t_16_13:0-97 t_16_14:0-102"
+    },
+    {
+      "order": 247,
+      "textSha": "d22e3db380222577",
+      "head": "Moreover, the study delves into how LLMs, throug",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_15:0-96 t_16_16:0-98 t_16_17:0-43"
+    },
+    {
+      "order": 248,
+      "textSha": "3bdf81acb281f7dd",
+      "head": "This capability enhances the adaptability and re",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_17:45-105 t_16_18:0-98 t_16_19:0-10"
+    },
+    {
+      "order": 249,
+      "textSha": "b486196a2085be1a",
+      "head": "The research emphasizes the importance of intuit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_19:12-100 t_16_20:0-94 t_16_21:0-9"
+    },
+    {
+      "order": 250,
+      "textSha": "5c37d9b5f902ba80",
+      "head": "This integration not only improves the accuracy ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_23:0-89 t_16_24:0-101 t_16_25:0-6"
+    },
+    {
+      "order": 251,
+      "textSha": "6c028702760153bc",
+      "head": "Additionally, the autonomous reasoning capacity ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_26:0-93 t_16_27:0-22"
+    },
+    {
+      "order": 252,
+      "textSha": "55640078a92d1e04",
+      "head": "Innovative frameworks, such as Auto-GPT [DLL + 2",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_16_27:24-68 t_16_29:0-24 t_16_30:0-97 t_16_31:0-95"
+    },
+    {
+      "order": 253,
+      "textSha": "03ab4cb57eb2d35c",
+      "head": "This methodology is exemplified by Google's RT2 ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_31:97-101 t_16_32:0-53 t_16_34:0-39"
+    },
+    {
+      "order": 254,
+      "textSha": "a469a160086dc7ee",
+      "head": "The crux of this innovation lies in converting c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_34:41-44 t_16_35:0-100 t_16_36:0-34"
+    },
+    {
+      "order": 255,
+      "textSha": "53ebfbe4ee09574b",
+      "head": "While no novel technology has been introduced at",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_16_36:36-99 t_16_37:0-99"
+    },
+    {
+      "order": 256,
+      "textSha": "b53d535f8073a9a2",
+      "head": "This advancement represents a significant breakt",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_16_38:0-99 t_16_39:0-50"
+    },
+    {
+      "order": 257,
+      "textSha": "2d89f0f86cfbc035",
+      "head": "Moreover, LLMs enable robots to adjust actions b",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_41:0-46 t_16_42:0-97 t_16_43:0-45"
+    },
+    {
+      "order": 258,
+      "textSha": "1d1509244985c4a7",
+      "head": "Concomitantly, an increasing number of scholars ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_16_44:0-95 t_16_45:0-81 t_16_47:0-7 t_16_49:0-3"
+    },
+    {
+      "order": 259,
+      "textSha": "1d8b9114cff5827c",
+      "head": "Utilizing the logical reasoning and task decompo",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_16_50:0-98 t_17_2:0-16"
+    },
+    {
+      "order": 260,
+      "textSha": "5f92b951932c7c89",
+      "head": "Techniques such as reinforcement learning from h",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_2:18-97 t_17_3:0-101 t_17_4:0-55"
+    },
+    {
+      "order": 261,
+      "textSha": "7c7f8e4e22a5679c",
+      "head": "Through the large language model's reasoning fac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_4:57-101 t_17_5:0-81"
+    },
+    {
+      "order": 262,
+      "textSha": "22a195122f1e4581",
+      "head": "This process facilitates the generation of a ple",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_5:83-107 t_17_6:0-98 t_17_7:0-81"
+    },
+    {
+      "order": 263,
+      "textSha": "6127747df98e3236",
+      "head": "Consequently, this enhances the robot's proficie",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_9:0-18 t_17_10:0-76"
+    },
+    {
+      "order": 264,
+      "textSha": "9275fb018985a466",
+      "head": "The foundational element underpinning these adva",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_10:78-102 t_17_11:0-68"
+    },
+    {
+      "order": 265,
+      "textSha": "87eb50be7d7da349",
+      "head": "In the context of sim2real applications, robot t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_17_12:0-96 t_17_13:0-87"
+    },
+    {
+      "order": 266,
+      "textSha": "4f8b3bc15b553247",
+      "head": "Yet, the discrepancy between simulated and actua",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_17_13:89-101 t_17_14:0-94 t_17_15:0-26"
+    },
+    {
+      "order": 267,
+      "textSha": "d8fcf74ef297372c",
+      "head": "Historically, Generative Adversarial Networks (G",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_17_15:28-86 t_17_17:0-9 t_17_18:0-102 t_17_19:0-61"
+    },
+    {
+      "order": 268,
+      "textSha": "791cfe4fff444aca",
+      "head": "Conversely, diffusion models [HJA20] emerge as a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_17_19:63-98 t_17_20:0-98 t_17_21:0-24 t_17_23:0-22"
+    },
+    {
+      "order": 269,
+      "textSha": "145d47dbd82a3981",
+      "head": "LLMs further improve this process by enabling th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_17_23:24-73 t_17_24:0-96 t_17_25:0-84"
+    },
+    {
+      "order": 270,
+      "textSha": "8fe6388b336d70ea",
+      "head": "In pursuit of this objective, numerous researche",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary", "parser_defect"],
+      "spans": "t_17_26:0-93 t_17_28:0-2 t_17_29:0-30 t_18_5:0-102 t_18_6:0-26",
+      "note": "GROBID가 문장 가운데를 빼고 다음 쪽의 조각을 이어 붙였다."
+    },
+    {
+      "order": 271,
+      "textSha": "ac74d708107bb1c4",
+      "head": "Furthermore, the impact of LLMs in manufacturing",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_7:0-97 t_18_8:0-101 t_18_9:0-10"
+    },
+    {
+      "order": 272,
+      "textSha": "eb202193f5e210a7",
+      "head": "LLMs such as ChatGPT are not merely facilitators",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_9:12-95 t_18_10:0-98 t_18_11:0-17"
+    },
+    {
+      "order": 273,
+      "textSha": "cc3a74f7e86154d7",
+      "head": "By integrating domain-specific knowledge into LL",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_11:20-95 t_18_12:0-101 t_18_13:0-84"
+    },
+    {
+      "order": 274,
+      "textSha": "dc2d2985aba465ee",
+      "head": "LLMs revolutionize field service operations such",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_14:0-95 t_18_15:0-97"
+    },
+    {
+      "order": 275,
+      "textSha": "d84c34d4f034ab8a",
+      "head": "This involves providing conversational access to",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_15:99-103 t_18_16:0-103 t_18_17:0-99"
+    },
+    {
+      "order": 276,
+      "textSha": "11bf2db9c6aff44f",
+      "head": "In the case of design for manufacturing, LLMs co",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_18_18:0-96 t_18_19:0-33"
+    },
+    {
+      "order": 277,
+      "textSha": "4be8923b420c89c3",
+      "head": "These models facilitate the translation of digit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_21:0-63 t_18_22:0-94"
+    },
+    {
+      "order": 278,
+      "textSha": "0fe5e43d39baf200",
+      "head": "This capability enables engineers to efficiently",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_18_22:96-100 t_18_23:0-103 t_18_24:0-44 t_18_26:0-2"
+    },
+    {
+      "order": 279,
+      "textSha": "b67491d2e8d9fd8a",
+      "head": "LLMs dramatically improve the accessibility of c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_26:5-51 t_18_27:0-29"
+    },
+    {
+      "order": 280,
+      "textSha": "5ba83062637ef814",
+      "head": "By enabling natural language interactions with s",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_18_27:31-97 t_18_28:0-100 t_18_29:0-12"
+    },
+    {
+      "order": 281,
+      "textSha": "ba5553277600a478",
+      "head": "This reduces the learning curve and boosts produ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_18_31:0-83 t_18_32:0-100 t_18_33:0-13"
+    },
+    {
+      "order": 282,
+      "textSha": "a50852e1a818e5ea",
+      "head": "The adoption of LLMs in flexible modular product",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_34:0-95 t_18_35:0-34"
+    },
+    {
+      "order": 283,
+      "textSha": "db6db25fcb67f4b8",
+      "head": "These systems, enhanced with LLM agents, adapt d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_35:36-94 t_18_36:0-55"
+    },
+    {
+      "order": 284,
+      "textSha": "e90aadc3a8c26b52",
+      "head": "This adaptability is essential for modern manufa",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_18_38:0-38 t_18_39:0-96 t_18_40:0-38"
+    },
+    {
+      "order": 285,
+      "textSha": "2181d3bda2da3ea8",
+      "head": "Additionally, LLMs foster a collaborative enviro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_42:0-56 t_18_43:0-99 t_18_44:0-11"
+    },
+    {
+      "order": 286,
+      "textSha": "e0fbe6ed26d3937b",
+      "head": "This collaboration leads to innovative and susta",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_18_46:0-83 t_18_47:0-94 t_18_48:0-27"
+    },
+    {
+      "order": 287,
+      "textSha": "d0b21a575bb495d9",
+      "head": "Besides, LLMs get involved in robot coding (Figu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_49:0-53"
+    },
+    {
+      "order": 288,
+      "textSha": "49f84ce93f5d2fd5",
+      "head": "Robot programming is one of the most fundamental",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_18_49:56-92 t_18_50:0-47"
+    },
+    {
+      "order": 289,
+      "textSha": "50d480a13c311dcb",
+      "head": "It is also a field adopted by LLMs with signific",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_18_50:49-100 t_19_0:0-102 t_19_1:0-39"
+    },
+    {
+      "order": 290,
+      "textSha": "b5a6daa91936c4d3",
+      "head": "LLMs not only enhance productivity but also demo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_1:41-96 t_19_2:0-96"
+    },
+    {
+      "order": 291,
+      "textSha": "dd8253fb083cc319",
+      "head": "Recently, many companies have built their LLMs a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_3:0-74"
+    },
+    {
+      "order": 292,
+      "textSha": "dbed7f188b703420",
+      "head": "Meta puts forward Code Llama [RGG + 23].",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_5:0-17 t_19_6:0-15 t_19_8:0-2"
+    },
+    {
+      "order": 293,
+      "textSha": "1cf0074ff5f33811",
+      "head": "GitHub Copilot is developed by GitHub, OpenAI, a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_8:5-78 t_19_9:0-9"
+    },
+    {
+      "order": 294,
+      "textSha": "9545f9f177266138",
+      "head": "Other programming LLMs include Codet5+ [WLG + 23",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_11:0-43 t_19_13:0-31 t_19_14:0-7"
+    },
+    {
+      "order": 295,
+      "textSha": "ba84ae59d1011e61",
+      "head": "One of the key areas where LLMs have made a cons",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_15:0-89 t_19_16:0-26"
+    },
+    {
+      "order": 296,
+      "textSha": "a2ff122e77818ba0",
+      "head": "Research shows that LLMs can generate code snipp",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_19_18:0-66 t_19_19:0-99 t_19_20:0-17"
+    },
+    {
+      "order": 297,
+      "textSha": "5289b119343ab020",
+      "head": "This capability is particularly beneficial in ro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_22:0-78 t_19_23:0-55"
+    },
+    {
+      "order": 298,
+      "textSha": "c50309f8655c9128",
+      "head": "LLMs like CODEX [CTJ + 21] and Code-Gen [NPH + 2",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_19_25:0-20 t_19_27:0-12 t_19_28:0-8 t_19_30:0-90 t_19_31:0-11"
+    },
+    {
+      "order": 299,
+      "textSha": "6f5223721b45c067",
+      "head": "This context often includes a function signature",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_31:13-103 t_19_32:0-21"
+    },
+    {
+      "order": 300,
+      "textSha": "7f6efcb6273216ba",
+      "head": "The generated code snippet is combined with this",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_32:23-98 t_19_33:0-29"
+    },
+    {
+      "order": 301,
+      "textSha": "d130f0c6af0d9d47",
+      "head": "This approach highlights the significant capabil",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_19_35:0-67 t_19_36:0-75 t_19_38:0-7 t_19_40:0-10 t_19_41:0-54"
+    },
+    {
+      "order": 302,
+      "textSha": "0b92fb9fde4f364c",
+      "head": "[SZJ + 24] demonstrates the performance of LLMs ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_19_43:1-4 t_19_45:0-35 t_19_46:0-94 t_19_47:0-56"
+    },
+    {
+      "order": 303,
+      "textSha": "9344392d78147c1b",
+      "head": "They also test and attempt to generate fundament",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_49:0-38 t_19_50:0-46"
+    },
+    {
+      "order": 304,
+      "textSha": "2c24d5c32e8bdbbe",
+      "head": "In conclusion, the integration of LLMs into manu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_19_51:0-94 t_19_52:0-81"
+    },
+    {
+      "order": 305,
+      "textSha": "9d2ca6ed7c1a0ec3",
+      "head": "As this technology continues to evolve, it will ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_52:83-101 t_19_53:0-102 t_19_54:0-20"
+    },
+    {
+      "order": 306,
+      "textSha": "c1dd34b3592fd876",
+      "head": "Quality control is a critical aspect of manufact",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_60:0-97 t_19_61:0-21"
+    },
+    {
+      "order": 307,
+      "textSha": "b2f5b6a11a1627c1",
+      "head": "It encompasses a range of practices and methodol",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_63:0-73 t_19_64:0-46"
+    },
+    {
+      "order": 308,
+      "textSha": "45929857d58de376",
+      "head": "The application of statistical techniques to ove",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_64:48-104 t_19_65:0-76"
+    },
+    {
+      "order": 309,
+      "textSha": "5bfd17c6f83fa7f3",
+      "head": "This universal principle has been successfully i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_65:78-102 t_19_66:0-75"
+    },
+    {
+      "order": 310,
+      "textSha": "4da9defa134cd7c9",
+      "head": "In recent years, research in the quality control",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_67:0-102 t_19_68:0-41"
+    },
+    {
+      "order": 311,
+      "textSha": "ec10036af5d8452b",
+      "head": "Deep learning models have shown remarkable abili",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_70:0-53 t_19_71:0-73 t_19_73:0-18 t_19_74:0-11 t_19_76:0-64 t_19_78:0-18 t_19_79:0-66"
+    },
+    {
+      "order": 312,
+      "textSha": "9346e64926335466",
+      "head": "Additionally, the powerful feature extraction ca",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_79:68-102 t_19_80:0-102 t_19_81:0-87"
+    },
+    {
+      "order": 313,
+      "textSha": "183e6ceb2bb93091",
+      "head": "Stricker et al. [ZDW + 23] introduced an adaptiv",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_83:0-11 t_19_84:0-8 t_19_86:0-85 t_19_87:0-103 t_19_88:0-45"
+    },
+    {
+      "order": 314,
+      "textSha": "306c715a5ae47143",
+      "head": "Beyond improving defect detection accuracy, deep",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_89:0-96 t_19_90:0-37"
+    },
+    {
+      "order": 315,
+      "textSha": "df6e9819ef8019c9",
+      "head": "These advancements have introduced innovative to",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_19_90:39-99 t_19_91:0-96"
+    },
+    {
+      "order": 316,
+      "textSha": "093a06ac97e62a8a",
+      "head": "By integrating advanced data-driven approaches w",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_91:98-100 t_19_92:0-99 t_19_93:0-99"
+    },
+    {
+      "order": 317,
+      "textSha": "db8453c98a9a089f",
+      "head": "Conventional quality control in manufacturing ha",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_94:0-97 t_19_95:0-102 t_19_96:0-40"
+    },
+    {
+      "order": 318,
+      "textSha": "ba9d946ac09b2ff8",
+      "head": "This approach is rooted in statistical quality c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_96:42-101 t_19_97:0-98"
+    },
+    {
+      "order": 319,
+      "textSha": "9ab4b348bce14bb5",
+      "head": "The aim is to detect and correct problems as the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_98:0-105 t_19_99:0-49"
+    },
+    {
+      "order": 320,
+      "textSha": "1c86723502a64b18",
+      "head": "Over time, these practices have evolved from sim",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_19_99:52-96 t_19_100:0-100 t_19_101:0-96 t_19_102:0-40"
+    },
+    {
+      "order": 321,
+      "textSha": "4e8fbafd689e9c9e",
+      "head": "As a result, conventional quality control has la",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_19_102:43-97 t_20_0:0-98 t_20_1:0-55 t_20_3:0-2"
+    },
+    {
+      "order": 322,
+      "textSha": "96aa927631b0b751",
+      "head": "The transition from conventional quality control",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_4:0-95 t_20_5:0-95 t_20_6:0-23"
+    },
+    {
+      "order": 323,
+      "textSha": "d653597a3e41971a",
+      "head": "LLMs are leading this transformation by offering",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_8:0-72 t_20_9:0-98 t_20_10:0-2"
+    },
+    {
+      "order": 324,
+      "textSha": "ef609172373d32e7",
+      "head": "In other words, the emergence of LLMs in manufac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_12:0-91 t_20_13:0-95 t_20_14:0-83"
+    },
+    {
+      "order": 325,
+      "textSha": "272dc4a27e140e88",
+      "head": "This integration signifies a new era in quality ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_16:0-16 t_20_17:0-109 t_20_18:0-67"
+    },
+    {
+      "order": 326,
+      "textSha": "8a1e2bc939f3700b",
+      "head": "Due to the incredible capabilities of LLMs, LLMs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_19:0-100 t_20_20:0-102 t_20_21:0-23"
+    },
+    {
+      "order": 327,
+      "textSha": "2847c80b73fa0aa4",
+      "head": "Traditional quality control methods, deeply root",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_21:25-99 t_20_22:0-103 t_20_23:0-23"
+    },
+    {
+      "order": 328,
+      "textSha": "1acef768c373873e",
+      "head": "These methods are designed to identify and mitig",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_25:0-72 t_20_26:0-79"
+    },
+    {
+      "order": 329,
+      "textSha": "f2366406cd204516",
+      "head": "LLMs can augment these SQC methods by providing ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_26:81-97 t_20_27:0-98 t_20_28:0-102 t_20_29:0-38"
+    },
+    {
+      "order": 330,
+      "textSha": "5c8425feb7cbef6d",
+      "head": "Furthermore, the evolution of quality control pr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_29:40-100 t_20_30:0-88"
+    },
+    {
+      "order": 331,
+      "textSha": "34c4652064838386",
+      "head": "LLMs are driving this evolution by enhancing the",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_30:90-98 t_20_31:0-90"
+    },
+    {
+      "order": 332,
+      "textSha": "32a15e1d326d7346",
+      "head": "By analyzing historical and real-time data, LLMs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_33:0-6 t_20_34:0-100 t_20_35:0-50"
+    },
+    {
+      "order": 333,
+      "textSha": "4dd76f7bba6e4505",
+      "head": "This shift from a reactive to a predictive appro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_37:0-45 t_20_38:0-103"
+    },
+    {
+      "order": 334,
+      "textSha": "c878327af1a47b64",
+      "head": "In addition, advanced quality control methodolog",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_39:0-98 t_20_40:0-56"
+    },
+    {
+      "order": 335,
+      "textSha": "4fbb26cbf3922da1",
+      "head": "LLMs contribute to this by facilitating informed",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_42:0-39 t_20_43:0-96 t_20_44:0-37"
+    },
+    {
+      "order": 336,
+      "textSha": "4e121939df63033a",
+      "head": "Their ability to understand and generate human l",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_46:0-55 t_20_47:0-99 t_20_48:0-99"
+    },
+    {
+      "order": 337,
+      "textSha": "e8578003e8031082",
+      "head": "LLMs also extend the capabilities of traditional",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_49:0-102 t_20_50:0-99 t_20_51:0-7"
+    },
+    {
+      "order": 338,
+      "textSha": "3b8099a329e4a681",
+      "head": "They can automate the generation and interpretat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_51:9-96 t_20_52:0-95"
+    },
+    {
+      "order": 339,
+      "textSha": "1e109daefa9b17c9",
+      "head": "In this way, LLMs not only improve the technical",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_52:97-99 t_20_53:0-99 t_20_54:0-58"
+    },
+    {
+      "order": 340,
+      "textSha": "c0490f6001df61a9",
+      "head": "To evaluate the capability of LLMs in the contex",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_55:0-96 t_20_56:0-50"
+    },
+    {
+      "order": 341,
+      "textSha": "74dd2fd6b0ac5929",
+      "head": "As shown in Figure 16, the input consists of two",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_56:52-96 t_20_57:0-67"
+    },
+    {
+      "order": 342,
+      "textSha": "54280da1eede1f53",
+      "head": "The input data table describes the factors that ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_57:69-99 t_20_58:0-95"
+    },
+    {
+      "order": 343,
+      "textSha": "200f1fe3d21c1b8d",
+      "head": "The prompt configures the background, describes ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_58:97-100 t_20_59:0-98 t_20_60:0-59"
+    },
+    {
+      "order": 344,
+      "textSha": "5c7cdf804229fcba",
+      "head": "The result on the right and lower left shows a c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_62:0-38 t_20_63:0-99 t_20_64:0-58"
+    },
+    {
+      "order": 345,
+      "textSha": "8e91c4b5d9772440",
+      "head": "Cost control is one of the core tasks in the ope",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_65:0-94 t_20_66:0-5"
+    },
+    {
+      "order": 346,
+      "textSha": "e21f0d6565c287f0",
+      "head": "Traditional cost control methods primarily rely ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_66:7-101 t_20_67:0-36"
+    },
+    {
+      "order": 347,
+      "textSha": "b74fc12be4e9b862",
+      "head": "LLMs, with their exceptional NLP abilities, brin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_20_67:38-99 t_20_68:0-28"
+    },
+    {
+      "order": 348,
+      "textSha": "3443d08ff242911c",
+      "head": "Research by [YCL + 23] demonstrates that by inte",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_70:0-16 t_20_72:0-50 t_20_73:0-94 t_20_74:0-32"
+    },
+    {
+      "order": 349,
+      "textSha": "315a573c7dbbd0c5",
+      "head": "Their study employs the GPT-4V model for zero-sh",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_74:34-97 t_20_75:0-97 t_20_76:0-39 t_20_78:0-51 t_20_79:0-12"
+    },
+    {
+      "order": 350,
+      "textSha": "ea8e6a741e6c845c",
+      "head": "This strongly validates the advantages of LLMs i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_20_79:15-96 t_20_80:0-49"
+    },
+    {
+      "order": 351,
+      "textSha": "6a7d3d369234fbb7",
+      "head": "Furthermore, their research introduces the conce",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary", "parser_defect"],
+      "spans": "t_20_80:51-97 t_20_81:0-101 t_21_0:0-65",
+      "note": "GROBID가 문장을 자르고 그림 16 설명을 이어 붙였다. 남은 조각은 #353이다."
+    },
+    {
+      "order": 352,
+      "textSha": "f5fd2d9f98c5ab66",
+      "head": "This demonstrates the ability of LLMs to underta",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_0:67-99 t_21_1:0-58"
+    },
+    {
+      "order": 353,
+      "textSha": "ef4d89b05df40165",
+      "head": "model outputs.",
+      "verification": "read",
+      "how": "repeated_by_order",
+      "tags": ["parser_defect", "repeated", "short"],
+      "spans": "t_21_2:0-13",
+      "note": "#351에서 잘린 문장의 남은 조각이다."
+    },
+    {
+      "order": 354,
+      "textSha": "4b17190ab3b27c53",
+      "head": "With the development of LLM technology, quality ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_21_2:15-97 t_21_3:0-99 t_21_4:0-11 t_21_6:0-2"
+    },
+    {
+      "order": 355,
+      "textSha": "aea1aebdc3ab58f6",
+      "head": "This illustrates a more dynamic and interconnect",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_6:5-83 t_21_7:0-75"
+    },
+    {
+      "order": 356,
+      "textSha": "2b681dc46a05dead",
+      "head": "This is crucial for decisionmaking in the manufa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_21_7:77-105 t_21_8:0-96"
+    },
+    {
+      "order": 357,
+      "textSha": "760177eeb3c8cfba",
+      "head": "Stock return prediction is just one example of t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_9:0-89"
+    },
+    {
+      "order": 358,
+      "textSha": "292f3ac6a58fa7c4",
+      "head": "In fact, LLMs have shown great promise in variou",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_9:91-98 t_21_10:0-64"
+    },
+    {
+      "order": 359,
+      "textSha": "e259b5cebab6585d",
+      "head": "For instance, in manufacturing report analysis, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_12:0-30 t_21_13:0-100 t_21_14:0-80"
+    },
+    {
+      "order": 360,
+      "textSha": "5da72305ca0c86c4",
+      "head": "This greatly improves the efficiency and compreh",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_16:0-12 t_21_17:0-67"
+    },
+    {
+      "order": 361,
+      "textSha": "c8d8f3d57faf4b14",
+      "head": "Moreover, LLMs have been applied to other areas ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_17:69-101 t_21_18:0-88"
+    },
+    {
+      "order": 362,
+      "textSha": "f2fad0932992d7b0",
+      "head": "By conducting comprehensive analyses of historic",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_20:0-2 t_21_21:0-93 t_21_22:0-55"
+    },
+    {
+      "order": 363,
+      "textSha": "1cbeebb3aa7c93f9",
+      "head": "Despite the remarkable progress of LLMs in cost ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_23:0-101"
+    },
+    {
+      "order": 364,
+      "textSha": "a9ef4b0da5635bfe",
+      "head": "First, current studies mainly focus on specific ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_24:0-103 t_21_25:0-82"
+    },
+    {
+      "order": 365,
+      "textSha": "91269ccbef895f07",
+      "head": "Future research should take an end-to-end perspe",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_25:84-106 t_21_26:0-102 t_21_27:0-24"
+    },
+    {
+      "order": 366,
+      "textSha": "70aebe845f2c0636",
+      "head": "Second, most existing studies adopt a supervised",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_27:26-101 t_21_28:0-45"
+    },
+    {
+      "order": 367,
+      "textSha": "999bb6256705cdb6",
+      "head": "However, obtaining such ideal data in real-world",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_30:0-48 t_21_31:0-24"
+    },
+    {
+      "order": 368,
+      "textSha": "760f2a3b7f5bbd83",
+      "head": "Therefore, leveraging unsupervised or semi-super",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_33:0-73 t_21_34:0-83"
+    },
+    {
+      "order": 369,
+      "textSha": "5d45fe07cb83808f",
+      "head": "Finally, the interpretability of LLMs needs to b",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_36:0-12 t_21_37:0-53"
+    },
+    {
+      "order": 370,
+      "textSha": "11a285c43bdca0fc",
+      "head": "Financial decisions are critical and require car",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_39:0-44 t_21_40:0-21"
+    },
+    {
+      "order": 371,
+      "textSha": "140d8ce547690dba",
+      "head": "Simple model outputs are not convincing enough; ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_42:0-71 t_21_43:0-38 t_21_45:0-2"
+    },
+    {
+      "order": 372,
+      "textSha": "3b17c7d96e3cfd57",
+      "head": "This poses higher requirements for LLMs, necessi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_45:5-59 t_21_46:0-50"
+    },
+    {
+      "order": 373,
+      "textSha": "257c5f644f0726e6",
+      "head": "In conclusion, LLMs have opened up vast prospect",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_47:0-99 t_21_48:0-64"
+    },
+    {
+      "order": 374,
+      "textSha": "fc9cd68996268759",
+      "head": "Future research should focus on the following di",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_21_50:0-35 t_21_51:0-103 t_21_52:0-101 t_21_53:0-101 t_21_54:0-105 t_21_55:0-14"
+    },
+    {
+      "order": 375,
+      "textSha": "44240b16e9bb2780",
+      "head": "Only through the joint advancement of theoretica",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_21_55:16-101 t_21_56:0-98 t_21_57:0-10"
+    },
+    {
+      "order": 376,
+      "textSha": "265114ef7f949526",
+      "head": "This requires close collaboration between academ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_21_57:12-98 t_21_58:0-43"
+    },
+    {
+      "order": 377,
+      "textSha": "58b70d59586178a7",
+      "head": "The integration of LLMs into engineering assista",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_4:0-98 t_22_5:0-36"
+    },
+    {
+      "order": 378,
+      "textSha": "1491d45769b55ab7",
+      "head": "These chatbots are designed to assist engineers ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_5:39-99 t_22_6:0-78"
+    },
+    {
+      "order": 379,
+      "textSha": "d6bbcc341a760f43",
+      "head": "The ability of LLMs to understand and generate h",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_6:80-99 t_22_7:0-102 t_22_8:0-85"
+    },
+    {
+      "order": 380,
+      "textSha": "04cf5d2fd8c7843d",
+      "head": "LLMs like GPT-4 [Ope] and Bard [MH23] are transf",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_14:0-97 t_22_15:0-91"
+    },
+    {
+      "order": 381,
+      "textSha": "af94c000bcf98edb",
+      "head": "These models, trained on vast datasets including",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_22_15:93-98 t_22_16:0-100 t_22_17:0-77"
+    },
+    {
+      "order": 382,
+      "textSha": "bb8d42e7e39539d9",
+      "head": "For example, an engineer can ask the chatbot for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_17:79-103 t_22_18:0-102 t_22_19:0-62"
+    },
+    {
+      "order": 383,
+      "textSha": "1a70d885cc007df2",
+      "head": "The large-scale impact of this technology is pro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_20:0-53"
+    },
+    {
+      "order": 384,
+      "textSha": "c1351d5aae2a0c54",
+      "head": "Internal studies have shown that up to 60% of a ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_22_20:55-100 t_22_21:0-107 t_22_22:0-98 t_22_24:0-2"
+    },
+    {
+      "order": 385,
+      "textSha": "c9a24f53c72ea0c2",
+      "head": "By integrating LLMs into chatbots, engineers can",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_25:0-102 t_22_26:0-25"
+    },
+    {
+      "order": 386,
+      "textSha": "477ef32f9397d6f3",
+      "head": "This can significantly improve overall productiv",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_26:27-103 t_22_27:0-87"
+    },
+    {
+      "order": 387,
+      "textSha": "0eba424dcc45461d",
+      "head": "One of the critical contributions of LLMs in eng",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_33:0-103 t_22_34:0-36"
+    },
+    {
+      "order": 388,
+      "textSha": "15143bc1e3915ada",
+      "head": "When an engineer encounters an error or a bug in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_34:38-99 t_22_35:0-71"
+    },
+    {
+      "order": 389,
+      "textSha": "3677d83c43fd1975",
+      "head": "This immediate feedback loop significantly reduc",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_35:73-101 t_22_36:0-68"
+    },
+    {
+      "order": 390,
+      "textSha": "a53cab29404fd655",
+      "head": "By leveraging extensive training data, the LLM c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_36:70-102 t_22_37:0-98 t_22_38:0-14"
+    },
+    {
+      "order": 391,
+      "textSha": "4f2270dda250b4f6",
+      "head": "Furthermore, these chatbots serve as a repositor",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_39:0-96 t_22_40:0-93"
+    },
+    {
+      "order": 392,
+      "textSha": "33349bb051decb67",
+      "head": "This centralization of knowledge ensures that en",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_40:95-99 t_22_41:0-98 t_22_42:0-67"
+    },
+    {
+      "order": 393,
+      "textSha": "df1568913f7a4850",
+      "head": "It also facilitates knowledge sharing across glo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_42:69-106 t_22_43:0-101"
+    },
+    {
+      "order": 394,
+      "textSha": "360e50bcee14dd53",
+      "head": "LLMs enhance the functionality of engineering as",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_49:0-97 t_22_50:0-35"
+    },
+    {
+      "order": 395,
+      "textSha": "33d0cc767099b3f2",
+      "head": "Through APIs and custom connectors, these chatbo",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_52:0-54 t_22_53:0-85"
+    },
+    {
+      "order": 396,
+      "textSha": "ffe09c9da882c253",
+      "head": "For instance, an engineer can instruct the chatb",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_53:87-103 t_22_54:0-98 t_22_55:0-40"
+    },
+    {
+      "order": 397,
+      "textSha": "779df55a99b02b20",
+      "head": "This integration reduces the need for manual int",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_55:42-100 t_22_56:0-33"
+    },
+    {
+      "order": 398,
+      "textSha": "5b82d794b0ad72a1",
+      "head": "Moreover, LLM-powered chatbots help coordinate c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_57:0-90 t_22_58:0-65"
+    },
+    {
+      "order": 399,
+      "textSha": "d072166c047c7e12",
+      "head": "This ensures that all team members are updated a",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_58:67-101 t_22_59:0-93"
+    },
+    {
+      "order": 400,
+      "textSha": "e7c516bd8cfeef13",
+      "head": "By acting as a centralized communication hub, th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_59:95-97 t_22_60:0-96 t_22_61:0-17"
+    },
+    {
+      "order": 401,
+      "textSha": "351d07a81dd7968d",
+      "head": "Practical applications of LLMs in engineering as",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_22_62:0-98 t_22_63:0-4"
+    },
+    {
+      "order": 402,
+      "textSha": "7bcb0338fcdf4818",
+      "head": "For instance, NVIDIA's ChipNeMo [LEK + 23] utili",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_63:6-42 t_22_65:0-52 t_22_66:0-14"
+    },
+    {
+      "order": 403,
+      "textSha": "5afbd27714e8c6b9",
+      "head": "Engineers using ChipNeMo receive real-time guida",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_22_66:16-98 t_22_67:0-101 t_22_68:0-8"
+    },
+    {
+      "order": 404,
+      "textSha": "7068e98c8cf56ab9",
+      "head": "Similarly, RapidSilicon's upcoming tools leverag",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_22_69:0-96 t_22_70:0-11"
+    },
+    {
+      "order": 405,
+      "textSha": "6652ce2e9c9f437c",
+      "head": "These tools would provide detailed technical ass",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_22_72:0-84 t_23_0:0-98 t_23_1:0-4"
+    },
+    {
+      "order": 406,
+      "textSha": "2a08bc2f19c516df",
+      "head": "The ability of LLMs to quickly adapt and provide",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_1:6-97 t_23_2:0-70"
+    },
+    {
+      "order": 407,
+      "textSha": "81558d823cf55c49",
+      "head": "Recently, the integration of AI with EDA algorit",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_8:0-99 t_23_9:0-6"
+    },
+    {
+      "order": 408,
+      "textSha": "38e31d2da8c61fe4",
+      "head": "Even though traditional EDA tools have been adva",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_9:8-100 t_23_10:0-107 t_23_11:0-17"
+    },
+    {
+      "order": 409,
+      "textSha": "a60d4c624d960c68",
+      "head": "This gap is where LLMs are making a transformati",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_11:19-76"
+    },
+    {
+      "order": 410,
+      "textSha": "8ad3781d91ab40cb",
+      "head": "The advent of both commercial (e.g., GPT family ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_12:0-88 t_23_13:0-11 t_23_15:0-22 t_23_17:0-7 t_23_19:0-8 t_23_21:0-35 t_23_22:0-51"
+    },
+    {
+      "order": 411,
+      "textSha": "d288348e96efae80",
+      "head": "These models excel in code generation, engineeri",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_24:0-43 t_23_25:0-104 t_23_26:0-29"
+    },
+    {
+      "order": 412,
+      "textSha": "bb05f741b2e41746",
+      "head": "Moreover, domain-specific LLMs like BloombergGPT",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_28:0-53 t_23_30:0-7 t_23_31:0-13 t_23_33:0-76 t_23_34:0-95 t_23_35:0-31"
+    },
+    {
+      "order": 413,
+      "textSha": "882171ccece9bb80",
+      "head": "Tailoring LLMs to specific domains helps mitigat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_37:0-64 t_23_38:0-70"
+    },
+    {
+      "order": 414,
+      "textSha": "bb9bc4835498b23a",
+      "head": "This is well addressed by Chip-NeMo [LEK + 23], ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_38:72-102 t_23_39:0-9 t_23_41:0-24"
+    },
+    {
+      "order": 415,
+      "textSha": "811c33638c23db2c",
+      "head": "ChipNeMo leverages domain-adapted LLMs to automa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_41:26-76 t_23_42:0-41"
+    },
+    {
+      "order": 416,
+      "textSha": "908817645322ceea",
+      "head": "By employing domain-adaptive techniques like con",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_44:0-51 t_23_45:0-98 t_23_46:0-17"
+    },
+    {
+      "order": 417,
+      "textSha": "4429a50203768e70",
+      "head": "For instance, in direct applications, ChipNeMo's",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_46:19-99 t_23_47:0-95 t_23_48:0-68"
+    },
+    {
+      "order": 418,
+      "textSha": "c6d16de8f915954d",
+      "head": "In addition, a study by Jason et al. [BGKP23] fr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_48:70-102 t_23_49:0-96 t_23_50:0-99 t_23_51:0-7"
+    },
+    {
+      "order": 419,
+      "textSha": "9538c2af6656d76f",
+      "head": "This process, typically time-consuming and prone",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_53:0-88 t_23_54:0-35"
+    },
+    {
+      "order": 420,
+      "textSha": "1be30ba35b4200d2",
+      "head": "The study involved co-designing an 8-bit accumul",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_54:37-95 t_23_55:0-104 t_23_56:0-66"
+    },
+    {
+      "order": 421,
+      "textSha": "9f74b683b257ea72",
+      "head": "The result was a processor that was sent to tape",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_56:68-99 t_23_57:0-99"
+    },
+    {
+      "order": 422,
+      "textSha": "64d5022e12e63834",
+      "head": "These advancements underscore the critical role ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_58:0-90"
+    },
+    {
+      "order": 423,
+      "textSha": "51f6dbce2642a267",
+      "head": "By reducing the reliance on external LLM service",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_58:92-94 t_23_59:0-99 t_23_60:0-97 t_23_61:0-59"
+    },
+    {
+      "order": 424,
+      "textSha": "75ea4326bc942915",
+      "head": "The successful implementation of LLMs in chip de",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_61:61-98 t_23_62:0-94 t_23_63:0-99 t_23_64:0-29"
+    },
+    {
+      "order": 425,
+      "textSha": "961dd49f0730db8c",
+      "head": "However, the application of LLMs in chip design ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_65:0-95 t_23_66:0-8"
+    },
+    {
+      "order": 426,
+      "textSha": "804daa152fdc66b4",
+      "head": "Due to the technical complexity and engineering ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_66:10-99 t_23_67:0-43"
+    },
+    {
+      "order": 427,
+      "textSha": "4d307a2263a9b68e",
+      "head": "Moreover, the design solutions proposed by LLMs ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_67:45-99 t_23_68:0-105 t_23_69:0-7"
+    },
+    {
+      "order": 428,
+      "textSha": "249778ac0b51b2fc",
+      "head": "Thus, blending the intelligence of LLMs with hum",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_69:9-98"
+    },
+    {
+      "order": 429,
+      "textSha": "ee8ee27e61b0321d",
+      "head": "A a sectional summary, the integration of LLMs i",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_70:0-93 t_23_71:0-76"
+    },
+    {
+      "order": 430,
+      "textSha": "2169056bb1d8b4f2",
+      "head": "These models, by automating complex, language-in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_73:0-19 t_23_74:0-102 t_23_75:0-71"
+    },
+    {
+      "order": 431,
+      "textSha": "85b53f9fc8668c28",
+      "head": "This not only elevates the efficiency of the chi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_75:73-99 t_23_76:0-103 t_23_77:0-21"
+    },
+    {
+      "order": 432,
+      "textSha": "77c5dbc51f9e23d7",
+      "head": "Looking ahead, the functionality and relevance o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_79:0-71 t_23_80:0-95"
+    },
+    {
+      "order": 433,
+      "textSha": "996dc767db170408",
+      "head": "The exploration of innovative applications, incl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_23_80:97-100 t_23_81:0-103 t_23_82:0-99 t_23_83:0-14"
+    },
+    {
+      "order": 434,
+      "textSha": "e7ba38ca23ec24ab",
+      "head": "Consequently, the future of LLMs in chip design ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_23_83:16-95 t_23_84:0-102 t_23_85:0-24"
+    },
+    {
+      "order": 435,
+      "textSha": "31ad66e8475b3ed4",
+      "head": "In the realm of supply chain management, leverag",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_17:0-99 t_24_18:0-42"
+    },
+    {
+      "order": 436,
+      "textSha": "e807e2d7caff1cc8",
+      "head": "This advanced technology aids in refining proces",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_18:44-103 t_24_19:0-100 t_24_20:0-41"
+    },
+    {
+      "order": 437,
+      "textSha": "f122dd6019c1883a",
+      "head": "Figure 20 is a detailed logistic workflow empowe",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_22:0-56 t_24_23:0-4"
+    },
+    {
+      "order": 438,
+      "textSha": "e334abe1010d4124",
+      "head": "By analyzing historical sales data, market trend",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_29:0-98 t_24_30:0-51"
+    },
+    {
+      "order": 439,
+      "textSha": "36440cb948fa7351",
+      "head": "This precision in analysis helps companies refin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_30:53-102 t_24_31:0-72"
+    },
+    {
+      "order": 440,
+      "textSha": "9de6335baebe7db2",
+      "head": "Furthermore, LLMs excel in processing customer a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_31:74-100 t_24_32:0-97 t_24_33:0-27"
+    },
+    {
+      "order": 441,
+      "textSha": "5480b9c6678145f1",
+      "head": "It enables sentiment analysis to quantify textua",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_24_35:0-65 t_24_36:0-29"
+    },
+    {
+      "order": 442,
+      "textSha": "77ff6be7055e76af",
+      "head": "By analyzing consumer feedback through the asses",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_24_38:0-65 t_25_0:0-93"
+    },
+    {
+      "order": 443,
+      "textSha": "71674070691e6550",
+      "head": "This quantitative approach allows manufacturers ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_0:95-99 t_25_1:0-99 t_25_2:0-99 t_25_3:0-57 t_25_5:0-2"
+    },
+    {
+      "order": 444,
+      "textSha": "21b679441ea5fadd",
+      "head": "Also, LLMs greatly enhance the supplier evaluati",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_7:0-30 t_25_8:0-107 t_25_9:0-9"
+    },
+    {
+      "order": 445,
+      "textSha": "a4a80837c3d87834",
+      "head": "Before the LLMs, the practitioner implemented di",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_11:0-86 t_25_12:0-74"
+    },
+    {
+      "order": 446,
+      "textSha": "f5422db6eebc3668",
+      "head": "For example, Moutaz's study analyzes four undere",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_12:76-97 t_25_13:0-100 t_25_14:0-31"
+    },
+    {
+      "order": 447,
+      "textSha": "1db8977036bd33f9",
+      "head": "It covers scenarios of full or partial upfront p",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_14:33-100 t_25_15:0-96"
+    },
+    {
+      "order": 448,
+      "textSha": "1e8a244b0fc98873",
+      "head": "The scale of LLMs and quality of data representa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_15:99-102 t_25_16:0-99 t_25_17:0-79"
+    },
+    {
+      "order": 449,
+      "textSha": "224577957de32a69",
+      "head": "LLMs analyze data throughout the manufacturing p",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_25_23:0-96 t_25_24:0-58"
+    },
+    {
+      "order": 450,
+      "textSha": "e83886587e99903e",
+      "head": "Jeong has examined that, in a complex manufactur",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_24:60-97 t_25_25:0-98 t_25_26:0-97"
+    },
+    {
+      "order": 451,
+      "textSha": "cd76f597fbd54224",
+      "head": "An LLM trained on historical scheduling data can",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_26:99-101 t_25_27:0-96 t_25_28:0-90"
+    },
+    {
+      "order": 452,
+      "textSha": "452556abdb2a0142",
+      "head": "This approach highlights the potential of AI and",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_25_30:0-7 t_25_31:0-99 t_25_32:0-17"
+    },
+    {
+      "order": 453,
+      "textSha": "8310580514b217d4",
+      "head": "The factory production setting inherently genera",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_25_32:20-99 t_25_33:0-103 t_25_34:0-10"
+    },
+    {
+      "order": 454,
+      "textSha": "829e86da27c851c5",
+      "head": "This reliability allows for the use of local dat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_36:0-87 t_25_37:0-40"
+    },
+    {
+      "order": 455,
+      "textSha": "3646a341ea879be7",
+      "head": "By leveraging this localized LLM, manufacturing ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_37:42-100 t_25_38:0-102 t_25_39:0-25"
+    },
+    {
+      "order": 456,
+      "textSha": "1e6d660faea417cd",
+      "head": "In predictive maintenance, LLMs analyze operatio",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_45:0-96 t_25_46:0-98 t_25_47:0-32"
+    },
+    {
+      "order": 457,
+      "textSha": "f32d297233c455bb",
+      "head": "The system incorporates several key components (",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_47:34-91"
+    },
+    {
+      "order": 458,
+      "textSha": "0e7a8647befa1f13",
+      "head": "Validation Scripts: These automated scripts are ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_48:0-89"
+    },
+    {
+      "order": 459,
+      "textSha": "d013399080611d3a",
+      "head": "They check the accuracy and adherence of the out",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_48:91-95 t_25_49:0-95 t_25_50:0-58"
+    },
+    {
+      "order": 460,
+      "textSha": "5222bdaaa9262831",
+      "head": "AI Agent: This component serves as the operation",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_52:0-8 t_25_54:0-24 t_25_55:0-81"
+    },
+    {
+      "order": 461,
+      "textSha": "5c36ae4daf701447",
+      "head": "It continuously learns from the outcomes and fee",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_57:0-15 t_25_58:0-97 t_25_59:0-39"
+    },
+    {
+      "order": 462,
+      "textSha": "3e1c62fd1cfc5d2a",
+      "head": "Logging: This process involves the systematic re",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_61:0-55 t_25_62:0-36"
+    },
+    {
+      "order": 463,
+      "textSha": "d2cc6d8ceb91cacf",
+      "head": "Logging is essential for tracking the AI agent's",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_64:0-62 t_25_65:0-101 t_25_66:0-27"
+    },
+    {
+      "order": 464,
+      "textSha": "7f34c484b40de901",
+      "head": "The processes described above constitute the cor",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_68:0-62 t_25_69:0-97"
+    },
+    {
+      "order": 465,
+      "textSha": "a19dcf7a52f36df0",
+      "head": "By minimizing human subjectivity, these systems ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_69:99-101 t_25_70:0-82"
+    },
+    {
+      "order": 466,
+      "textSha": "41d001cba7b3fa18",
+      "head": "Furthermore, in instances where machines encount",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_72:0-11 t_25_73:0-100 t_25_74:0-58"
+    },
+    {
+      "order": 467,
+      "textSha": "61b9a0c99bdfd568",
+      "head": "The integration of LLMs into these processes mar",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_74:60-104 t_25_75:0-101 t_25_76:0-8"
+    },
+    {
+      "order": 468,
+      "textSha": "cf90235e2a56614a",
+      "head": "LLMs serve not only as the cognitive hub of fact",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_82:0-97 t_25_83:0-60"
+    },
+    {
+      "order": 469,
+      "textSha": "b8a282df7708c85c",
+      "head": "This integration enables the resolution of real-",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_25_83:62-101 t_25_84:0-101 t_25_85:0-35"
+    },
+    {
+      "order": 470,
+      "textSha": "f4e983d4efce1a7d",
+      "head": "By integrating external APIs for weather conditi",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_25_85:37-100 t_26_53:0-98 t_26_54:0-45"
+    },
+    {
+      "order": 471,
+      "textSha": "e191d97c91f70216",
+      "head": "Furthermore, LLMs not only exhibit high accuracy",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_26_55:0-94 t_26_56:0-99"
+    },
+    {
+      "order": 472,
+      "textSha": "b12d6f0ea80339b0",
+      "head": "This attribute renders LLMs particularly advanta",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_26_57:0-99 t_26_58:0-44"
+    },
+    {
+      "order": 473,
+      "textSha": "ccd421727cb31e04",
+      "head": "Additionally, the implementation of LLMs in such",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_26_58:46-103 t_26_59:0-106 t_26_60:0-84"
+    },
+    {
+      "order": 474,
+      "textSha": "e9952e8965798926",
+      "head": "The applications of LLMs in manufacturing, as ev",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_26_62:0-11 t_26_63:0-102 t_26_64:0-102 t_26_65:0-96 t_26_66:0-12"
+    },
+    {
+      "order": 475,
+      "textSha": "c10d872d54e061a1",
+      "head": "The research highlighted the LLMs' high precisio",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_26_66:14-100 t_26_67:0-86 t_26_69:0-2"
+    },
+    {
+      "order": 476,
+      "textSha": "f859efc410d55ae7",
+      "head": "The integration of LLMs into manufacturing proce",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_26_70:0-94 t_26_71:0-75"
+    },
+    {
+      "order": 477,
+      "textSha": "01a898392ff07942",
+      "head": "The real-time recommendations provided by LLMs c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_26_71:78-100 t_26_72:0-95 t_26_73:0-72"
+    },
+    {
+      "order": 478,
+      "textSha": "d67e47f08c0dffae",
+      "head": "The integration of LLMs into the educational fie",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_27_15:0-102 t_27_16:0-103"
+    },
+    {
+      "order": 479,
+      "textSha": "6a4fed782cbe840c",
+      "head": "Emerging research provides an all-around view of",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_17:0-97 t_27_18:0-38"
+    },
+    {
+      "order": 480,
+      "textSha": "1f6e9577bb781461",
+      "head": "Figure 18 shows the existing and potential appli",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_27_18:40-101 t_27_19:0-48"
+    },
+    {
+      "order": 481,
+      "textSha": "37c6bb1bbb04ae9e",
+      "head": "They can be summarized as offering personalized ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_19:50-97 t_27_20:0-99 t_27_21:0-49"
+    },
+    {
+      "order": 482,
+      "textSha": "c408ac3fdff691ea",
+      "head": "Studies have emphasized the potential of LLMs to",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_22:0-99 t_27_23:0-21"
+    },
+    {
+      "order": 483,
+      "textSha": "31f0c8232a708281",
+      "head": "For instance, LLMs are particularly effective in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_23:23-103 t_27_24:0-93"
+    },
+    {
+      "order": 484,
+      "textSha": "48ee6d8995e1d29f",
+      "head": "These models excel at addressing common beginner",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_26:0-5 t_27_27:0-95 t_27_28:0-101 t_27_29:0-35"
+    },
+    {
+      "order": 485,
+      "textSha": "9ea8d6ef6bbc89b8",
+      "head": "With powerful plugins like Wolfram Alpha for sol",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_30:0-91 t_27_31:0-96"
+    },
+    {
+      "order": 486,
+      "textSha": "0ea07e1c41781522",
+      "head": "These models can adapt content delivery to suit ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_32:0-89 t_27_34:0-2"
+    },
+    {
+      "order": 487,
+      "textSha": "8144416fe85506a4",
+      "head": "For example, [KCB23] demonstrated how LLMs can g",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_27_34:5-8 t_27_35:0-7 t_27_37:1-84 t_27_38:0-98 t_27_39:0-71"
+    },
+    {
+      "order": 488,
+      "textSha": "3954f3a2a4577c8b",
+      "head": "LLMs can also collect multidimensional data to h",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_27_41:0-21 t_28_1:0-102 t_28_2:0-55 t_28_4:0-2"
+    },
+    {
+      "order": 489,
+      "textSha": "a8f360bcaca02377",
+      "head": "In the field of mechanical engineering, research",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_28_5:0-68 t_28_7:0-32 t_28_8:0-75"
+    },
+    {
+      "order": 490,
+      "textSha": "f3167168ff5e38ff",
+      "head": "Their study shows that GPT-4V, in particular, ou",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_28_8:77-99 t_28_9:0-94 t_28_10:0-81"
+    },
+    {
+      "order": 491,
+      "textSha": "5238e06eab94d039",
+      "head": "This underscores the growing potential of LLMs a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_28_10:83-103 t_28_11:0-102 t_28_12:0-72"
+    },
+    {
+      "order": 492,
+      "textSha": "a6a75974af5b0142",
+      "head": "For example, many students turn to LLMs for supp",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_28_12:74-105 t_28_13:0-37"
+    },
+    {
+      "order": 493,
+      "textSha": "cf59d3a489398e9b",
+      "head": "Models like GPT-4 provide detailed explanations ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_28_13:39-96 t_28_14:0-104 t_28_15:0-14"
+    },
+    {
+      "order": 494,
+      "textSha": "bda2308f1b880ee3",
+      "head": "LLMs provide precise explanations that save time",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_28_15:16-96 t_28_16:0-7"
+    },
+    {
+      "order": 495,
+      "textSha": "c995f610af723667",
+      "head": "Moreover, LLMs are not limited to predefined ins",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_28_17:0-92 t_28_18:0-36 t_28_20:0-2"
+    },
+    {
+      "order": 496,
+      "textSha": "e5843836cbab369e",
+      "head": "These qualities make LLMs ideal for use in inter",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_28_22:0-48 t_28_23:0-96 t_28_24:0-46"
+    },
+    {
+      "order": 497,
+      "textSha": "4de477fd1482e3e4",
+      "head": "Simulations powered by LLMs are used across vari",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary", "parser_defect"],
+      "spans": "t_28_24:48-99 t_28_25:0-11 t_28_27:0-22 t_29_2:0-62",
+      "note": "GROBID가 인용 목록 중간에서 끊고 다음 쪽의 조각을 이어 붙였다."
+    },
+    {
+      "order": 498,
+      "textSha": "f6ed77600a4ea689",
+      "head": "The integration of LLMs into the educational lan",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_3:0-91 t_29_4:0-90"
+    },
+    {
+      "order": 499,
+      "textSha": "760c04ddf2ec8f75",
+      "head": "For educators in these fields, LLMs can be power",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_6:0-3 t_29_7:0-97 t_29_8:0-64"
+    },
+    {
+      "order": 500,
+      "textSha": "af592e35110a74d4",
+      "head": "For students in engineering and manufacturing pr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_10:0-31 t_29_11:0-98 t_29_12:0-67"
+    },
+    {
+      "order": 501,
+      "textSha": "351bb0e81787dc9f",
+      "head": "Figure 24 shows the interaction of LLMs for both",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_12:69-103 t_29_13:0-92"
+    },
+    {
+      "order": 502,
+      "textSha": "d716967dc918da84",
+      "head": "In curriculum design, LLMs offer significant adv",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_29_14:0-94 t_29_15:0-97 t_29_16:0-19"
+    },
+    {
+      "order": 503,
+      "textSha": "1e7d9c42578e3060",
+      "head": "Educators can access a vast array of technical c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_16:22-101 t_29_17:0-84"
+    },
+    {
+      "order": 504,
+      "textSha": "eaf8a1e5f1c4ddce",
+      "head": "Furthermore, LLMs assist in designing efficient ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_29_19:0-11 t_29_20:0-103 t_29_21:0-94"
+    },
+    {
+      "order": 505,
+      "textSha": "8394020a7616a904",
+      "head": "This comprehensive support system enhances the o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_21:97-101 t_29_22:0-99 t_29_23:0-38"
+    },
+    {
+      "order": 506,
+      "textSha": "ca238f83938a95cf",
+      "head": "For engineering and manufacturing programs stude",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_24:0-95 t_29_25:0-101 t_29_26:0-54"
+    },
+    {
+      "order": 507,
+      "textSha": "3bbf00fcd1b0b033",
+      "head": "Additionally, the vast array of resources made a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_29_28:0-41 t_29_29:0-94 t_29_30:0-92 t_29_31:0-9"
+    },
+    {
+      "order": 508,
+      "textSha": "7aa6f6002f5d25a7",
+      "head": "Figure 24: Examples of interaction between LLMs ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_0:0-91"
+    },
+    {
+      "order": 509,
+      "textSha": "99738781ef071352",
+      "head": "By assisting with LLMs, future education will be",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_0:93-95 t_30_1:0-94"
+    },
+    {
+      "order": 510,
+      "textSha": "5636cfc197505594",
+      "head": "The integration of LLMs into engineering educati",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_2:0-92 t_30_3:0-38"
+    },
+    {
+      "order": 511,
+      "textSha": "5245fb7baa51c946",
+      "head": "From personalized learning and instructional sup",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_30_3:40-101 t_30_4:0-103 t_30_5:0-26"
+    },
+    {
+      "order": 512,
+      "textSha": "2b545bf81fa4632c",
+      "head": "However, realizing their full potential requires",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_7:0-73 t_30_8:0-52"
+    },
+    {
+      "order": 513,
+      "textSha": "9649ba54bde749bb",
+      "head": "As the technology continues to evolve, ongoing r",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_8:54-100 t_30_9:0-100 t_30_10:0-42"
+    },
+    {
+      "order": 514,
+      "textSha": "f62f305972377d16",
+      "head": "Multimodality large language models (MLLMs) repr",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_30_16:0-96 t_30_17:0-100 t_30_18:0-43"
+    },
+    {
+      "order": 515,
+      "textSha": "fcdfae7663f8d6de",
+      "head": "These models leverage the synergy of visual, aud",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_20:0-53 t_30_21:0-97"
+    },
+    {
+      "order": 516,
+      "textSha": "c22cafdffdaadcad",
+      "head": "By combining these different modes, MLLMs addres",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_21:99-101 t_30_22:0-97 t_30_23:0-77"
+    },
+    {
+      "order": 517,
+      "textSha": "bcc7b353e8e24390",
+      "head": "With advancements in Visual Question Answering (",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_24:0-88 t_30_25:0-39"
+    },
+    {
+      "order": 518,
+      "textSha": "c7720564e28e1e76",
+      "head": "VQA was first introduced in [AAL + 15], represen",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_25:41-73 t_30_27:0-25 t_30_28:0-79"
+    },
+    {
+      "order": 519,
+      "textSha": "dbccd2e5fcdd10f1",
+      "head": "It focuses on creating systems capable of interp",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_28:81-103 t_30_29:0-96 t_30_30:0-9"
+    },
+    {
+      "order": 520,
+      "textSha": "5f232edd614b68d7",
+      "head": "VQA systems combine image comprehension techniqu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_32:0-83 t_30_33:0-80"
+    },
+    {
+      "order": 521,
+      "textSha": "f299e112194f7058",
+      "head": "By integrating multimodal features-visual and li",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_35:0-14 t_30_36:0-95"
+    },
+    {
+      "order": 522,
+      "textSha": "7884b1f73ddac357",
+      "head": "Recently, numerous generative image models have ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_37:0-70 t_30_39:0-7 t_30_41:0-7 t_30_43:0-2 t_30_44:0-5 t_30_46:0-7 t_30_48:0-2"
+    },
+    {
+      "order": 523,
+      "textSha": "7e2dc687c0f4152f",
+      "head": "These models learn to capture the distribution o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_50:0-73 t_30_51:0-61"
+    },
+    {
+      "order": 524,
+      "textSha": "09008968aed5a381",
+      "head": "Diffusion models, in particular, are trained by ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_53:0-36 t_30_54:0-98 t_30_55:0-19"
+    },
+    {
+      "order": 525,
+      "textSha": "1740385c544bc913",
+      "head": "These technologies create a bridge between MLLMs",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_57:0-72 t_30_58:0-65"
+    },
+    {
+      "order": 526,
+      "textSha": "ad189c15cb58e852",
+      "head": "For visual learning in the manufacturing domain,",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_59:0-97 t_30_60:0-29 t_30_62:0-2"
+    },
+    {
+      "order": 527,
+      "textSha": "99df7102a746e02f",
+      "head": "Video analysis techniques have applications in a",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_64:0-62 t_30_65:0-97"
+    },
+    {
+      "order": 528,
+      "textSha": "47b6cf6ff4d36a15",
+      "head": "For instance, [vdH20] recorded classroom videos ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_30_66:0-96 t_30_67:0-63"
+    },
+    {
+      "order": 529,
+      "textSha": "594dd4d07444dc78",
+      "head": "By analyzing students' emotions and moods, educa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_30_67:65-100 t_30_68:0-96 t_30_69:0-57"
+    },
+    {
+      "order": 530,
+      "textSha": "34e14bf215b67212",
+      "head": "MLLMs can also be utilized to enhance diagrams a",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "hyphenated", "page_boundary"],
+      "spans": "t_30_69:59-100 t_30_70:0-98 t_30_71:0-102 t_31_0:0-23"
+    },
+    {
+      "order": 531,
+      "textSha": "4c27d3adf480a71d",
+      "head": "Regarding flowcharts and process maps, visualizi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_31_1:0-97 t_31_2:0-98"
+    },
+    {
+      "order": 532,
+      "textSha": "bab476ff737be04d",
+      "head": "MLLMs can expedite the creation of animations an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_3:0-96 t_31_4:0-63"
+    },
+    {
+      "order": 533,
+      "textSha": "7d8d53baac01e2f7",
+      "head": "These tools provide a real-time understanding of",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_6:0-31 t_31_7:0-98 t_31_8:0-12"
+    },
+    {
+      "order": 534,
+      "textSha": "35a4687919b36ee4",
+      "head": "Audio analysis is widely supported by artificial",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_9:0-101 t_31_10:0-39 t_31_12:0-2"
+    },
+    {
+      "order": 535,
+      "textSha": "efcaf93de9c9b4b7",
+      "head": "[CG22] developed an automated classroom audio an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_31_12:6-55 t_31_13:0-106 t_31_14:0-27 t_31_16:0-2"
+    },
+    {
+      "order": 536,
+      "textSha": "fd2777b29717097d",
+      "head": "MLLMs analyze the requirement of students to ger",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_31_16:5-66 t_31_17:0-101 t_31_18:0-97 t_31_19:0-28"
+    },
+    {
+      "order": 537,
+      "textSha": "eeb5d7e4add43152",
+      "head": "Socratic Seminars can be established between stu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_21:0-66 t_31_22:0-101 t_31_23:0-80"
+    },
+    {
+      "order": 538,
+      "textSha": "69443e79c732dd3c",
+      "head": "Besides, Using multimedia presentations that com",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_31_23:82-100 t_31_24:0-101 t_31_25:0-75"
+    },
+    {
+      "order": 539,
+      "textSha": "6aae38fb86d2d368",
+      "head": "All of these multimedia productions are potentia",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_27:0-23 t_31_28:0-59"
+    },
+    {
+      "order": 540,
+      "textSha": "e1e2392bd4fc055a",
+      "head": "In conclusion, multimodality models represent a ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_29:0-92 t_31_30:0-100 t_31_31:0-32"
+    },
+    {
+      "order": 541,
+      "textSha": "c70c10617e8990f0",
+      "head": "By adopting these models, educational institutio",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_31:34-103 t_31_32:0-98 t_31_33:0-45"
+    },
+    {
+      "order": 542,
+      "textSha": "ae56353b7a9e7c57",
+      "head": "While LLMs and MLLMs have demonstrated significa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_31_39:0-93 t_31_40:0-96 t_31_41:0-59"
+    },
+    {
+      "order": 543,
+      "textSha": "2176beebf150f618",
+      "head": "These challenges extend beyond technical limitat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_41:61-101 t_31_42:0-105 t_31_43:0-44"
+    },
+    {
+      "order": 544,
+      "textSha": "81ad6954488099b3",
+      "head": "A nuanced understanding of these challenges is c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_43:46-100 t_31_44:0-97 t_31_45:0-71"
+    },
+    {
+      "order": 545,
+      "textSha": "948b998cf6fd639b",
+      "head": "The following sections will explore these key ch",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_47:0-27 t_31_48:0-37"
+    },
+    {
+      "order": 546,
+      "textSha": "3113ea0ca16a0abf",
+      "head": "• Instruction Quality and Overreliance: The inte",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_51:0-36 t_31_53:0-49 t_31_54:0-96 t_31_55:0-73"
+    },
+    {
+      "order": 547,
+      "textSha": "449c5f61695df7d5",
+      "head": "However, the risk of overreliance on these model",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_55:75-95 t_31_56:0-93"
+    },
+    {
+      "order": 548,
+      "textSha": "ef6ce98867b97423",
+      "head": "The models, while capable of generating fluent t",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_56:95-98 t_31_57:0-93 t_31_58:0-81"
+    },
+    {
+      "order": 549,
+      "textSha": "4f25a95fd1cea00d",
+      "head": "For instance, LLMs such as GPT-3 and GPT-4 are p",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_58:83-95 t_31_59:0-88 t_31_60:0-91 t_31_62:0-2"
+    },
+    {
+      "order": 550,
+      "textSha": "9023b37f4b8080cf",
+      "head": "Moreover, these models are subject to inherent b",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_63:0-93 t_31_64:0-96 t_31_65:0-12"
+    },
+    {
+      "order": 551,
+      "textSha": "ba605560bad77adb",
+      "head": "This raises concerns not only about the quality ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_65:14-95 t_31_66:0-60"
+    },
+    {
+      "order": 552,
+      "textSha": "72edde0ebefd99d9",
+      "head": "Addressing these issues requires a careful balan",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_66:62-96 t_31_67:0-91 t_31_68:0-30"
+    },
+    {
+      "order": 553,
+      "textSha": "f604e000323f6c74",
+      "head": "• Student Learning and Cognitive Engagement: The",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_31_71:0-41 t_31_73:0-40 t_31_74:0-95 t_31_75:0-68"
+    },
+    {
+      "order": 554,
+      "textSha": "2eebe4716014fbe2",
+      "head": "While these models can serve as powerful tools f",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_31_75:70-92 t_31_76:0-96 t_31_77:0-75"
+    },
+    {
+      "order": 555,
+      "textSha": "4bdd3bbead461909",
+      "head": "This reduces the necessity for students to engag",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_31_79:0-16 t_31_80:0-101 t_32_0:0-51"
+    },
+    {
+      "order": 556,
+      "textSha": "d22585362c271760",
+      "head": "Research suggests that the widespread use of LLM",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_0:53-97 t_32_1:0-92 t_32_2:0-91 t_32_3:0-24"
+    },
+    {
+      "order": 557,
+      "textSha": "d0c576fff517331d",
+      "head": "In essence, while LLMs provide a valuable resour",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_3:27-92 t_32_4:0-99 t_32_5:0-55"
+    },
+    {
+      "order": 558,
+      "textSha": "e9bc97ec4cbf976e",
+      "head": "• Integrity and Bias: The ethical implications o",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_8:0-18 t_32_10:0-71 t_32_11:0-97 t_32_12:0-36"
+    },
+    {
+      "order": 559,
+      "textSha": "da6d0ac9451e06f2",
+      "head": "The use of LLMs in the production of essays, rep",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_12:38-95 t_32_13:0-93 t_32_14:0-38"
+    },
+    {
+      "order": 560,
+      "textSha": "4ef713484dd5df65",
+      "head": "This not only undermines the integrity of the ed",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_14:40-97 t_32_15:0-89 t_32_17:0-2"
+    },
+    {
+      "order": 561,
+      "textSha": "bdce27a0a52545d9",
+      "head": "Additionally, since LLMs are trained on vast dat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_18:0-91 t_32_19:0-73"
+    },
+    {
+      "order": 562,
+      "textSha": "5bbb9a06d76c8df5",
+      "head": "Such biases can be particularly problematic in e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_19:75-97 t_32_20:0-95 t_32_21:0-9"
+    },
+    {
+      "order": 563,
+      "textSha": "ca88ff7889dc6a31",
+      "head": "Furthermore, the issue of privacy arises from th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_21:11-98 t_32_22:0-90"
+    },
+    {
+      "order": 564,
+      "textSha": "986fb773ce23b7e4",
+      "head": "These ethical challenges necessitate the develop",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_22:92-97 t_32_23:0-96 t_32_24:0-74"
+    },
+    {
+      "order": 565,
+      "textSha": "577050b9fc32769d",
+      "head": "• Transparency and Privacy: The practical challe",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_27:0-24 t_32_29:0-63 t_32_30:0-56"
+    },
+    {
+      "order": 566,
+      "textSha": "45244fec73bee276",
+      "head": "One major concern is the lack of transparency in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_30:58-96 t_32_31:0-94 t_32_32:0-57"
+    },
+    {
+      "order": 567,
+      "textSha": "56b2c7c263ceb1e7",
+      "head": "This opacity undermines the ability to criticall",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_32:59-94 t_32_33:0-76"
+    },
+    {
+      "order": 568,
+      "textSha": "725aa05339d52676",
+      "head": "Additionally, issues related to technological re",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_33:78-98 t_32_34:0-95 t_32_35:0-10"
+    },
+    {
+      "order": 569,
+      "textSha": "3ea9567929a28649",
+      "head": "Many existing LLM-based tools are not yet fully ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_37:0-78 t_32_38:0-97 t_32_39:0-83 t_32_41:0-2"
+    },
+    {
+      "order": 570,
+      "textSha": "bd91b2b3ee854811",
+      "head": "Privacy concerns also loom large, as the use of ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_32_41:5-12 t_32_42:0-97 t_32_43:0-94 t_32_44:0-9"
+    },
+    {
+      "order": 571,
+      "textSha": "2e75b806aa12423e",
+      "head": "Addressing these practical challenges requires a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_44:11-92 t_32_45:0-88"
+    },
+    {
+      "order": 572,
+      "textSha": "6bde4aa1f9add396",
+      "head": "Patent management encompasses a multifaceted arr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_52:0-99 t_32_53:0-51"
+    },
+    {
+      "order": 573,
+      "textSha": "f64bac8e1771aac8",
+      "head": "Technological support is indispensable for firms",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_55:0-42 t_32_56:0-104 t_32_57:0-57"
+    },
+    {
+      "order": 574,
+      "textSha": "0426a4bf2910b598",
+      "head": "The deployment of valuation tools is crucial for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_57:59-103 t_32_58:0-98 t_32_59:0-96 t_32_60:0-63"
+    },
+    {
+      "order": 575,
+      "textSha": "f10f252ca67d34d9",
+      "head": "The advent of large language models, characteriz",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_62:0-28 t_32_63:0-100 t_32_64:0-98"
+    },
+    {
+      "order": 576,
+      "textSha": "6d55061c788ed6c7",
+      "head": "This development underscores a significant shift",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_64:100-104 t_32_65:0-103 t_32_66:0-65"
+    },
+    {
+      "order": 577,
+      "textSha": "015f71f5603792a0",
+      "head": "LLMs are increasingly leveraged to automate the ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_67:0-93 t_32_68:0-4"
+    },
+    {
+      "order": 578,
+      "textSha": "bcf651bf69789034",
+      "head": "By extracting multi-level keywords from each pat",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_68:6-98 t_32_69:0-80"
+    },
+    {
+      "order": 579,
+      "textSha": "1eee2e3f8c424838",
+      "head": "Furthermore, these models conduct comprehensive ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_32_69:82-100 t_32_70:0-101 t_32_71:0-103 t_32_72:0-40"
+    },
+    {
+      "order": 580,
+      "textSha": "acc935a751535bb9",
+      "head": "Moreover, LLMs facilitate the patent application",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_0:0-100 t_33_1:0-45"
+    },
+    {
+      "order": 581,
+      "textSha": "428da470d14d69d3",
+      "head": "By generating preliminary application drafts bas",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_1:48-101 t_33_2:0-83"
+    },
+    {
+      "order": 582,
+      "textSha": "fc9bc1117085991f",
+      "head": "Applicants can refine these drafts with minimal ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_2:85-95 t_33_3:0-104 t_33_4:0-46"
+    },
+    {
+      "order": 583,
+      "textSha": "9c7836758f841530",
+      "head": "The rise of LLMs marks a significant shift in in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_5:0-93 t_33_6:0-27"
+    },
+    {
+      "order": 584,
+      "textSha": "11620772470f8a4d",
+      "head": "Freire et al. [FWF + 24] explore the transformat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_6:29-47 t_33_8:0-51 t_33_9:0-52"
+    },
+    {
+      "order": 585,
+      "textSha": "9370d7fddf1712cd",
+      "head": "Their study introduces an innovative system that",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_9:54-97 t_33_10:0-97 t_33_11:0-15"
+    },
+    {
+      "order": 586,
+      "textSha": "fa61a78a1d740eee",
+      "head": "This approach streamlines information flow and e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_11:17-101 t_33_12:0-22"
+    },
+    {
+      "order": 587,
+      "textSha": "39380fd4aec1a1e4",
+      "head": "A key highlight is GPT-4V's superior performance",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_12:24-100 t_33_13:0-98"
+    },
+    {
+      "order": 588,
+      "textSha": "c8cd490a6e62c05f",
+      "head": "This comparison across various LLMs underscores ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_14:0-94 t_33_15:0-99 t_33_16:0-101 t_33_17:0-22"
+    },
+    {
+      "order": 589,
+      "textSha": "64a976b8a4749970",
+      "head": "Recent advances in natural language processing e",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_17:24-99 t_33_18:0-41"
+    },
+    {
+      "order": 590,
+      "textSha": "b457f746a2500563",
+      "head": "Freire et al. [KFWF + 24] demonstrate the effica",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_19:0-19 t_33_21:0-73 t_33_22:0-80"
+    },
+    {
+      "order": 591,
+      "textSha": "d8e378094f679966",
+      "head": "Through a meticulous user study in a factory env",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_22:82-97 t_33_23:0-101 t_33_24:0-100 t_33_25:0-24"
+    },
+    {
+      "order": 592,
+      "textSha": "c9ff9dc0c7cf7f33",
+      "head": "Their evaluation distinguishes GPT-4V as the mos",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_27:0-70 t_33_28:0-102 t_33_29:0-10"
+    },
+    {
+      "order": 593,
+      "textSha": "3e4f0a23615f01c8",
+      "head": "Xia et al. [XLZ + 24] take a novel approach by f",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_30:0-15 t_33_32:0-83 t_33_33:0-99 t_33_34:0-20"
+    },
+    {
+      "order": 594,
+      "textSha": "4b7ea33012861860",
+      "head": "This technique addresses the critical challenge ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_34:22-102 t_33_35:0-102 t_33_36:0-43"
+    },
+    {
+      "order": 595,
+      "textSha": "df341ef815cb4d2c",
+      "head": "Concurrently, Wang et al. [WADL23] assess ChatGP",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_37:0-93 t_33_38:0-91"
+    },
+    {
+      "order": 596,
+      "textSha": "ce48be026f9f2a38",
+      "head": "Despite noting limitations in accuracy and relia",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_38:93-100 t_33_39:0-109 t_33_40:0-88"
+    },
+    {
+      "order": 597,
+      "textSha": "e93f762f4b99b4bc",
+      "head": "Moreover, Meyer et al. [MSF + 23] explore ChatGP",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_41:0-27 t_33_43:0-59 t_33_44:0-101 t_33_45:0-6"
+    },
+    {
+      "order": 598,
+      "textSha": "40d6149846bc7f7d",
+      "head": "While acknowledging certain limitations, includi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_45:8-102 t_33_46:0-98 t_33_47:0-42"
+    },
+    {
+      "order": 599,
+      "textSha": "157f7e45c700b1f5",
+      "head": "These studies collectively illuminate the essent",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_33_48:0-95 t_33_49:0-101 t_33_50:0-84"
+    },
+    {
+      "order": 600,
+      "textSha": "fcf9aca932c2ecae",
+      "head": "While large language model can benefit patent an",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_51:0-90 t_33_52:0-96 t_33_53:0-59"
+    },
+    {
+      "order": 601,
+      "textSha": "b161a98b9d9e912a",
+      "head": "Ensuring the reliability, safety, fairness, robu",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_53:61-103 t_33_54:0-100 t_33_55:0-33"
+    },
+    {
+      "order": 602,
+      "textSha": "0b5f70568f8b7ae2",
+      "head": "By addressing these dimensions, manufacturers ca",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_55:35-99 t_33_56:0-100 t_33_57:0-36"
+    },
+    {
+      "order": 603,
+      "textSha": "47e37f25a4b12b8b",
+      "head": "The manufacturing industry is undergoing a signi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_33_63:0-98 t_33_64:0-100"
+    },
+    {
+      "order": 604,
+      "textSha": "1431fc59acec2494",
+      "head": "As AI systems become more prevalent in various a",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_33_64:102-104 t_33_65:0-96 t_33_66:0-99 t_34_9:0-34"
+    },
+    {
+      "order": 605,
+      "textSha": "ce3b81cdd2f19070",
+      "head": "Trustworthiness in AI encompasses multiple dimen",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_9:36-98 t_34_10:0-66 t_34_12:0-2"
+    },
+    {
+      "order": 606,
+      "textSha": "d4157653901e2dec",
+      "head": "In the context of manufacturing, these dimension",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_13:0-76 t_34_15:0-11 t_34_17:0-87 t_34_18:0-51"
+    },
+    {
+      "order": 607,
+      "textSha": "0c2068948c5adab7",
+      "head": "For example, computer vision algorithms used for",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_20:0-44 t_34_21:0-99 t_34_22:0-42"
+    },
+    {
+      "order": 608,
+      "textSha": "ca61b51287f31344",
+      "head": "Similarly, LLMs used for analyzing customer feed",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_34_22:45-97 t_34_23:0-96 t_34_24:0-12"
+    },
+    {
+      "order": 609,
+      "textSha": "072412edae7f5b56",
+      "head": "Safety is paramount in manufacturing environment",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_26:0-6 t_34_28:0-83 t_34_29:0-13"
+    },
+    {
+      "order": 610,
+      "textSha": "1a9780ac725bd6e0",
+      "head": "Collaborative robots, or cobots, must operate sa",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_29:15-101 t_34_30:0-26"
+    },
+    {
+      "order": 611,
+      "textSha": "d298cf8aec6cc600",
+      "head": "Advanced sensor fusion and real-time motion plan",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_32:0-63 t_34_33:0-54 t_34_35:0-2"
+    },
+    {
+      "order": 612,
+      "textSha": "9c2f6554e6dcd10d",
+      "head": "Additionally, AI systems must respect data priva",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_35:5-42 t_34_36:0-103 t_34_37:0-20"
+    },
+    {
+      "order": 613,
+      "textSha": "84e548b4d566ff10",
+      "head": "Fairness is crucial in AI-assisted decision-maki",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_39:0-8 t_34_41:0-88 t_34_42:0-68"
+    },
+    {
+      "order": 614,
+      "textSha": "b9e39283fe45a76d",
+      "head": "Scheduling algorithms should ensure equitable al",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_34_42:70-98 t_34_43:0-102 t_34_44:0-68"
+    },
+    {
+      "order": 615,
+      "textSha": "5ba4041ffd81fdb7",
+      "head": "Performance evaluation systems should base their",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_44:71-101 t_34_45:0-99 t_34_46:0-31 t_34_48:0-2"
+    },
+    {
+      "order": 616,
+      "textSha": "11faaffcff2da5ed",
+      "head": "Robustness is critical for AI systems in manufac",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_50:0-10 t_34_52:0-81 t_34_53:0-10"
+    },
+    {
+      "order": 617,
+      "textSha": "1777171aeec11493",
+      "head": "For instance, LLMs used for generating product d",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_55:0-85 t_34_56:0-68"
+    },
+    {
+      "order": 618,
+      "textSha": "7e87b8efdc47ab90",
+      "head": "Anomaly detection models for predictive maintena",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_58:0-28 t_34_59:0-97 t_34_60:0-44"
+    },
+    {
+      "order": 619,
+      "textSha": "6f2d19f29229b079",
+      "head": "Robust optimization techniques can help AI model",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_62:0-49 t_34_63:0-99 t_34_64:0-5"
+    },
+    {
+      "order": 620,
+      "textSha": "1105897324ff1844",
+      "head": "Explainability is important for building trust a",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_66:0-14 t_34_68:0-77 t_34_69:0-9"
+    },
+    {
+      "order": 621,
+      "textSha": "2321eb913072f19d",
+      "head": "Plant managers and operators should be able to u",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_69:11-100 t_34_70:0-79"
+    },
+    {
+      "order": 622,
+      "textSha": "482c39457f7e8724",
+      "head": "Techniques such as feature importance analysis, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_70:81-99 t_34_71:0-102 t_34_72:0-34"
+    },
+    {
+      "order": 623,
+      "textSha": "bac3a728edf1c558",
+      "head": "Explainable AI can also facilitate compliance wi",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_34_72:36-102 t_34_73:0-102 t_34_74:0-34"
+    },
+    {
+      "order": 624,
+      "textSha": "2cf4ace0efda77aa",
+      "head": "To operationalize trustworthy AI in manufacturin",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_0:0-92 t_35_1:0-101 t_35_2:0-22"
+    },
+    {
+      "order": 625,
+      "textSha": "2b71b12e1bb8a4e4",
+      "head": "This includes establishing governance structures",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_35_2:24-98 t_35_3:0-100 t_35_4:0-36"
+    },
+    {
+      "order": 626,
+      "textSha": "2d1fc4f36cf138ee",
+      "head": "Collaborative efforts among industry, academia, ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_5:0-93 t_35_6:0-60"
+    },
+    {
+      "order": 627,
+      "textSha": "5867ea40c3829ce4",
+      "head": "By proactively addressing reliability, safety, f",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_6:62-99 t_35_7:0-103 t_35_8:0-99 t_35_9:0-70"
+    },
+    {
+      "order": 628,
+      "textSha": "f146a1d5cf8f2d84",
+      "head": "• Domain-Specific Knowledge Acquisition: Deployi",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_21:0-37 t_35_23:0-46 t_35_24:0-58"
+    },
+    {
+      "order": 629,
+      "textSha": "0a634b8e187309e2",
+      "head": "Manufacturing involves specialized terminologies",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_24:60-94 t_35_25:0-67"
+    },
+    {
+      "order": 630,
+      "textSha": "36ab1024676f2f62",
+      "head": "Ensuring LLMs can effectively comprehend and pro",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_27:0-17 t_35_28:0-98"
+    },
+    {
+      "order": 631,
+      "textSha": "e86529c64acab681",
+      "head": "• High Expectations for Engineering Outcomes: Th",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_35_31:0-42 t_35_33:0-38 t_35_34:0-69"
+    },
+    {
+      "order": 632,
+      "textSha": "0accdaebf613908e",
+      "head": "Manufacturing processes require precise calculat",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_35_34:71-94 t_35_35:0-95 t_35_36:0-5"
+    },
+    {
+      "order": 633,
+      "textSha": "48ef6779a2b6a0a9",
+      "head": "While LLMs have shown significant potential for ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_36:7-94 t_35_37:0-48"
+    },
+    {
+      "order": 634,
+      "textSha": "e50c702b5357b72a",
+      "head": "• Efficient Integration into Downstream Tasks: A",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_35_40:0-43 t_35_42:0-35 t_35_43:0-94 t_35_44:0-7"
+    },
+    {
+      "order": 635,
+      "textSha": "3014f2f45b71bb9b",
+      "head": "Manufacturing workflows involve complex interact",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_46:0-81 t_35_47:0-12"
+    },
+    {
+      "order": 636,
+      "textSha": "98c36bca64ec811a",
+      "head": "Seamlessly incorporating LLMs requires careful c",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_47:14-94 t_35_48:0-36"
+    },
+    {
+      "order": 637,
+      "textSha": "023d99b6a2b1a9c1",
+      "head": "• Enhancing Domain Adaptation Techniques: To add",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_56:0-38 t_35_58:0-43 t_35_59:0-90 t_35_60:0-4"
+    },
+    {
+      "order": 638,
+      "textSha": "8989b3f907012c12",
+      "head": "This involves training models on curated corpora",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_60:6-95 t_35_61:0-64"
+    },
+    {
+      "order": 639,
+      "textSha": "5f35976a5fb6c496",
+      "head": "Exposing LLMs to a wide range of relevant inform",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_63:0-23 t_35_64:0-96 t_35_65:0-44"
+    },
+    {
+      "order": 640,
+      "textSha": "bcf68f82677af359",
+      "head": "• Developing Hybrid Approaches: While LLMs excel",
+      "verification": "read",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_35_68:0-28 t_35_70:0-52 t_35_71:0-90 t_35_72:0-35"
+    },
+    {
+      "order": 641,
+      "textSha": "1e1a658e8d1ef1b5",
+      "head": "Researchers are investigating hybrid approaches ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_74:0-57 t_35_75:0-77"
+    },
+    {
+      "order": 642,
+      "textSha": "d90161b899aa7b87",
+      "head": "Leveraging the strengths of each approach can de",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_75:79-93 t_35_76:0-91 t_35_77:0-12"
+    },
+    {
+      "order": 643,
+      "textSha": "35c432872fc131aa",
+      "head": "• Collaborative Development and Evaluation Frame",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_80:0-51 t_35_82:0-29 t_35_83:0-89"
+    },
+    {
+      "order": 644,
+      "textSha": "2446d69ce707a757",
+      "head": "These frameworks should provide standardized int",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_84:0-91 t_35_85:0-26"
+    },
+    {
+      "order": 645,
+      "textSha": "6d7aa5ef21c9bac0",
+      "head": "Establishing common protocols and best practices",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_85:28-91 t_35_86:0-92"
+    },
+    {
+      "order": 646,
+      "textSha": "3ab755bfef399c02",
+      "head": "• Explainable AI for Manufacturing: As LLMs are ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_35_89:0-32 t_35_91:0-53 t_35_92:0-80"
+    },
+    {
+      "order": 647,
+      "textSha": "db0329c83ddab170",
+      "head": "Researchers are exploring techniques to enhance ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_35_92:82-93 t_35_93:0-94 t_35_94:0-40"
+    },
+    {
+      "order": 648,
+      "textSha": "0ea3bb6c72376744",
+      "head": "This includes developing methods for generating ",
+      "verification": "read",
+      "how": "segmented",
+      "tags": ["gapped", "page_boundary"],
+      "spans": "t_35_96:0-47 t_36_0:0-93 t_36_1:0-17"
+    },
+    {
+      "order": 649,
+      "textSha": "9b6032293697d16c",
+      "head": "Improving the transparency and accountability of",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_3:0-70 t_36_4:0-66"
+    },
+    {
+      "order": 650,
+      "textSha": "17a4efd992d1ee87",
+      "head": "As of the completion of this paper, OpenAI has r",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_5:0-82"
+    },
+    {
+      "order": 651,
+      "textSha": "f29e8d49dc2c66eb",
+      "head": "The o1 model has demonstrated outstanding perfor",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_5:84-96 t_36_6:0-97 t_36_7:0-50"
+    },
+    {
+      "order": 652,
+      "textSha": "c71ba0366b0d78e1",
+      "head": "With an 83.3% success rate in solving complex pr",
+      "verification": "auto",
+      "how": "unique",
+      "tags": ["hyphenated"],
+      "spans": "t_36_9:0-45 t_36_10:0-98 t_36_11:0-79"
+    },
+    {
+      "order": 653,
+      "textSha": "b39e71481b67d9c3",
+      "head": "Integrating o1 into manufacturing pipelines can ",
+      "verification": "read",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_11:81-100 t_36_12:0-94"
+    },
+    {
+      "order": 654,
+      "textSha": "548c09e343b03b66",
+      "head": "Additionally, o1's proficiency in multi-modal in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_13:0-103 t_36_14:0-95"
+    },
+    {
+      "order": 655,
+      "textSha": "cccc5e343736414c",
+      "head": "This study has highlighted the immense potential",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_20:0-98 t_36_21:0-20"
+    },
+    {
+      "order": 656,
+      "textSha": "13900f2985ca2104",
+      "head": "Through a comprehensive exploration of LLMs' app",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_21:22-95 t_36_22:0-100 t_36_23:0-103"
+    },
+    {
+      "order": 657,
+      "textSha": "159f121f47ab1630",
+      "head": "The exceptional performance of LLMs, particularl",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_24:0-97 t_36_25:0-77"
+    },
+    {
+      "order": 658,
+      "textSha": "2d5cb3ecfd4a0e85",
+      "head": "However, the successful deployment of LLMs in ma",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_25:79-102 t_36_26:0-97 t_36_27:0-101"
+    },
+    {
+      "order": 659,
+      "textSha": "ca7fc8fe268c76f9",
+      "head": "As the manufacturing industry continues to evolv",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_28:0-94 t_36_29:0-36"
+    },
+    {
+      "order": 660,
+      "textSha": "ba85f70190abf661",
+      "head": "Ongoing research efforts in areas such as domain",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_31:0-59 t_36_32:0-101 t_36_33:0-13"
+    },
+    {
+      "order": 661,
+      "textSha": "6dc685a3ae52317f",
+      "head": "Looking ahead, the symbiotic relationship betwee",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_34:0-93 t_36_35:0-33"
+    },
+    {
+      "order": 662,
+      "textSha": "0abd849e8e5b48d2",
+      "head": "By harnessing the power of these AI technologies",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_37:0-63 t_36_38:0-88"
+    },
+    {
+      "order": 663,
+      "textSha": "54f569b16b0d162b",
+      "head": "The future of manufacturing lies in the successf",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_38:90-100 t_36_39:0-102 t_36_40:0-29"
+    },
+    {
+      "order": 664,
+      "textSha": "d1249e98f4ff359b",
+      "head": "The authors would like to express their sincere ",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_44:0-103 t_36_45:0-65"
+    },
+    {
+      "order": 665,
+      "textSha": "f3707147afd93b87",
+      "head": "His expertise and suggestions were invaluable in",
+      "verification": "auto",
+      "how": "unique",
+      "tags": [],
+      "spans": "t_36_47:0-29 t_36_48:0-61"
+    }
+  ]
+}

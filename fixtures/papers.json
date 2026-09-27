@@ -1,0 +1,38 @@
+{
+  "note": "검증 논문 3편(PLAN 12.2). PDF는 커밋하지 않는다. `npm run fixtures:download`가 url에서 받아 sha256을 대조한다.",
+  "papers": [
+    {
+      "id": "2005.11401",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "arxivVersion": "v4",
+      "stamp": "arXiv:2005.11401v4 [cs.CL] 12 Apr 2021",
+      "url": "https://arxiv.org/pdf/2005.11401v4",
+      "sha256": "23e3249e9a1e75418d82efecab0ea8c4d033b89c93742f63208d47ce01f21233",
+      "bytes": 885323,
+      "pages": 19,
+      "layout": "1단, 인라인 수식·각주 있음"
+    },
+    {
+      "id": "2312.06718",
+      "title": "Large Scale Foundation Models for Intelligent Manufacturing Applications: A Survey",
+      "arxivVersion": "v3",
+      "stamp": "arXiv:2312.06718v3 [cs.AI] 22 Dec 2023",
+      "url": "https://arxiv.org/pdf/2312.06718v3",
+      "sha256": "b48110f4907771f92e5b78230cb4dfdb62e508caea8c7d0cc2635e92b67134a3",
+      "bytes": 2763641,
+      "pages": 26,
+      "layout": "2단, 반복되는 소제목 있음"
+    },
+    {
+      "id": "2410.21418",
+      "title": "Large Language Models for Manufacturing",
+      "arxivVersion": "v1",
+      "stamp": "arXiv:2410.21418v1 [cs.AI] 28 Oct 2024",
+      "url": "https://arxiv.org/pdf/2410.21418v1",
+      "sha256": "b15069c9e4a6467aded5956c6ea838b645ac5ff5080fc6c9e92ac9dd09ffa198",
+      "bytes": 30831766,
+      "pages": 52,
+      "layout": "1단, 40쪽 이상, 그림이 많아 쪽 경계 문장이 많음"
+    }
+  ]
+}
