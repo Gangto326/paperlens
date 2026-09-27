@@ -12,6 +12,7 @@ import type { Turn } from './protocol/v2/Turn';
 import type { TurnCompletedNotification } from './protocol/v2/TurnCompletedNotification';
 import type { TurnError } from './protocol/v2/TurnError';
 import type { TurnInterruptParams } from './protocol/v2/TurnInterruptParams';
+import type { TurnStartedNotification } from './protocol/v2/TurnStartedNotification';
 import type { TurnStartParams } from './protocol/v2/TurnStartParams';
 import type { TurnStartResponse } from './protocol/v2/TurnStartResponse';
 
@@ -253,7 +254,19 @@ export async function runStructuredTurn(
   const outcome = new Promise<Outcome>((resolve) => {
     settle = resolve;
   });
+  // turn/start 응답과 알림이 한 묶음으로 오면 알림 처리기가 응답을 기다리던 코드보다 먼저 돈다.
+  // 그래서 started는 응답과 turn/started 알림 중 먼저 본 쪽에서 한 번만 알린다.
+  let announced = false;
+  const announce = (id: string): void => {
+    if (announced) return;
+    announced = true;
+    emit({ type: 'started', turnId: id });
+  };
   const off = [
+    transport.onNotification('turn/started', (raw) => {
+      const p = raw as TurnStartedNotification;
+      if (mine({ threadId: p.threadId, turnId: p.turn.id })) announce(p.turn.id);
+    }),
     transport.onNotification('item/started', (raw) => {
       const p = raw as ItemStartedNotification;
       if (!mine(p)) return;
@@ -310,7 +323,7 @@ export async function runStructuredTurn(
         approvalPolicy: THREAD_APPROVAL_POLICY,
       } satisfies TurnStartParams);
       turnId = res.turn.id;
-      emit({ type: 'started', turnId });
+      announce(turnId);
     } catch (err) {
       if (err instanceof AppServerError) {
         if (err.kind === 'timeout') return fail('timeout', err.message);
