@@ -16,6 +16,13 @@ export const IPC = {
   parserFulltext: 'parser:fulltext',
   extractBuildDocument: 'extract:buildDocument',
   extractReadDocument: 'extract:readDocument',
+  llmAccountRead: 'llm:accountRead',
+  llmLoginStart: 'llm:loginStart',
+  llmLoginCancel: 'llm:loginCancel',
+  llmLogout: 'llm:logout',
+  llmRateLimitsRead: 'llm:rateLimitsRead',
+  /** main → renderer 푸시(계정·한도·로그인 완료). 나머지는 renderer → main invoke. */
+  llmAccountEvent: 'llm:accountEvent',
 } as const;
 
 export interface AppInfo {
@@ -104,3 +111,57 @@ export interface MappingResult {
  * TEI 원문·정규화 대응표·서지는 포함하지 않는다. 문장 수백 개·스팬 수천 개라도 수백 KB 수준이라 한 번에 보낸다.
  */
 export type ReadDocumentResult = SentenceIndex & { documentPath: string };
+
+/**
+ * LLM 계정 상태(C1.19, PLAN 4.2 "인증 상태 확인·로그인"). Codex 고유 응답은 어댑터(main/llm/codex) 밖으로 내보내지 않고
+ * 앱이 정의한 이 형태로만 renderer에 준다.
+ * - unavailable: 런타임이 뜨지 않았거나 응답할 수 없다(PAPERLENS_NO_CODEX, 시작 실패, 종료).
+ * - needs_login: 런타임은 있으나 로그인된 계정이 없다(PaperState `needs_login`과 같은 뜻).
+ */
+export type LlmAccountStatus =
+  | { state: 'unavailable'; reason: string }
+  | { state: 'needs_login' }
+  | {
+      state: 'authenticated';
+      method: 'chatgpt' | 'api_key' | 'other';
+      email: string | null;
+      /** 계정이 보고한 요금제 이름(예: plus, pro). 앱은 특정 요금제를 가정하지 않는다. */
+      plan: string | null;
+    };
+
+/** 한도 창 하나. resetsAt은 ISO 8601(UTC). 값이 없으면 null이고 UI는 "확인 불가"로 표시한다. */
+export interface LlmRateLimitWindow {
+  usedPercent: number;
+  windowMinutes: number | null;
+  resetsAt: string | null;
+}
+
+/** 사용 한도(PLAN 10: 계정이 제공하는 한도·갱신 시각 또는 unavailable). */
+export type LlmRateLimits =
+  | {
+      available: true;
+      primary: LlmRateLimitWindow | null;
+      secondary: LlmRateLimitWindow | null;
+      plan: string | null;
+      /** 조회 또는 알림 수신 시각(ISO 8601) */
+      readAt: string;
+    }
+  | { available: false; reason: 'needs_login' | 'unavailable' | 'error'; message: string };
+
+/** 로그인 흐름 시작 결과. started면 main이 authUrl을 기본 브라우저로 열었다. */
+export type LlmLoginStart =
+  { started: true; loginId: string; authUrl: string } | { started: false; reason: string };
+
+export type LlmLoginCancel = 'canceled' | 'not_found' | 'unavailable';
+
+export interface LlmLoginCompleted {
+  loginId: string | null;
+  success: boolean;
+  error: string | null;
+}
+
+/** main이 renderer에 푸시하는 계정 관련 이벤트. */
+export type LlmAccountEvent =
+  | { type: 'account'; status: LlmAccountStatus }
+  | { type: 'rateLimits'; rateLimits: LlmRateLimits }
+  | { type: 'loginCompleted'; result: LlmLoginCompleted };

@@ -74,6 +74,26 @@ body,
   margin: 0 0 12px;
   font-size: 12px;
 }
+#account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid rgb(128 128 128 / 0.3);
+  border-radius: 4px;
+}
+#account[data-tone='warn'] {
+  border-color: rgb(214 138 0 / 0.6);
+}
+#account[data-tone='ok'] {
+  border-color: rgb(40 160 90 / 0.6);
+}
+#account .account-limits {
+  flex-basis: 100%;
+}
 .selection-summary {
   margin: 0 0 8px;
   font-size: 12px;

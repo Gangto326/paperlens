@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   IPC,
   type AppInfo,
+  type LlmAccountEvent,
+  type LlmAccountStatus,
+  type LlmLoginCancel,
+  type LlmLoginStart,
+  type LlmRateLimits,
   type MappingResult,
   type ParserFulltextResult,
   type ParserHealth,
@@ -26,6 +31,19 @@ const api = {
     ipcRenderer.invoke(IPC.extractBuildDocument, pdfSha256),
   readDocument: (pdfSha256: string): Promise<ReadDocumentResult> =>
     ipcRenderer.invoke(IPC.extractReadDocument, pdfSha256),
+  readAccount: (): Promise<LlmAccountStatus> => ipcRenderer.invoke(IPC.llmAccountRead),
+  startLogin: (): Promise<LlmLoginStart> => ipcRenderer.invoke(IPC.llmLoginStart),
+  cancelLogin: (loginId: string): Promise<LlmLoginCancel> =>
+    ipcRenderer.invoke(IPC.llmLoginCancel, loginId),
+  logout: (): Promise<LlmAccountStatus> => ipcRenderer.invoke(IPC.llmLogout),
+  readRateLimits: (): Promise<LlmRateLimits> => ipcRenderer.invoke(IPC.llmRateLimitsRead),
+  /** main이 푸시하는 계정·한도·로그인 완료 이벤트 구독. 반환값은 구독 해제 함수. */
+  onAccountEvent: (handler: (event: LlmAccountEvent) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: LlmAccountEvent): void =>
+      handler(payload);
+    ipcRenderer.on(IPC.llmAccountEvent, listener);
+    return () => ipcRenderer.removeListener(IPC.llmAccountEvent, listener);
+  },
 };
 
 export type PaperLensApi = typeof api;

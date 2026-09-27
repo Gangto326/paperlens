@@ -1,6 +1,7 @@
 import 'pdfjs-dist/web/pdf_viewer.css';
 import type { OpenedPdf, SentenceIndex } from '@shared/ipc';
 import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
+import { AccountPanel } from './panel/account-panel';
 import { SentencePanel } from './panel/sentence-panel';
 import { rangesFromSelection } from './viewer/dom-selection';
 import { PdfViewer } from './viewer/pdf-viewer';
@@ -21,6 +22,7 @@ const viewerEl = $('viewer');
 const viewer = new PdfViewer({ container: viewerEl });
 const selection = new SelectionController(viewer, viewerEl);
 const panel = new SentencePanel($('selection'));
+const accountPanel = new AccountPanel($('account'), (err) => showError(err));
 let screenshotMode = false;
 
 /** 상단 단계 표시(PLAN 9: 추출 → 문장 연결 → 논문 문맥·조사 → 번역 → 완료). 진행률은 실제 완료 수만 쓴다. */
@@ -248,6 +250,8 @@ async function boot(): Promise<void> {
       `[paperlens] rendered page ${pageIndex} textDivs=${tl?.textDivs.length ?? 0} items=${tl?.textContentItemsStr.length ?? 0}`,
     );
   });
+  // 계정·한도 표시(C1.19). 런타임이 아직 뜨는 중이면 unavailable로 시작하고 main의 푸시로 갱신된다.
+  await accountPanel.start();
   if (info.autoOpened) await loadOpened(info.autoOpened);
 }
 

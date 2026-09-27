@@ -4,6 +4,11 @@ import { writeFile } from 'node:fs/promises';
 import {
   IPC,
   type AppInfo,
+  type LlmAccountEvent,
+  type LlmAccountStatus,
+  type LlmLoginCancel,
+  type LlmLoginStart,
+  type LlmRateLimits,
   type MappingResult,
   type ParserFulltextResult,
   type ParserHealth,
@@ -19,6 +24,7 @@ import type { Page } from '@shared/schema';
 import { GrobidClient } from './parser/grobid-client';
 import { FULLTEXT_PARAMS, processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
 import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
+import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex/codex-account';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -29,6 +35,10 @@ const extractedPages = new Map<string, Page[]>();
 let grobidVersion: string | null = null;
 /** 앱이 소유하는 Codex App Server(C1.18). PAPERLENS_NO_CODEX=1이면 띄우지 않는다. */
 let codex: CodexRuntime | null = null;
+/** 계정·로그인·한도 어댑터(C1.19). 런타임이 없어도 존재하며 그때는 unavailable을 돌려준다. */
+const account = new CodexAccount(() => codex?.client ?? null, {
+  log: (line) => console.log(`[codex] ${line}`),
+});
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -197,6 +207,27 @@ function registerIpc(): void {
       return readSentenceIndex(store, pdfSha256);
     },
   );
+
+  // 계정·로그인·한도(C1.19). 실제 로그인은 기본 브라우저에서 사용자가 마치고, 완료는 llm:accountEvent로 푸시된다.
+  ipcMain.handle(IPC.llmAccountRead, async (): Promise<LlmAccountStatus> => account.read());
+  ipcMain.handle(IPC.llmLoginStart, async (): Promise<LlmLoginStart> => {
+    const start = await account.startLogin();
+    if (start.started) await shell.openExternal(start.authUrl);
+    return start;
+  });
+  ipcMain.handle(IPC.llmLoginCancel, async (_event, loginId: unknown): Promise<LlmLoginCancel> => {
+    if (typeof loginId !== 'string') throw new Error('loginId가 없습니다');
+    return account.cancelLogin(loginId);
+  });
+  ipcMain.handle(IPC.llmLogout, async (): Promise<LlmAccountStatus> => account.logout());
+  ipcMain.handle(IPC.llmRateLimitsRead, async (): Promise<LlmRateLimits> =>
+    account.readRateLimits(),
+  );
+  account.onEvent((event: LlmAccountEvent) => {
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) win.webContents.send(IPC.llmAccountEvent, event);
+    }
+  });
 }
 
 // Codex App Server를 앱 전용 CODEX_HOME으로 띄우고, 도구 없는 스레드의 유효 도구 목록을 로그로 남긴다(C1.18 확인 항목).
@@ -221,6 +252,10 @@ async function bootCodex(): Promise<void> {
       `[codex] thread ${thread.threadId} model=${thread.model} sandbox=${JSON.stringify(thread.sandbox)} approval=${JSON.stringify(thread.approvalPolicy)}`,
     );
     console.log(`[codex] ${formatToolInventory(await runtime.toolInventory(thread.threadId))}`);
+    // C1.19: 시작 직후 계정 상태·한도를 확인해 로그로 남기고 renderer에 푸시한다.
+    account.attach();
+    console.log(`[codex] ${formatAccountStatus(await account.read())}`);
+    console.log(`[codex] ${formatRateLimits(await account.readRateLimits())}`);
   } catch (err) {
     console.error(`[codex] 시작 실패: ${err instanceof Error ? err.message : String(err)}`);
   }

@@ -36,3 +36,5 @@ npm run dev      # 개발 실행
 npm run check    # typecheck → lint → test
 npm run build    # out/ 빌드
 ```
+- 로그인은 앱 안의 "ChatGPT 로그인" 버튼으로 시작한다(`account/login/start {type:"chatgpt"}`). App Server가 `localhost:1455` 콜백 서버를 열고 앱이 인증 URL을 기본 브라우저로 연다. 인증 정보는 앱 전용 `CODEX_HOME`에만 저장되므로 전역 `codex login`과 별개다(0.157.1 실측).
+- 한도는 `account/rateLimits/read`로만 조회하고 값이 없으면 "확인 불가"로 표시한다. 미로그인이면 오류(-32600)라 로그인 필요로 구분한다.
