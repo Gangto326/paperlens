@@ -193,6 +193,12 @@ describe('preferredForms', () => {
     expect(preferredForms({ preferredKo: '검색기' })).toEqual(['검색기']);
     expect(preferredForms({ preferredKo: ' ' })).toEqual([]);
   });
+
+  it('허용 표기도 지킨 표기로 본다', () => {
+    expect(
+      preferredForms({ preferredKo: '문서 조각', acceptedKo: ['문서', ' 패시지(passage) ', ''] }),
+    ).toEqual(['문서 조각', '문서', '패시지(passage)', '패시지']);
+  });
 });
 
 describe('keepsOriginal', () => {

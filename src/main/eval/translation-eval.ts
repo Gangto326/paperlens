@@ -13,7 +13,8 @@ import { mentions } from '../translate/chunk-input';
  *
  * ID 정합성: 저장된 결과가 추출 문서의 문장과 빠짐없이, 겹치지 않게 대응하는가.
  * 용어 일관성: 원문에 용어집의 대표 용어(term)가 나온 문장의 번역에 그 용어의 정해진 표기가 있는가.
- *   번역에 선호 한국어 표기(preferredKo)가 있거나 원어·별칭이 그대로 있으면 지킨 것으로 본다.
+ *   번역에 선호 한국어 표기(preferredKo)나 허용 표기(acceptedKo)가 있거나 원어·별칭이 그대로 있으면
+ *   지킨 것으로 본다. 허용 표기가 없는 옛 세대는 선호 표기만 본다.
  *   원어를 그대로 두는 것은 용어집의 표기 규칙(첫 등장 뒤 약어 사용 등)이 허용하는 경우가 많아 위반으로 치지 않는다.
  *   별칭(aliases)만 나온 문장은 검사하지 않고 수만 센다. 용어집 항목에는 선호 표기가 하나뿐이고,
  *   별칭의 번역은 표기 규칙 글(displayRule)에 따로 적혀 있어 글자열로 대조할 수 없다.
@@ -96,11 +97,18 @@ export function keepsOriginal(ko: string, term: string): boolean {
   return false;
 }
 
-/** 선호 표기에 괄호 설명이 붙어 있으면(`검색 증강 생성(RAG)`) 괄호 앞부분도 같은 표기로 본다. */
-export function preferredForms(entry: Pick<GlossaryEntry, 'preferredKo'>): string[] {
-  const full = entry.preferredKo.trim();
-  const head = full.replace(/\s*[([（].*$/, '').trim();
-  return [...new Set([full, head].filter((f) => f !== ''))];
+/**
+ * 지킨 것으로 보는 한국어 표기. 선호 표기와 허용 표기를 모두 담는다.
+ * 표기에 괄호 설명이 붙어 있으면(`검색 증강 생성(RAG)`) 괄호 앞부분도 같은 표기로 본다.
+ */
+export function preferredForms(
+  entry: Pick<GlossaryEntry, 'preferredKo'> & { acceptedKo?: string[] },
+): string[] {
+  const forms = [entry.preferredKo, ...(entry.acceptedKo ?? [])].flatMap((form) => {
+    const full = form.trim();
+    return [full, full.replace(/\s*[([（].*$/, '').trim()];
+  });
+  return [...new Set(forms.filter((f) => f !== ''))];
 }
 
 export function evaluateTranslation(input: {
