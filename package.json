@@ -16,6 +16,7 @@
     "codex:generate-ts": "node scripts/generate-codex-protocol.mjs",
     "fixtures:download": "node scripts/download-fixtures.mjs",
     "eval:mapping": "vitest run src/main/mapping/eval-mapping.samples.test.ts --silent=false --disableConsoleIntercept",
+    "eval:translation": "vitest run src/main/eval/eval-translation.samples.test.ts --silent=false --disableConsoleIntercept",
     "check": "npm run typecheck && npm run lint && npm run test"
   },
   "engines": {
