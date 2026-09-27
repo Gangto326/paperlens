@@ -7,7 +7,6 @@ import {
   type ExtractionDocument,
   type Failure,
   type PaperState,
-  type SentenceResult,
   type Usage,
 } from '@shared/schema';
 import Ajv from 'ajv';
@@ -22,11 +21,12 @@ import { TRANSLATE_CHUNK_TEMPLATE } from '../prompt/templates';
 import { isRetryableLlmFailure, stateAfterLlmFailure } from '../state/paper-state';
 import { buildChunkInputs } from './chunk-input';
 import { CHUNK_RESULTS_SCHEMA, type ChunkModelOutput } from './chunk-output';
+import { summarizeIssues, validateChunkOutput, type ChunkIssue } from './chunk-validate';
 
 /**
- * 2차 패스 청크 1개 실행(COMMIT_PLAN C2.5, 도구 없음). 프롬프트 → 구조화 작업 1회 → ID 검사 → chunks/<id>.json.
- * 완료로 저장하는 조건은 반환 ID 집합이 대상 ID 집합과 같고 중복이 없는 것이다.
- * 자리표시자·인용·문맥 문장 혼입 검사는 C2.6, 수정 턴과 청크 축소 재시도는 C2.7이다.
+ * 2차 패스 청크 1개 실행(COMMIT_PLAN C2.5·C2.6, 도구 없음). 프롬프트 → 구조화 작업 1회 → 검증 → chunks/<id>.json.
+ * 완료로 저장하는 조건은 검증기(chunk-validate.ts)에 fatal이 없는 것이다.
+ * 수정 턴과 청크 축소 재시도는 C2.7이다.
  * 실패한 청크도 파일로 남긴다(status failed, lastError). 이전에 완료된 같은 입력의 결과는 덮어쓰지 않는다.
  */
 export const CHUNK_TIMEOUT_MS = 10 * 60_000;
@@ -55,14 +55,7 @@ export interface ChunkRunOptions {
   onEvent?: (event: LlmJobEvent) => void;
 }
 
-export type ChunkRunFailureCode = 'llm_failed' | 'output_shape' | 'id_mismatch';
-
-export interface IdSetProblem {
-  missing: string[];
-  duplicated: string[];
-  /** 대상에 없는 id(모델이 돌려준 글자 그대로) */
-  unexpected: string[];
-}
+export type ChunkRunFailureCode = 'llm_failed' | 'output_shape' | 'validation_failed';
 
 export type ChunkRunResult =
   | {
@@ -71,6 +64,8 @@ export type ChunkRunResult =
       reused: boolean;
       chunkPath: string;
       chunk: ChunkDocument;
+      /** 저장은 했지만 남긴 경고(number_missing 등) */
+      issues: ChunkIssue[];
       usage: Usage | null;
       state: PaperState;
     }
@@ -79,7 +74,7 @@ export type ChunkRunResult =
       code: ChunkRunFailureCode;
       message: string;
       llmKind: LlmJobFailureKind | null;
-      idProblem: IdSetProblem | null;
+      issues: ChunkIssue[];
       rawText: string | null;
       chunkPath: string;
       chunk: ChunkDocument;
@@ -93,32 +88,6 @@ const compact = (d: Date): string =>
     .replace(/[-:]/g, '')
     .replace(/\.\d+Z$/, 'Z');
 const outputValidator = new Ajv({ allErrors: true, strict: false }).compile(CHUNK_RESULTS_SCHEMA);
-
-/** 반환 id(별칭)를 원래 id로 되돌리며 대상 집합과 비교한다. */
-export function checkIdSet(
-  returned: string[],
-  targetIds: string[],
-  toId: (alias: string) => string | undefined,
-): IdSetProblem & { ids: (string | null)[] } {
-  const targets = new Set(targetIds);
-  const seen = new Set<string>();
-  const duplicated: string[] = [];
-  const unexpected: string[] = [];
-  const ids = returned.map((alias) => {
-    const id = toId(alias);
-    if (id === undefined || !targets.has(id)) {
-      unexpected.push(alias);
-      return null;
-    }
-    if (seen.has(id)) {
-      if (!duplicated.includes(id)) duplicated.push(id);
-      return null;
-    }
-    seen.add(id);
-    return id;
-  });
-  return { ids, missing: targetIds.filter((id) => !seen.has(id)), duplicated, unexpected };
-}
 
 export async function runChunk(
   deps: ChunkRunDeps,
@@ -153,6 +122,7 @@ export async function runChunk(
           reused: true,
           chunkPath,
           chunk: saved,
+          issues: [],
           usage: null,
           state: manifest.state,
         };
@@ -229,7 +199,7 @@ export async function runChunk(
     failureCode: string,
     message: string,
     retryable: boolean,
-    extra: { llmKind?: LlmJobFailureKind; idProblem?: IdSetProblem },
+    extra: { llmKind?: LlmJobFailureKind; issues?: ChunkIssue[] },
   ): Promise<ChunkRunResult> => {
     const at = now();
     const failure: Failure = {
@@ -253,7 +223,7 @@ export async function runChunk(
       code,
       message,
       llmKind,
-      idProblem: extra.idProblem ?? null,
+      issues: extra.issues ?? [],
       rawText: result.rawText,
       chunkPath,
       chunk: doc,
@@ -282,43 +252,24 @@ export async function runChunk(
     );
   }
   const output: ChunkModelOutput = result.value;
-  const checked = checkIdSet(
-    output.results.map((r) => r.id),
-    chunk.targetSentenceIds,
-    (alias) => aliases.sentenceId(alias),
-  );
-  if (checked.missing.length + checked.duplicated.length + checked.unexpected.length > 0) {
-    const idProblem: IdSetProblem = {
-      missing: checked.missing,
-      duplicated: checked.duplicated,
-      unexpected: checked.unexpected,
-    };
+  const checked = validateChunkOutput(output, {
+    targets: chunk.targetSentenceIds.map((id) => sentences.get(id)).filter((s) => s !== undefined),
+    neighbors: chunk.neighborSentenceIds
+      .map((id) => sentences.get(id))
+      .filter((s) => s !== undefined),
+    toId: (alias) => aliases.sentenceId(alias),
+  });
+  if (!checked.ok) {
+    const fatal = checked.issues.filter((i) => i.severity === 'fatal');
     return failed(
-      'id_mismatch',
-      'chunk_id_mismatch',
-      `반환 ID가 대상과 다릅니다: 누락 ${checked.missing.length}, 중복 ${checked.duplicated.length}, 대상 아님 ${checked.unexpected.length}`,
+      'validation_failed',
+      `chunk_${fatal[0]?.code ?? 'validation'}`,
+      `청크 검증 실패: ${summarizeIssues(fatal)}`,
       true,
-      { idProblem },
+      { issues: checked.issues },
     );
   }
-
-  const byId = new Map<string, SentenceResult>();
-  output.results.forEach((r, i) => {
-    const id = checked.ids[i];
-    if (id === null || id === undefined) return;
-    byId.set(id, {
-      id,
-      ko: r.ko.trim(),
-      note: r.note.trim(),
-      refs: [],
-      conceptIds: [],
-      warnings: r.warnings.map((w) => w.trim()).filter((w) => w !== ''),
-    });
-  });
-  // 저장 순서는 모델이 돌려준 순서가 아니라 대상 문장 순서다.
-  const results = chunk.targetSentenceIds
-    .map((id) => byId.get(id))
-    .filter((r): r is SentenceResult => r !== undefined);
+  const results = checked.results;
   const doc: ChunkDocument = {
     ...base,
     status: 'complete',
@@ -328,7 +279,15 @@ export async function runChunk(
   };
   const state = await save(doc, null, (current) => current);
   log(
-    `chunk ${chunk.id} 완료 results=${results.length} notes=${results.filter((r) => r.note !== '').length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
+    `chunk ${chunk.id} 완료 results=${results.length} warnings=${checked.issues.length} notes=${results.filter((r) => r.note !== '').length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
   );
-  return { ok: true, reused: false, chunkPath, chunk: doc, usage: result.usage, state };
+  return {
+    ok: true,
+    reused: false,
+    chunkPath,
+    chunk: doc,
+    issues: checked.issues,
+    usage: result.usage,
+    state,
+  };
 }

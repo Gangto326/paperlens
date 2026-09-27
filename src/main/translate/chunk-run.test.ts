@@ -20,7 +20,7 @@ import { saveOriginalTei } from '../parser/grobid-fulltext';
 import { INPUT_PREAMBLE } from '../prompt/template';
 import { mentions, relevantGlossary, type ChunkPromptInputs } from './chunk-input';
 import { CHUNK_RESULTS_SCHEMA } from './chunk-output';
-import { checkIdSet, runChunk } from './chunk-run';
+import { runChunk } from './chunk-run';
 
 let root: string;
 let store: PaperCacheStore;
@@ -253,19 +253,20 @@ describe('runChunk', () => {
       }),
     );
     const result = await runChunk(deps(runner), options({ chunk: whole }));
-    expect(result).toMatchObject({ ok: false, code: 'id_mismatch', state: 'translating' });
+    expect(result).toMatchObject({ ok: false, code: 'validation_failed', state: 'translating' });
     if (result.ok) return;
-    expect(result.idProblem).toEqual({
-      missing: [whole.targetSentenceIds[1]],
-      duplicated: [whole.targetSentenceIds[0]],
-      unexpected: ['s9999'],
-    });
+    expect(result.issues.map((i) => [i.code, i.sentenceId])).toEqual([
+      ['duplicate_id', whole.targetSentenceIds[0]],
+      ['unexpected_id', null],
+      ['missing_id', whole.targetSentenceIds[1]],
+    ]);
+    expect(result.message).toBe('청크 검증 실패: duplicate_id 1, unexpected_id 1, missing_id 1');
     expect(result.rawText).not.toBeNull();
     const saved = await store.readJson('chunkDocument', result.chunkPath);
     expect(saved).toMatchObject({ status: 'failed', results: [], resultHash: null });
     expect(saved.lastError).toMatchObject({
       stage: 'translate',
-      code: 'chunk_id_mismatch',
+      code: 'chunk_duplicate_id',
       retryable: true,
       attempt: 1,
     });
@@ -310,27 +311,6 @@ describe('runChunk', () => {
     expect(await runChunk(deps(runner), options())).toMatchObject({
       ok: false,
       code: 'output_shape',
-    });
-  });
-});
-
-describe('checkIdSet', () => {
-  const toId = (alias: string): string | undefined => ({ s1: 'a', s2: 'b', s3: 'c' })[alias.trim()];
-
-  it('같은 집합이면 문제가 없다', () => {
-    expect(checkIdSet(['s2', 's1'], ['a', 'b'], toId)).toEqual({
-      ids: ['b', 'a'],
-      missing: [],
-      duplicated: [],
-      unexpected: [],
-    });
-  });
-
-  it('문서에는 있지만 이 청크의 대상이 아닌 문장도 대상 아님이다', () => {
-    expect(checkIdSet(['s1', 's3'], ['a', 'b'], toId)).toMatchObject({
-      ids: ['a', null],
-      missing: ['b'],
-      unexpected: ['s3'],
     });
   });
 });
