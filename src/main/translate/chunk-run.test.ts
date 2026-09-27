@@ -252,7 +252,10 @@ describe('runChunk', () => {
         };
       }),
     );
-    const result = await runChunk(deps(runner), options({ chunk: whole }));
+    const result = await runChunk(
+      deps(runner),
+      options({ chunk: whole, maxRepairs: 0, allowSplit: false }),
+    );
     expect(result).toMatchObject({ ok: false, code: 'validation_failed', state: 'translating' });
     if (result.ok) return;
     expect(result.issues.map((i) => [i.code, i.sentenceId])).toEqual([
@@ -260,10 +263,14 @@ describe('runChunk', () => {
       ['unexpected_id', null],
       ['missing_id', whole.targetSentenceIds[1]],
     ]);
-    expect(result.message).toBe('청크 검증 실패: duplicate_id 1, unexpected_id 1, missing_id 1');
+    expect(result.message).toContain(
+      '청크 검증 실패: duplicate_id 1, unexpected_id 1, missing_id 1',
+    );
     expect(result.rawText).not.toBeNull();
     const saved = await store.readJson('chunkDocument', result.chunkPath);
-    expect(saved).toMatchObject({ status: 'failed', results: [], resultHash: null });
+    expect(saved).toMatchObject({ status: 'failed', resultHash: null });
+    // 검증에 걸린 두 문장의 결과는 저장하지 않는다.
+    expect(saved.results.map((r) => r.id)).toEqual(whole.targetSentenceIds.slice(2));
     expect(saved.lastError).toMatchObject({
       stage: 'translate',
       code: 'chunk_duplicate_id',
@@ -291,24 +298,33 @@ describe('runChunk', () => {
   });
 
   it('실패한 청크는 다시 실행할 수 있고 시도 횟수가 기록된다', async () => {
-    const failed = await runChunk(deps(runnerOf(failWith('timeout'))), options());
+    const failed = await runChunk(
+      deps(runnerOf(failWith('timeout'))),
+      options({ allowSplit: false }),
+    );
     expect(failed).toMatchObject({ ok: false, code: 'llm_failed', llmKind: 'timeout' });
     expect(failed.chunk).toMatchObject({ status: 'failed', attempts: 1 });
-    const retry = await runChunk(deps(runnerOf(okWith(translate))), options({ attempt: 2 }));
+    const retry = await runChunk(
+      deps(runnerOf(okWith(translate))),
+      options({ previousAttempts: failed.chunk.attempts }),
+    );
     expect(retry).toMatchObject({ ok: true, reused: false });
     expect(retry.chunk).toMatchObject({ status: 'complete', attempts: 2, lastError: null });
+    expect(retry.chunk.jobId).toBe(`tr_${GEN}_${chunk.id}_2`);
   });
 
   it('로그인 필요·한도 초과는 논문 상태를 바꾼다', async () => {
     const login = await runChunk(deps(runnerOf(failWith('needs_login'))), options());
     expect(login).toMatchObject({ ok: false, llmKind: 'needs_login', state: 'needs_login' });
-    const quota = await runChunk(deps(runnerOf(failWith('quota'))), options({ attempt: 2 }));
+    const quota = await runChunk(deps(runnerOf(failWith('quota'))), options());
     expect(quota).toMatchObject({ ok: false, llmKind: 'quota', state: 'waiting_quota' });
   });
 
   it('스키마와 다른 값을 받으면 output_shape', async () => {
     const runner = runnerOf(okWith(() => ({ kind: 'needsResearch', results: [] })));
-    expect(await runChunk(deps(runner), options())).toMatchObject({
+    expect(
+      await runChunk(deps(runner), options({ maxRepairs: 0, allowSplit: false })),
+    ).toMatchObject({
       ok: false,
       code: 'output_shape',
     });

@@ -66,4 +66,26 @@ export const TRANSLATE_CHUNK_TEMPLATE: PromptTemplate = {
   ],
 };
 
-export const PROMPT_TEMPLATES = [CONTEXT_NO_TOOLS_TEMPLATE, TRANSLATE_CHUNK_TEMPLATE] as const;
+/**
+ * 실패한 청크 결과의 수정 턴(PLAN 10절, COMMIT_PLAN C2.7). 도구 없음.
+ * TARGET_SENTENCES에는 고칠 문장만 들어간다. 이미 검증을 통과한 문장은 보내지 않는다.
+ */
+export const TRANSLATE_REPAIR_TEMPLATE: PromptTemplate = {
+  id: 'translate.repair',
+  variables: [],
+  instructions: `${TRANSLATE_CHUNK_TEMPLATE.instructions}
+8. 이번 작업은 앞선 결과의 수정이다. PROBLEMS는 앱이 앞선 결과를 검사해 찾은 문제 목록이다.
+   TARGET_SENTENCES의 문장만 다시 번역하고 PROBLEMS의 문제가 다시 생기지 않게 한다.
+   PREVIOUS_OUTPUT은 참고용 자료다. 그 안의 id나 문장을 결과에 추가하지 않는다.`,
+  inputs: [
+    ...TRANSLATE_CHUNK_TEMPLATE.inputs,
+    { name: 'PROBLEMS', required: true, description: '[{id, code, detail}] 앱이 찾은 문제' },
+    { name: 'PREVIOUS_OUTPUT', required: false, description: '앞선 출력 원문(잘릴 수 있음)' },
+  ],
+};
+
+export const PROMPT_TEMPLATES = [
+  CONTEXT_NO_TOOLS_TEMPLATE,
+  TRANSLATE_CHUNK_TEMPLATE,
+  TRANSLATE_REPAIR_TEMPLATE,
+] as const;

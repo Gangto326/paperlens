@@ -53,6 +53,12 @@ export class PaperCacheStore {
     return join(this.paperDir(pdfSha256), 'generations', generationId, file);
   }
 
+  /** 실패한 출력 등 진단 자료. 캐시 결과가 아니므로 manifest.files에 기록하지 않는다. */
+  diagnosticsPath(pdfSha256: string, generationId: string, name: string): string {
+    if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error(`invalid diagnostics name: ${name}`);
+    return join(this.paperDir(pdfSha256), 'generations', generationId, 'diagnostics', name);
+  }
+
   async exists(path: string): Promise<boolean> {
     try {
       await fs.access(path);
