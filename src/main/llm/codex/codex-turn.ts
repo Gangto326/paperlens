@@ -3,7 +3,9 @@ import { formatAjvErrors, type Usage } from '@shared/schema';
 import { AppServerError } from './app-server-client';
 import { THREAD_APPROVAL_POLICY, TURN_SANDBOX_POLICY } from './codex-runtime';
 import type { JsonValue } from './protocol/serde_json/JsonValue';
+import type { AgentMessageDeltaNotification } from './protocol/v2/AgentMessageDeltaNotification';
 import type { ItemCompletedNotification } from './protocol/v2/ItemCompletedNotification';
+import type { ItemStartedNotification } from './protocol/v2/ItemStartedNotification';
 import type { ThreadTokenUsageUpdatedNotification } from './protocol/v2/ThreadTokenUsageUpdatedNotification';
 import type { TokenUsageBreakdown } from './protocol/v2/TokenUsageBreakdown';
 import type { Turn } from './protocol/v2/Turn';
@@ -22,7 +24,11 @@ import type { TurnStartResponse } from './protocol/v2/TurnStartResponse';
  * - 미로그인이면 401로 재연결을 10회 시도한 뒤 약 17초 만에 `turn/completed status:'failed'`가 온다.
  *   그때 `codexErrorInfo`는 'unauthorized'가 아니라 'other'이고 메시지에만 "401 Unauthorized"가 있다.
  * 사용량은 `thread/tokenUsage/updated`의 `total`(스레드 누적)을 쓴다. 턴마다 새 스레드를 쓰는 것이 전제다.
- * 진행 이벤트 스트림과 사용자 중단은 C2.1 몫이다. 여기서는 제한 시간을 넘긴 턴만 `turn/interrupt`로 멈춘다.
+ * 진행 이벤트와 사용자 중단(C2.1): `options.onProgress`로 턴 시작·항목·출력 글자 수·사용량을 알리고,
+ * `options.signal`이 abort되면 `turn/interrupt`를 보낸 뒤 `turn/completed`를 `interruptGraceMs`만큼 기다린다.
+ * 0.157.1 실측(로그인 상태): 출력 도중 `turn/interrupt`를 보내면 응답 `{}`와 `turn/completed status:'interrupted'`가
+ * 약 10ms 안에 온다. 중단된 턴에는 진행 중이던 항목의 `item/completed`도 `thread/tokenUsage/updated`도 오지 않는다.
+ * 그래서 중단된 턴의 토큰 값은 null이다. 제한 시간을 넘긴 턴은 `turn/interrupt`만 보내고 기다리지 않는다.
  * Codex 고유 타입은 이 파일 안에서만 쓴다.
  */
 export interface TurnTransport {
@@ -38,6 +44,7 @@ export type TurnFailureKind =
   | 'quota'
   | 'turn_failed'
   | 'interrupted'
+  | 'cancelled'
   | 'no_output'
   | 'invalid_json'
   | 'schema_mismatch'
@@ -51,6 +58,29 @@ export interface StructuredTurnParams {
   outputSchema: Record<string, unknown>;
   /** 턴 전체 제한 시간. 기본 120초. */
   timeoutMs?: number;
+}
+
+/** 턴 진행 알림. `chars`는 이 턴에서 받은 agent message delta의 누적 글자 수다. */
+export type TurnProgress =
+  | { type: 'started'; turnId: string }
+  | {
+      type: 'item';
+      state: 'started' | 'completed';
+      itemType: string;
+      phase: string | null;
+    }
+  | { type: 'output'; chars: number }
+  | { type: 'usage'; usage: Usage }
+  | { type: 'interrupt_requested'; turnId: string };
+
+export interface StructuredTurnOptions {
+  log?: (line: string) => void;
+  /** 진행 알림. 여기서 던진 예외는 로그만 남기고 턴에 영향을 주지 않는다. */
+  onProgress?: (event: TurnProgress) => void;
+  /** abort되면 턴을 중단한다. 이미 abort된 신호면 턴을 보내지 않는다. */
+  signal?: AbortSignal;
+  /** 중단 요청 뒤 `turn/completed`를 기다리는 시간. 기본 5초. */
+  interruptGraceMs?: number;
 }
 
 export type StructuredTurnResult =
@@ -73,9 +103,12 @@ export type StructuredTurnResult =
       rawText: string | null;
       usage: Usage;
       tokenUsageUpdates: number;
+      /** kind가 cancelled일 때만. 서버가 `turn/completed status:'interrupted'`로 중단을 확인했는지. */
+      interruptConfirmed?: boolean;
     };
 
 export const DEFAULT_TURN_TIMEOUT_MS = 120_000;
+export const DEFAULT_INTERRUPT_GRACE_MS = 5_000;
 
 const QUOTA_ERRORS = new Set(['usageLimitExceeded', 'rateLimitExceeded', 'sessionBudgetExceeded']);
 
@@ -156,23 +189,38 @@ const messageOf = (err: unknown): string => (err instanceof Error ? err.message 
 type Outcome =
   { type: 'completed'; turn: Turn } | { type: 'timeout' } | { type: 'exited'; detail: string };
 
+const phaseOf = (item: { type: string }): string | null => {
+  const phase = (item as { phase?: unknown }).phase;
+  return typeof phase === 'string' ? phase : null;
+};
+
 export async function runStructuredTurn(
   transport: TurnTransport | null,
   params: StructuredTurnParams,
-  options: { log?: (line: string) => void } = {},
+  options: StructuredTurnOptions = {},
 ): Promise<StructuredTurnResult> {
   const log = options.log ?? (() => undefined);
+  const signal = options.signal;
+  const emit = (event: TurnProgress): void => {
+    if (!options.onProgress) return;
+    try {
+      options.onProgress(event);
+    } catch (err) {
+      log(`onProgress 예외: ${messageOf(err)}`);
+    }
+  };
   const t0 = Date.now();
   let turnId: string | null = null;
   let lastAgentText: string | null = null;
   let total: TokenUsageBreakdown | null = null;
   let tokenUsageUpdates = 0;
+  let outputChars = 0;
 
   const fail = (
     kind: TurnFailureKind,
     message: string,
     errors: string[] = [],
-  ): StructuredTurnResult => ({
+  ): Extract<StructuredTurnResult, { ok: false }> => ({
     ok: false,
     kind,
     message,
@@ -185,6 +233,9 @@ export async function runStructuredTurn(
 
   if (!transport || transport.state !== 'running') {
     return fail('unavailable', 'LLM 런타임이 실행 중이 아닙니다');
+  }
+  if (signal?.aborted) {
+    return { ...fail('cancelled', '턴을 보내기 전에 취소됐습니다'), interruptConfirmed: true };
   }
   let validate: ValidateFunction;
   try {
@@ -203,15 +254,29 @@ export async function runStructuredTurn(
     settle = resolve;
   });
   const off = [
+    transport.onNotification('item/started', (raw) => {
+      const p = raw as ItemStartedNotification;
+      if (!mine(p)) return;
+      emit({ type: 'item', state: 'started', itemType: p.item.type, phase: phaseOf(p.item) });
+    }),
+    transport.onNotification('item/agentMessage/delta', (raw) => {
+      const p = raw as AgentMessageDeltaNotification;
+      if (!mine(p)) return;
+      outputChars += p.delta.length;
+      emit({ type: 'output', chars: outputChars });
+    }),
     transport.onNotification('item/completed', (raw) => {
       const p = raw as ItemCompletedNotification;
-      if (mine(p) && p.item.type === 'agentMessage') lastAgentText = p.item.text;
+      if (!mine(p)) return;
+      if (p.item.type === 'agentMessage') lastAgentText = p.item.text;
+      emit({ type: 'item', state: 'completed', itemType: p.item.type, phase: phaseOf(p.item) });
     }),
     transport.onNotification('thread/tokenUsage/updated', (raw) => {
       const p = raw as ThreadTokenUsageUpdatedNotification;
       if (!mine(p)) return;
       total = p.tokenUsage.total;
       tokenUsageUpdates += 1;
+      emit({ type: 'usage', usage: toUsage(total, Date.now() - t0, 1) });
     }),
     transport.onNotification('turn/completed', (raw) => {
       const p = raw as TurnCompletedNotification;
@@ -228,6 +293,12 @@ export async function runStructuredTurn(
   ];
   const timeoutMs = params.timeoutMs ?? DEFAULT_TURN_TIMEOUT_MS;
   const timer = setTimeout(() => settle({ type: 'timeout' }), timeoutMs);
+  let graceTimer: ReturnType<typeof setTimeout> | null = null;
+  let wakeCancel: () => void = () => undefined;
+  const cancelRequested = new Promise<'cancel'>((resolve) => {
+    wakeCancel = () => resolve('cancel');
+  });
+  signal?.addEventListener('abort', wakeCancel, { once: true });
 
   try {
     try {
@@ -239,6 +310,7 @@ export async function runStructuredTurn(
         approvalPolicy: THREAD_APPROVAL_POLICY,
       } satisfies TurnStartParams);
       turnId = res.turn.id;
+      emit({ type: 'started', turnId });
     } catch (err) {
       if (err instanceof AppServerError) {
         if (err.kind === 'timeout') return fail('timeout', err.message);
@@ -250,7 +322,32 @@ export async function runStructuredTurn(
       return fail('transport', messageOf(err));
     }
 
-    const result = await outcome;
+    let result = await Promise.race([outcome, cancelRequested]);
+    let cancelSent = false;
+    if (result === 'cancel') {
+      // 취소는 turn/start 응답을 받은 뒤에만 여기 온다. 그 전에 abort됐어도 turnId를 알아야 중단할 수 있다.
+      cancelSent = true;
+      log(`turn ${turnId} 취소 요청, turn/interrupt 전송`);
+      emit({ type: 'interrupt_requested', turnId });
+      void transport
+        .request('turn/interrupt', {
+          threadId: params.threadId,
+          turnId,
+        } satisfies TurnInterruptParams)
+        .catch((err: unknown) => log(`turn/interrupt 실패: ${messageOf(err)}`));
+      const graceMs = options.interruptGraceMs ?? DEFAULT_INTERRUPT_GRACE_MS;
+      const grace = new Promise<'unconfirmed'>((resolve) => {
+        graceTimer = setTimeout(() => resolve('unconfirmed'), graceMs);
+      });
+      const after = await Promise.race([outcome, grace]);
+      if (after === 'unconfirmed' || after.type === 'timeout') {
+        return {
+          ...fail('cancelled', `중단을 요청했지만 ${graceMs}ms 안에 턴 종료를 확인하지 못했습니다`),
+          interruptConfirmed: false,
+        };
+      }
+      result = after;
+    }
     if (result.type === 'exited') {
       return fail('transport', `턴이 끝나기 전에 App Server가 종료됐습니다 (${result.detail})`);
     }
@@ -266,11 +363,17 @@ export async function runStructuredTurn(
     }
 
     const turn = result.turn;
+    if (turn.status === 'interrupted') {
+      if (cancelSent) {
+        return { ...fail('cancelled', '요청에 따라 턴을 중단했습니다'), interruptConfirmed: true };
+      }
+      return fail('interrupted', '턴이 중단됐습니다');
+    }
+    // 취소를 보냈는데도 completed·failed로 끝났다면 중단보다 턴 종료가 먼저였다. 받은 결과를 그대로 쓴다.
     if (turn.status === 'failed') {
       const c = classifyTurnError(turn.error);
       return fail(c.kind, c.message);
     }
-    if (turn.status === 'interrupted') return fail('interrupted', '턴이 중단됐습니다');
     if (turn.status !== 'completed') {
       return fail('turn_failed', `예상하지 않은 턴 상태 ${turn.status}`);
     }
@@ -293,6 +396,8 @@ export async function runStructuredTurn(
     };
   } finally {
     clearTimeout(timer);
+    if (graceTimer !== null) clearTimeout(graceTimer);
+    signal?.removeEventListener('abort', wakeCancel);
     for (const unsubscribe of off) unsubscribe();
   }
 }

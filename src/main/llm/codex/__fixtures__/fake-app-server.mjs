@@ -8,6 +8,10 @@
 //       turn/completed), turn/interrupt. 입력 글의 지시어로 동작을 고른다: `FAKE:reply <글>` 그 글로 응답, `FAKE:silent` agent message 없음,
 //       `FAKE:hang` turn/interrupt가 올 때까지 대기, `FAKE:limit` usageLimitExceeded 실패, `FAKE:rpcfail` turn/start 오류, `FAKE:crash` 턴 중 종료.
 //       지시어가 없으면 미로그인일 때 401 실패, 로그인 상태면 스모크 기대값으로 응답한다.
+// 진행·중단(C2.1, 0.157.1 실측을 흉내): `FAKE:stream <글>`은 reasoning 항목 → agentMessage item/started →
+//       4글자씩 15ms 간격 item/agentMessage/delta → item/completed → 사용량 → turn/completed. 도중에 turn/interrupt가 오면
+//       delta를 멈추고 item/completed·사용량 없이 turn/completed status:'interrupted'만 보낸다.
+//       `FAKE:deaf`는 turn/interrupt에 응답만 하고 턴을 끝내지 않는다(중단 확인 실패 경로).
 // 인자 --default-reply=<글>: 지시어 없는 턴의 응답 글을 바꾼다.
 // 인자 --ignore-stdin-close: stdin이 닫혀도 종료하지 않는다 (SIGTERM 경로 확인용).
 import { createInterface } from 'node:readline';
@@ -38,6 +42,7 @@ const RATE_LIMITS = {
 let threadSeq = 0;
 let turnSeq = 0;
 const hanging = new Map();
+const streaming = new Map();
 const TOKEN_USAGE = {
   totalTokens: 1244,
   inputTokens: 1200,
@@ -75,6 +80,17 @@ const agentMessage = (threadId, turnId, id, text, phase) =>
     },
     emittedAtMs: Date.now(),
   });
+const itemStarted = (threadId, turnId, item) =>
+  send({ method: 'item/started', params: { item, threadId, turnId, startedAtMs: Date.now() } });
+const tokenUsage = (threadId, turnId) =>
+  send({
+    method: 'thread/tokenUsage/updated',
+    params: {
+      threadId,
+      turnId,
+      tokenUsage: { total: TOKEN_USAGE, last: TOKEN_USAGE, modelContextWindow: 200_000 },
+    },
+  });
 const completeTurn = (threadId, turnId, status, error = null) =>
   send({
     method: 'turn/completed',
@@ -95,6 +111,43 @@ const runTurn = (threadId, turnId, text) => {
     case 'hang':
       hanging.set(turnId, threadId);
       return;
+    case 'deaf':
+      return;
+    case 'stream': {
+      const reply = directive[2];
+      const reasoning = { type: 'reasoning', id: `${turnId}-r`, summary: [], content: [] };
+      itemStarted(threadId, turnId, reasoning);
+      send({
+        method: 'item/completed',
+        params: { item: reasoning, threadId, turnId, completedAtMs: Date.now() },
+      });
+      const itemId = `${turnId}-f`;
+      itemStarted(threadId, turnId, {
+        type: 'agentMessage',
+        id: itemId,
+        text: '',
+        phase: 'final_answer',
+        memoryCitation: null,
+        delivery: null,
+        questions: null,
+      });
+      let at = 0;
+      const timer = setInterval(() => {
+        if (at < reply.length) {
+          const delta = reply.slice(at, at + 4);
+          at += 4;
+          send({ method: 'item/agentMessage/delta', params: { threadId, turnId, itemId, delta } });
+          return;
+        }
+        clearInterval(timer);
+        streaming.delete(turnId);
+        agentMessage(threadId, turnId, itemId, reply, 'final_answer');
+        tokenUsage(threadId, turnId);
+        completeTurn(threadId, turnId, 'completed');
+      }, 15);
+      streaming.set(turnId, { threadId, timer });
+      return;
+    }
     case 'crash':
       process.stderr.write('fake crash during turn\n');
       process.exit(3);
@@ -127,14 +180,7 @@ const runTurn = (threadId, turnId, text) => {
     const reply = kind === 'reply' ? directive[2] : defaultReply;
     agentMessage(threadId, turnId, `${turnId}-f`, reply, 'final_answer');
   }
-  send({
-    method: 'thread/tokenUsage/updated',
-    params: {
-      threadId,
-      turnId,
-      tokenUsage: { total: TOKEN_USAGE, last: TOKEN_USAGE, modelContextWindow: 200_000 },
-    },
-  });
+  tokenUsage(threadId, turnId);
   completeTurn(threadId, turnId, 'completed');
 };
 const completeLogin = (loginId, success, error) => {
@@ -292,6 +338,12 @@ rl.on('line', (line) => {
       if (threadId !== undefined) {
         hanging.delete(turnId);
         completeTurn(threadId, turnId, 'interrupted');
+      }
+      const stream = streaming.get(turnId);
+      if (stream !== undefined) {
+        clearInterval(stream.timer);
+        streaming.delete(turnId);
+        completeTurn(stream.threadId, turnId, 'interrupted');
       }
       break;
     }

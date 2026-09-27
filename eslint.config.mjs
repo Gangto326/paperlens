@@ -37,6 +37,7 @@ export default tseslint.config(
         process: 'readonly',
         console: 'readonly',
         setInterval: 'readonly',
+        clearInterval: 'readonly',
         fetch: 'readonly',
         FormData: 'readonly',
         Blob: 'readonly',

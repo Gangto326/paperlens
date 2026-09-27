@@ -218,6 +218,41 @@ describe('runStructuredTurn (가짜 App Server)', () => {
     expect(completed[0]).toMatchObject({ turn: { id: 'turn-1', status: 'interrupted' } });
   });
 
+  it('이미 취소된 신호면 턴을 보내지 않는다', async () => {
+    const { c, threadId } = await setup();
+    const started: unknown[] = [];
+    c.onNotification('turn/started', (p) => started.push(p));
+    const controller = new AbortController();
+    controller.abort();
+    const result = await runStructuredTurn(
+      c,
+      { threadId, prompt: 'FAKE:hang', outputSchema: SCHEMA },
+      { signal: controller.signal },
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      kind: 'cancelled',
+      turnId: null,
+      interruptConfirmed: true,
+      usage: { turnCount: 0 },
+    });
+    await c.request('echo', {});
+    expect(started).toEqual([]);
+  });
+
+  it('서버가 스스로 중단한 턴은 cancelled가 아니라 interrupted', async () => {
+    const { c, threadId } = await setup();
+    const running = runStructuredTurn(c, {
+      threadId,
+      prompt: 'FAKE:hang',
+      outputSchema: SCHEMA,
+      timeoutMs: 3_000,
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    await c.request('turn/interrupt', { threadId, turnId: 'turn-1' });
+    expect(await running).toMatchObject({ ok: false, kind: 'interrupted' });
+  });
+
   it('턴 도중 프로세스가 죽으면 transport', async () => {
     expect(await run('FAKE:crash')).toMatchObject({ ok: false, kind: 'transport' });
   });
