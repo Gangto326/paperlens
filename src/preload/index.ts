@@ -11,6 +11,9 @@ import {
   type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
+  type ProcessEvent,
+  type ProcessStart,
+  type ProcessStop,
   type ReadDocumentResult,
   type TextExtractionPayload,
   type TextExtractionResult,
@@ -43,6 +46,16 @@ const api = {
       handler(payload);
     ipcRenderer.on(IPC.llmAccountEvent, listener);
     return () => ipcRenderer.removeListener(IPC.llmAccountEvent, listener);
+  },
+  /** 번역 처리 시작(C2.8). 컨텍스트 → 청크 순서로 main에서 돈다. */
+  startProcessing: (pdfSha256: string): Promise<ProcessStart> =>
+    ipcRenderer.invoke(IPC.processStart, pdfSha256),
+  stopProcessing: (): Promise<ProcessStop> => ipcRenderer.invoke(IPC.processStop),
+  onProcessEvent: (handler: (event: ProcessEvent) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: ProcessEvent): void =>
+      handler(payload);
+    ipcRenderer.on(IPC.processEvent, listener);
+    return () => ipcRenderer.removeListener(IPC.processEvent, listener);
   },
 };
 

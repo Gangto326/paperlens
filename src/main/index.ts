@@ -13,6 +13,9 @@ import {
   type ParserFulltextResult,
   type ParserHealth,
   type PdfOpenDialogResult,
+  type ProcessEvent,
+  type ProcessStart,
+  type ProcessStop,
   type ReadDocumentResult,
   type TextExtractionResult,
 } from '@shared/ipc';
@@ -26,6 +29,8 @@ import { FULLTEXT_PARAMS, processFulltext, saveOriginalTei } from './parser/grob
 import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
 import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex/codex-account';
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
+import { CodexJobRunner } from './llm/codex/codex-jobs';
+import { PaperScheduler, type SchedulerEvent } from './scheduler/paper-scheduler';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -40,6 +45,87 @@ let codex: CodexRuntime | null = null;
 const account = new CodexAccount(() => codex?.client ?? null, {
   log: (line) => console.log(`[codex] ${line}`),
 });
+
+/** 구조화 작업 실행기(C2.1)와 논문 단위 스케줄러(C2.8). 런타임이 없으면 작업이 unavailable로 끝난다. */
+const jobs = new CodexJobRunner({
+  transport: () => codex?.client ?? null,
+  startThread: (options) => {
+    if (!codex) return Promise.reject(new Error('LLM 런타임이 실행 중이 아닙니다'));
+    return codex.startThread(options);
+  },
+  log: (line) => console.log(`[llm] ${line}`),
+});
+let scheduler: PaperScheduler | null = null;
+
+/** 스케줄러 이벤트 → renderer용 이벤트. 사용량·청크 계획 같은 내부 값은 보내지 않는다. */
+function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
+  switch (event.type) {
+    case 'started':
+      return null;
+    case 'state':
+      return event;
+    case 'context':
+      return {
+        type: 'context',
+        pdfSha256: event.pdfSha256,
+        status: event.status,
+        message: event.message,
+      };
+    case 'plan':
+      return { type: 'plan', pdfSha256: event.pdfSha256, total: event.chunkIds.length };
+    case 'chunk_started':
+      return {
+        type: 'chunkStarted',
+        pdfSha256: event.pdfSha256,
+        chunkId: event.chunkId,
+        total: event.total,
+      };
+    case 'chunk_finished':
+      return {
+        type: 'chunkFinished',
+        pdfSha256: event.pdfSha256,
+        chunkId: event.chunkId,
+        ok: event.ok,
+        completed: event.completed,
+        failed: event.failed,
+        total: event.total,
+        sentenceIds: event.sentenceIds,
+      };
+    case 'finished':
+      return {
+        type: 'finished',
+        pdfSha256: event.pdfSha256,
+        reason: event.outcome.reason,
+        message: event.outcome.message,
+        state: event.state,
+        completed: event.outcome.completedChunks,
+        failed: event.outcome.failedChunks,
+        total: event.outcome.totalChunks,
+      };
+  }
+}
+
+/** 처리를 백그라운드로 시작한다. 끝날 때까지 기다리지 않는다. */
+function startProcessing(pdfSha256: string, trigger: string): ProcessStart {
+  if (!scheduler) return { started: false, reason: '스케줄러가 준비되지 않았습니다' };
+  if (!codex || codex.client?.state !== 'running') {
+    return { started: false, reason: 'LLM 런타임이 실행 중이 아닙니다' };
+  }
+  if (scheduler.runningPaper !== null) {
+    return {
+      started: false,
+      reason:
+        scheduler.runningPaper === pdfSha256 ? '이미 처리 중입니다' : '다른 논문을 처리 중입니다',
+    };
+  }
+  console.log(`[process] 시작 ${pdfSha256.slice(0, 8)} (${trigger})`);
+  void scheduler
+    .run(pdfSha256)
+    .catch((err: unknown) =>
+      console.error(`[process] 실패: ${err instanceof Error ? err.message : String(err)}`),
+    );
+  return { started: true, reason: null };
+}
 
 /**
  * 구조화 출력 스모크(C1.20). 한도를 쓰므로 PAPERLENS_LLM_SMOKE=1일 때만 돈다: 시작 시 로그인 상태면 바로,
@@ -233,9 +319,40 @@ function registerIpc(): void {
       if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
         throw new Error('등록되지 않은 PDF');
       }
-      return readSentenceIndex(store, pdfSha256);
+      const index = await readSentenceIndex(store, pdfSha256);
+      // 개발·E2E용: PAPERLENS_AUTO_PROCESS=1이면 문장 색인을 읽은 직후 번역 처리를 시작한다(한도를 쓴다).
+      if (process.env['PAPERLENS_AUTO_PROCESS']) {
+        const started = startProcessing(pdfSha256, 'PAPERLENS_AUTO_PROCESS');
+        if (!started.started) console.log(`[process] 시작하지 않음: ${String(started.reason)}`);
+      }
+      return index;
     },
   );
+
+  // 번역 처리(C2.8). 시작은 곧바로 돌아오고 진행은 process:event로 푸시한다.
+  ipcMain.handle(IPC.processStart, (_event, pdfSha256: unknown): ProcessStart => {
+    if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
+      throw new Error('등록되지 않은 PDF');
+    }
+    return startProcessing(pdfSha256, 'renderer');
+  });
+  ipcMain.handle(IPC.processStop, (): ProcessStop => ({
+    accepted: scheduler?.requestStop() ?? false,
+  }));
+  scheduler = new PaperScheduler({
+    store,
+    runner: jobs,
+    provider: 'codex',
+    runtimeVersion: () => codex?.startInfo?.binary.version ?? 'unknown',
+    log: (line) => console.log(`[process] ${line}`),
+  });
+  scheduler.onEvent((event) => {
+    const payload = toProcessEvent(event);
+    if (!payload) return;
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) win.webContents.send(IPC.processEvent, payload);
+    }
+  });
 
   // 계정·로그인·한도(C1.19). 실제 로그인은 기본 브라우저에서 사용자가 마치고, 완료는 llm:accountEvent로 푸시된다.
   ipcMain.handle(IPC.llmAccountRead, async (): Promise<LlmAccountStatus> => account.read());

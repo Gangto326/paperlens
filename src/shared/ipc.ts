@@ -1,4 +1,4 @@
-import type { FontRecord, Page, TextItemRecord, TextQuality } from './schema';
+import type { FontRecord, Page, PaperState, TextItemRecord, TextQuality } from './schema';
 import type { SentenceIndex } from './mapping/selection';
 
 export type { SentenceIndex, SentenceIndexEntry } from './mapping/selection';
@@ -23,6 +23,10 @@ export const IPC = {
   llmRateLimitsRead: 'llm:rateLimitsRead',
   /** main → renderer 푸시(계정·한도·로그인 완료). 나머지는 renderer → main invoke. */
   llmAccountEvent: 'llm:accountEvent',
+  processStart: 'process:start',
+  processStop: 'process:stop',
+  /** main → renderer 푸시(처리 단계·진행). */
+  processEvent: 'process:event',
 } as const;
 
 export interface AppInfo {
@@ -165,3 +169,62 @@ export type LlmAccountEvent =
   | { type: 'account'; status: LlmAccountStatus }
   | { type: 'rateLimits'; rateLimits: LlmRateLimits }
   | { type: 'loginCompleted'; result: LlmLoginCompleted };
+
+/**
+ * 번역 처리 시작 결과(C2.8). 처리는 main에서 백그라운드로 돌고 진행은 process:event로 푸시된다.
+ * started가 false면 reason에 이유가 있다(다른 논문 처리 중, LLM 런타임 없음 등).
+ */
+export interface ProcessStart {
+  started: boolean;
+  reason: string | null;
+}
+
+/** 멈춤 요청 결과. 돌고 있는 청크가 끝난 뒤 멈춘다. 돌고 있는 처리가 없으면 accepted가 false다. */
+export interface ProcessStop {
+  accepted: boolean;
+}
+
+export type ProcessStopReason =
+  | 'complete'
+  | 'complete_with_gaps'
+  | 'paused'
+  | 'needs_login'
+  | 'waiting_quota'
+  | 'too_many_failures'
+  | 'context_failed'
+  | 'invalid_state'
+  | 'no_document'
+  | 'busy';
+
+/** main이 renderer에 푸시하는 처리 진행 이벤트. 진행률은 실제로 끝난 청크 수다(PLAN 9절). */
+export type ProcessEvent =
+  | { type: 'state'; pdfSha256: string; state: PaperState }
+  | {
+      type: 'context';
+      pdfSha256: string;
+      status: 'running' | 'reused' | 'done' | 'failed';
+      message: string | null;
+    }
+  | { type: 'plan'; pdfSha256: string; total: number }
+  | { type: 'chunkStarted'; pdfSha256: string; chunkId: string; total: number }
+  | {
+      type: 'chunkFinished';
+      pdfSha256: string;
+      chunkId: string;
+      ok: boolean;
+      completed: number;
+      failed: number;
+      total: number;
+      /** 이 청크에서 결과가 확정된 문장 */
+      sentenceIds: string[];
+    }
+  | {
+      type: 'finished';
+      pdfSha256: string;
+      reason: ProcessStopReason;
+      message: string | null;
+      state: PaperState;
+      completed: number;
+      failed: number;
+      total: number;
+    };
