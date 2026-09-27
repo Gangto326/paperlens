@@ -1,13 +1,20 @@
 import type { SelectionResult } from '@shared/mapping/selection';
-import { selectionView, type SentenceView } from './selection-view';
+import {
+  NO_TRANSLATIONS,
+  selectionView,
+  type SentenceView,
+  type TranslationLookup,
+} from './selection-view';
 
 /**
- * 우측 패널 DOM(C1.16). 선택 문장의 원문·매핑 상태를 보여준다. 번역·해설·출처는 M2 이후 같은 자리에 붙는다.
- * 표시는 캐시(메모리 색인) 조회만으로 끝나므로 네트워크를 기다리지 않는다 — 200ms 목표는 호출 쪽에서 측정한다.
+ * 우측 패널 DOM(C1.16·C2.9). 선택 문장의 원문·매핑 상태와 저장된 번역·해설을 보여준다. 출처는 M4에서 붙는다.
+ * 표시는 메모리 조회만으로 끝나므로 네트워크를 기다리지 않는다 — 200ms 목표는 호출 쪽에서 측정한다.
  */
 export class SentencePanel {
   private readonly summaryEl: HTMLElement;
   private readonly listEl: HTMLElement;
+  private lookup: TranslationLookup = NO_TRANSLATIONS;
+  private last: SelectionResult | null = null;
 
   constructor(private readonly root: HTMLElement) {
     root.replaceChildren();
@@ -21,12 +28,20 @@ export class SentencePanel {
   clear(): void {
     this.summaryEl.textContent = '';
     this.listEl.replaceChildren();
+    this.last = null;
+  }
+
+  /** 번역 조회기를 바꾸고, 보여주던 선택이 있으면 새 결과로 다시 그린다. */
+  setTranslations(lookup: TranslationLookup): void {
+    this.lookup = lookup;
+    if (this.last) this.show(this.last);
   }
 
   /** 결과를 그린다. 빈 선택(empty_selection)은 이전 표시를 유지한다. */
   show(result: SelectionResult): void {
     if (result.reason === 'empty_selection') return;
-    const view = selectionView(result);
+    this.last = result;
+    const view = selectionView(result, this.lookup);
     this.summaryEl.textContent = view.summary;
     this.listEl.replaceChildren(...view.sentences.map(renderSentence));
   }
@@ -69,9 +84,32 @@ function renderSentence(s: SentenceView): HTMLElement {
   }
   article.append(en);
 
-  const tr = document.createElement('p');
-  tr.className = 'sentence-translation muted';
-  tr.textContent = s.translation;
-  article.append(tr);
+  const t = s.translation;
+  article.dataset['translation'] = t.state;
+  if (t.state !== 'complete') {
+    const waiting = document.createElement('p');
+    waiting.className = `sentence-translation muted translation-${t.state}`;
+    waiting.textContent = t.text;
+    article.append(waiting);
+    return article;
+  }
+  const ko = document.createElement('p');
+  ko.className = 'sentence-ko';
+  ko.lang = 'ko';
+  ko.textContent = t.ko;
+  article.append(ko);
+  if (t.note !== null) {
+    const note = document.createElement('p');
+    note.className = 'sentence-note';
+    note.lang = 'ko';
+    note.textContent = t.note;
+    article.append(note);
+  }
+  for (const warning of t.warnings) {
+    const w = document.createElement('p');
+    w.className = 'sentence-warning muted';
+    w.textContent = `주의: ${warning}`;
+    article.append(w);
+  }
   return article;
 }

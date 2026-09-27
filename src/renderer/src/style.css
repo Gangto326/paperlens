@@ -145,3 +145,27 @@ body,
   margin: 0;
   font-size: 12px;
 }
+.translation-failed {
+  color: rgb(200 40 40);
+}
+
+/* 번역·해설 (C2.9) */
+.sentence-ko {
+  margin: 0 0 6px;
+  line-height: 1.6;
+}
+.sentence-note {
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  border-left: 3px solid rgb(80 140 255 / 0.5);
+  background: rgb(80 140 255 / 0.08);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.sentence-warning {
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+#btn-process {
+  margin-left: 8px;
+}

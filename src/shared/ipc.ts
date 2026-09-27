@@ -23,6 +23,7 @@ export const IPC = {
   llmRateLimitsRead: 'llm:rateLimitsRead',
   /** main → renderer 푸시(계정·한도·로그인 완료). 나머지는 renderer → main invoke. */
   llmAccountEvent: 'llm:accountEvent',
+  translateReadResults: 'translate:readResults',
   processStart: 'process:start',
   processStop: 'process:stop',
   /** main → renderer 푸시(처리 단계·진행). */
@@ -228,3 +229,23 @@ export type ProcessEvent =
       failed: number;
       total: number;
     };
+
+/** 문장 하나의 저장된 번역·해설(C2.9). 검증을 통과해 완료된 청크의 결과만 온다. */
+export interface SentenceTranslation {
+  ko: string;
+  /** 필요 없으면 빈 문자열. 화면에서는 숨긴다. */
+  note: string;
+  warnings: string[];
+  chunkId: string;
+}
+
+/** 캐시에 저장된 번역 상태 전체. 선택 시 표시는 이 값을 메모리에서 조회한다. */
+export interface TranslationSnapshot {
+  pdfSha256: string;
+  state: PaperState;
+  generationId: string | null;
+  /** 읽기 순서의 청크. pending은 아직 결과 파일이 없는 청크다. */
+  chunks: { id: string; status: 'pending' | 'complete' | 'failed'; sentenceIds: string[] }[];
+  /** 문장 ID → 번역. 완료된 문장만 들어 있다. */
+  results: Record<string, SentenceTranslation>;
+}

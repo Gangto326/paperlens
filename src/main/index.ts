@@ -18,6 +18,7 @@ import {
   type ProcessStop,
   type ReadDocumentResult,
   type TextExtractionResult,
+  type TranslationSnapshot,
 } from '@shared/ipc';
 import { PaperCacheStore } from './cache/paper-cache-store';
 import { PdfRegistry } from './pdf/pdf-registry';
@@ -31,6 +32,7 @@ import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 import { CodexJobRunner } from './llm/codex/codex-jobs';
 import { PaperScheduler, type SchedulerEvent } from './scheduler/paper-scheduler';
+import { readTranslations } from './translate/results-store';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -326,6 +328,17 @@ function registerIpc(): void {
         if (!started.started) console.log(`[process] 시작하지 않음: ${String(started.reason)}`);
       }
       return index;
+    },
+  );
+
+  // 저장된 번역 결과(C2.9). 캐시 파일만 읽고 LLM을 부르지 않는다.
+  ipcMain.handle(
+    IPC.translateReadResults,
+    async (_event, pdfSha256: unknown): Promise<TranslationSnapshot> => {
+      if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
+        throw new Error('등록되지 않은 PDF');
+      }
+      return readTranslations(store, pdfSha256);
     },
   );
 

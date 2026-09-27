@@ -1,7 +1,15 @@
 import 'pdfjs-dist/web/pdf_viewer.css';
-import type { OpenedPdf, SentenceIndex } from '@shared/ipc';
+import type { OpenedPdf, ProcessEvent, SentenceIndex, TranslationSnapshot } from '@shared/ipc';
 import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
 import { AccountPanel } from './panel/account-panel';
+import {
+  INITIAL_PROCESS,
+  applyProcessEvent,
+  processFromSnapshot,
+  processView,
+  type ProcessModel,
+} from './panel/process-view';
+import { lookupOf } from './panel/selection-view';
 import { SentencePanel } from './panel/sentence-panel';
 import { rangesFromSelection } from './viewer/dom-selection';
 import { PdfViewer } from './viewer/pdf-viewer';
@@ -23,7 +31,12 @@ const viewer = new PdfViewer({ container: viewerEl });
 const selection = new SelectionController(viewer, viewerEl);
 const panel = new SentencePanel($('selection'));
 const accountPanel = new AccountPanel($('account'), (err) => showError(err));
+const processButton = $<HTMLButtonElement>('btn-process');
 let screenshotMode = false;
+/** 열려 있는 논문. 다른 논문의 처리 이벤트는 화면에 반영하지 않는다. */
+let currentSha: string | null = null;
+let processModel: ProcessModel = INITIAL_PROCESS;
+let translations: TranslationSnapshot | null = null;
 
 /** 상단 단계 표시(PLAN 9: 추출 → 문장 연결 → 논문 문맥·조사 → 번역 → 완료). 진행률은 실제 완료 수만 쓴다. */
 function setStage(text: string): void {
@@ -32,6 +45,61 @@ function setStage(text: string): void {
 
 function setStatus(text: string): void {
   statusEl.textContent = text;
+}
+
+/** 처리 단계 글과 시작·멈춤 단추를 모델대로 그린다(C2.9). */
+function renderProcess(): void {
+  const view = processView(processModel);
+  if (view.stage !== '') setStage(view.stage);
+  processButton.hidden = view.button === null;
+  if (view.button) {
+    processButton.textContent = view.button.label;
+    processButton.disabled = view.button.disabled;
+    processButton.dataset['action'] = view.button.action;
+  }
+}
+
+/** 저장된 번역을 캐시에서 읽어 메모리에 둔다. 선택 표시는 이 값만 조회한다. */
+async function loadTranslations(pdfSha256: string, fresh: boolean): Promise<void> {
+  const t0 = performance.now();
+  const snapshot = await window.paperlens.readTranslations(pdfSha256);
+  if (currentSha !== pdfSha256) return;
+  translations = snapshot;
+  panel.setTranslations(lookupOf(snapshot));
+  if (fresh) processModel = processFromSnapshot(snapshot);
+  renderProcess();
+  console.info(
+    `[paperlens] translations state=${snapshot.state} generation=${String(snapshot.generationId)} chunks=${snapshot.chunks.map((c) => c.status[0]).join('')} sentences=${Object.keys(snapshot.results).length} ms=${Math.round(performance.now() - t0)}`,
+  );
+}
+
+function onProcessEvent(event: ProcessEvent): void {
+  if (event.pdfSha256 !== currentSha) return;
+  processModel = applyProcessEvent(processModel, event);
+  renderProcess();
+  if (event.type === 'chunkFinished' || event.type === 'finished') {
+    console.info(`[paperlens] process ${JSON.stringify({ ...event, sentenceIds: undefined })}`);
+    void loadTranslations(event.pdfSha256, false).catch(showError);
+  }
+  if (event.type === 'finished' && event.message) setStatus(event.message);
+}
+
+async function onProcessButton(): Promise<void> {
+  if (!currentSha) return;
+  if (processButton.dataset['action'] === 'stop') {
+    const stopped = await window.paperlens.stopProcessing();
+    if (stopped.accepted) processModel = { ...processModel, stopRequested: true };
+    renderProcess();
+    return;
+  }
+  const started = await window.paperlens.startProcessing(currentSha);
+  if (!started.started) {
+    setStatus(`번역을 시작하지 못했습니다: ${started.reason ?? '알 수 없는 이유'}`);
+    return;
+  }
+  processModel = { ...processModel, running: true, phase: 'context', message: null };
+  renderProcess();
+  setStatus('번역을 시작했습니다. 끝난 부분부터 표시됩니다.');
 }
 
 async function openPdf(): Promise<void> {
@@ -45,6 +113,11 @@ async function loadOpened(result: OpenedPdf): Promise<void> {
   setStage('열는 중');
   selection.setIndex(null);
   panel.clear();
+  currentSha = result.pdfSha256;
+  translations = null;
+  processModel = INITIAL_PROCESS;
+  panel.setTranslations(lookupOf(null));
+  processButton.hidden = true;
   const t0 = performance.now();
   const bytes = await window.paperlens.readPdfBytes(result.pdfSha256);
   const doc = await viewer.load(bytes);
@@ -100,7 +173,7 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
       return null;
     });
     if (reused) {
-      setStage(`문장 연결 완료(캐시) · 번역 대기 (0/${reused.sentences.length})`);
+      renderProcess();
       setStatus(
         `텍스트 추출 완료. GROBID에 연결할 수 없지만 이전에 연결한 문장 ${reused.sentences.length}개(캐시)를 사용합니다. 문장을 클릭하거나 드래그하세요.`,
       );
@@ -126,7 +199,7 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
     `[paperlens] document rev=${mapped.extractionRevision} sentences=${mapped.sentenceCount} mapped=${mapped.mapped} uncertain=${mapped.uncertain} unmapped=${mapped.unmapped} equations=${mapped.equationCount} readingOrder=${mapped.readingOrderMismatches} warnings=${JSON.stringify(mapped.warnings)} ms=${mapped.elapsedMs}`,
   );
   await loadSentenceIndex(result.pdfSha256);
-  setStage(`문장 연결 완료 · 번역 대기 (0/${mapped.sentenceCount})`);
+  renderProcess();
   setStatus(
     `문장 ${mapped.sentenceCount}개 준비 (연결 ${mapped.mapped}, 불확실 ${mapped.uncertain}, 미연결 ${mapped.unmapped}, 수식 ${mapped.equationCount}). 문장을 클릭하거나 드래그하세요.`,
   );
@@ -141,6 +214,7 @@ async function loadSentenceIndex(pdfSha256: string): Promise<SentenceIndex> {
   console.info(
     `[paperlens] sentence index rev=${index.extractionRevision} sentences=${index.sentences.length} spans=${spans} excluded=${index.excludedBlocks.length} ms=${Math.round(performance.now() - t0)}`,
   );
+  await loadTranslations(pdfSha256, true);
   if (screenshotMode) screenshotSelectSentence(index);
   return index;
 }
@@ -193,8 +267,9 @@ function onSelection(ev: SelectionEvent): void {
   const renderMs = performance.now() - t0;
   const totalMs = ev.elapsedMs + renderMs;
   const ids = ev.result.sentences.map((s) => s.id);
+  const translated = ids.filter((id) => translations?.results[id] !== undefined).length;
   console.info(
-    `[paperlens] selection kind=${ev.kind} reason=${ev.result.reason} byRect=${ev.result.byRect} ranges=${JSON.stringify(ev.ranges.map((r) => [r.textItemId, r.start, r.end]))} sentences=${JSON.stringify(ids)} resolveMs=${ev.elapsedMs.toFixed(1)} renderMs=${renderMs.toFixed(1)} totalMs=${totalMs.toFixed(1)}`,
+    `[paperlens] selection translated=${translated}/${ids.length} kind=${ev.kind} reason=${ev.result.reason} byRect=${ev.result.byRect} ranges=${JSON.stringify(ev.ranges.map((r) => [r.textItemId, r.start, r.end]))} sentences=${JSON.stringify(ids)} resolveMs=${ev.elapsedMs.toFixed(1)} renderMs=${renderMs.toFixed(1)} totalMs=${totalMs.toFixed(1)}`,
   );
   if (totalMs > PANEL_TARGET_MS) {
     console.warn(`[paperlens] selection display ${totalMs.toFixed(0)}ms > ${PANEL_TARGET_MS}ms`);
@@ -230,6 +305,8 @@ async function boot(): Promise<void> {
   );
   updateZoomLabel();
   selection.addListener(onSelection);
+  processButton.addEventListener('click', () => void onProcessButton().catch(showError));
+  window.paperlens.onProcessEvent(onProcessEvent);
   viewer.addPageRenderedListener((pageIndex) => {
     const tl = viewer.textLayerOf(pageIndex);
     if (info.screenshotMode && pageIndex === 0 && tl && tl.textDivs.length > 12) {

@@ -17,6 +17,7 @@ import {
   type ReadDocumentResult,
   type TextExtractionPayload,
   type TextExtractionResult,
+  type TranslationSnapshot,
 } from '@shared/ipc';
 
 /** renderer에 노출하는 유일한 API. 채널을 직접 노출하지 않고 함수 단위로 감싼다. */
@@ -47,6 +48,9 @@ const api = {
     ipcRenderer.on(IPC.llmAccountEvent, listener);
     return () => ipcRenderer.removeListener(IPC.llmAccountEvent, listener);
   },
+  /** 저장된 번역 결과(C2.9). 캐시 파일만 읽는다. */
+  readTranslations: (pdfSha256: string): Promise<TranslationSnapshot> =>
+    ipcRenderer.invoke(IPC.translateReadResults, pdfSha256),
   /** 번역 처리 시작(C2.8). 컨텍스트 → 청크 순서로 main에서 돈다. */
   startProcessing: (pdfSha256: string): Promise<ProcessStart> =>
     ipcRenderer.invoke(IPC.processStart, pdfSha256),
