@@ -46,7 +46,12 @@ export interface ChunkValidation {
 }
 
 const PLACEHOLDER = /\[EQ_\d+\]/g;
-const URL = /https?:\/\/[^\s)\]}>"']+/gi;
+// URL에 쓰는 ASCII 글자만 잇는다. 한국어 조사가 바로 붙어도(`…/rag/에서`) URL에 들어가지 않는다.
+const URL = /https?:\/\/[A-Za-z0-9\-._~:/?#@!$&*+,;=%]+/gi;
+
+/** 문장 끝 구두점은 URL이 아니다. */
+const urlsIn = (text: string): string[] =>
+  [...text.matchAll(URL)].map((m) => m[0].replace(/[.,;:!?]+$/, ''));
 const NUMBER = /\d+(?:[.,]\d+)*/g;
 
 const squeeze = (text: string): string => text.replace(/\s+/g, '');
@@ -147,10 +152,10 @@ export function validateChunkOutput(
       }
     }
 
-    const sourceUrls = new Set([...sentence.en.matchAll(URL)].map((m) => m[0]));
-    for (const m of `${got.ko}\n${got.note}`.matchAll(URL)) {
-      if (!sourceUrls.has(m[0])) {
-        fatal('invented_url', sentence.id, `원문에 없는 URL: ${m[0]}`);
+    const sourceUrls = new Set(urlsIn(sentence.en));
+    for (const url of urlsIn(`${got.ko}\n${got.note}`)) {
+      if (!sourceUrls.has(url)) {
+        fatal('invented_url', sentence.id, `원문에 없는 URL: ${url}`);
       }
     }
 

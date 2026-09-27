@@ -145,6 +145,14 @@ describe('validateChunkOutput', () => {
     ).toEqual([['invented_url', 'id_a']]);
     // 원문에 있는 URL은 그대로 써도 된다.
     expect(check(GOOD).ok).toBe(true);
+    // 실제 실행에서 나온 오탐: URL 바로 뒤에 조사가 붙거나 문장 부호로 끝나는 경우.
+    expect(
+      codes(replaced(2, '코드는 https://example.org/rag에서 볼 수 있고 정확도는 44.5%이다.')),
+    ).toEqual([]);
+    expect(codes(replaced(2, '정확도는 44.5%이고 코드는 https://example.org/rag.'))).toEqual([]);
+    expect(
+      codes(replaced(2, '정확도는 44.5%이고 코드는 https://example.org/rag2에 있다.')),
+    ).toEqual([['invented_url', 'id_c']]);
   });
 
   it('수치 누락은 경고다. 저장은 하고 그 문장의 warnings에 남긴다', () => {
