@@ -404,7 +404,10 @@ export interface SentenceResult {
 export interface ChunkDocument {
   schemaVersion: typeof SCHEMA_VERSION;
   id: string;
+  /** 첫 대상 문장의 섹션 */
   sectionId: string;
+  /** 청크가 걸친 모든 섹션(읽기 순서). 없으면 sectionId 하나로 본다. */
+  sectionIds?: string[];
   targetSentenceIds: string[];
   neighborSentenceIds: string[];
   inputHash: string;

@@ -416,6 +416,7 @@ export const chunkDocumentSchema = obj(
     schemaVersion,
     id: nonEmpty,
     sectionId: nonEmpty,
+    sectionIds: arr(nonEmpty),
     targetSentenceIds: arr(nonEmpty),
     neighborSentenceIds: arr(nonEmpty),
     inputHash: nonEmpty,
@@ -433,6 +434,7 @@ export const chunkDocumentSchema = obj(
     lastError: nullable(failure),
   },
   [
+    'sectionIds',
     'resultHash',
     'startedAt',
     'completedAt',
