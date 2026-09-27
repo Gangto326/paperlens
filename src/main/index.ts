@@ -25,6 +25,7 @@ import { GrobidClient } from './parser/grobid-client';
 import { FULLTEXT_PARAMS, processFulltext, saveOriginalTei } from './parser/grobid-fulltext';
 import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
 import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex/codex-account';
+import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
@@ -39,6 +40,34 @@ let codex: CodexRuntime | null = null;
 const account = new CodexAccount(() => codex?.client ?? null, {
   log: (line) => console.log(`[codex] ${line}`),
 });
+
+/**
+ * 구조화 출력 스모크(C1.20). 한도를 쓰므로 PAPERLENS_LLM_SMOKE=1일 때만 돈다: 시작 시 로그인 상태면 바로,
+ * 아니면 로그인 완료 직후 1회. 결과는 로그와 userData/llm/structured-smoke.json에 남긴다.
+ */
+let smokeRunning = false;
+async function runSmoke(trigger: string): Promise<void> {
+  const runtime = codex;
+  if (!process.env['PAPERLENS_LLM_SMOKE'] || !runtime || smokeRunning) return;
+  smokeRunning = true;
+  try {
+    console.log(`[codex] smoke 시작 (${trigger})`);
+    const record = await runStructuredSmoke({
+      transport: () => runtime.client,
+      readAccount: () => account.read(),
+      startThread: () => runtime.startThread(),
+      runtimeVersion: runtime.startInfo?.binary.version ?? null,
+      log: (line) => console.log(`[codex] ${line}`),
+    });
+    console.log(`[codex] ${formatSmokeRecord(record)}`);
+    const path = await saveSmokeRecord(app.getPath('userData'), record);
+    console.log(`[codex] smoke 기록 ${path}`);
+  } catch (err) {
+    console.error(`[codex] smoke 실패: ${err instanceof Error ? err.message : String(err)}`);
+  } finally {
+    smokeRunning = false;
+  }
+}
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -227,6 +256,7 @@ function registerIpc(): void {
     for (const win of BrowserWindow.getAllWindows()) {
       if (!win.isDestroyed()) win.webContents.send(IPC.llmAccountEvent, event);
     }
+    if (event.type === 'loginCompleted' && event.result.success) void runSmoke('로그인 완료');
   });
 }
 
@@ -256,6 +286,7 @@ async function bootCodex(): Promise<void> {
     account.attach();
     console.log(`[codex] ${formatAccountStatus(await account.read())}`);
     console.log(`[codex] ${formatRateLimits(await account.readRateLimits())}`);
+    await runSmoke('시작');
   } catch (err) {
     console.error(`[codex] 시작 실패: ${err instanceof Error ? err.message : String(err)}`);
   }

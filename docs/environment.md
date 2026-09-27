@@ -38,3 +38,4 @@ npm run build    # out/ 빌드
 ```
 - 로그인은 앱 안의 "ChatGPT 로그인" 버튼으로 시작한다(`account/login/start {type:"chatgpt"}`). App Server가 `localhost:1455` 콜백 서버를 열고 앱이 인증 URL을 기본 브라우저로 연다. 인증 정보는 앱 전용 `CODEX_HOME`에만 저장되므로 전역 `codex login`과 별개다(0.157.1 실측).
 - 한도는 `account/rateLimits/read`로만 조회하고 값이 없으면 "확인 불가"로 표시한다. 미로그인이면 오류(-32600)라 로그인 필요로 구분한다.
+- 구조화 출력 스모크는 한도를 쓰므로 `PAPERLENS_LLM_SMOKE=1`로 앱을 띄웠을 때만 돈다(시작 시 로그인 상태면 바로, 아니면 로그인 완료 직후). 결과는 로그 `[codex] smoke …`와 `userData/llm/structured-smoke.json`(Usage 포함)에 남는다. 미로그인 턴은 401 재시도로 약 17초 뒤에야 실패하므로 턴 전에 계정 상태를 먼저 확인한다(0.157.1 실측). 같은 변수로 `npm test`를 돌리면 실제 app-server 미로그인 턴 테스트가 추가로 돈다(api.openai.com 접속).

@@ -4,10 +4,19 @@
 // 계정(C1.19, 0.157.1 실측 형태를 흉내): account/read, account/rateLimits/read(미로그인 -32600), account/login/start(chatgpt),
 //       account/login/cancel, account/logout. 테스트 전용 test/completeLogin {loginId, success}는 브라우저 인증이 끝난 것처럼
 //       account/login/completed(+성공 시 account/updated·account/rateLimits/updated)를 보낸다.
+// 턴(C1.20, 0.157.1 실측 순서를 흉내): thread/start, turn/start(응답 뒤 turn/started → item/completed → thread/tokenUsage/updated →
+//       turn/completed), turn/interrupt. 입력 글의 지시어로 동작을 고른다: `FAKE:reply <글>` 그 글로 응답, `FAKE:silent` agent message 없음,
+//       `FAKE:hang` turn/interrupt가 올 때까지 대기, `FAKE:limit` usageLimitExceeded 실패, `FAKE:rpcfail` turn/start 오류, `FAKE:crash` 턴 중 종료.
+//       지시어가 없으면 미로그인일 때 401 실패, 로그인 상태면 스모크 기대값으로 응답한다.
+// 인자 --default-reply=<글>: 지시어 없는 턴의 응답 글을 바꾼다.
 // 인자 --ignore-stdin-close: stdin이 닫혀도 종료하지 않는다 (SIGTERM 경로 확인용).
 import { createInterface } from 'node:readline';
 
 const ignoreClose = process.argv.includes('--ignore-stdin-close');
+const DEFAULT_REPLY_FLAG = '--default-reply=';
+const defaultReply =
+  process.argv.find((a) => a.startsWith(DEFAULT_REPLY_FLAG))?.slice(DEFAULT_REPLY_FLAG.length) ??
+  '{"answer":"paperlens-ok","n":3}';
 const send = (m) => process.stdout.write(`${JSON.stringify(m)}\n`);
 const waiting = new Map();
 let serverId = 900;
@@ -25,6 +34,108 @@ const RATE_LIMITS = {
   spendControlReached: null,
   planType: 'plus',
   rateLimitReachedType: null,
+};
+let threadSeq = 0;
+let turnSeq = 0;
+const hanging = new Map();
+const TOKEN_USAGE = {
+  totalTokens: 1244,
+  inputTokens: 1200,
+  cachedInputTokens: 200,
+  cacheWriteInputTokens: 0,
+  outputTokens: 44,
+  reasoningOutputTokens: 10,
+};
+const turnOf = (id, status, error = null) => ({
+  id,
+  items: [],
+  itemsView: 'notLoaded',
+  status,
+  error,
+  startedAt: 1_790_497_369,
+  completedAt: status === 'inProgress' ? null : 1_790_497_370,
+  durationMs: status === 'inProgress' ? null : 1000,
+});
+const agentMessage = (threadId, turnId, id, text, phase) =>
+  send({
+    method: 'item/completed',
+    params: {
+      item: {
+        type: 'agentMessage',
+        id,
+        text,
+        phase,
+        memoryCitation: null,
+        delivery: null,
+        questions: null,
+      },
+      threadId,
+      turnId,
+      completedAtMs: Date.now(),
+    },
+    emittedAtMs: Date.now(),
+  });
+const completeTurn = (threadId, turnId, status, error = null) =>
+  send({
+    method: 'turn/completed',
+    params: { threadId, turn: turnOf(turnId, status, error) },
+    emittedAtMs: Date.now(),
+  });
+const turnError = (message, codexErrorInfo) => ({
+  message,
+  codexErrorInfo,
+  additionalDetails: null,
+  misalignment: null,
+});
+const runTurn = (threadId, turnId, text) => {
+  send({ method: 'turn/started', params: { threadId, turn: turnOf(turnId, 'inProgress') } });
+  const directive = /^FAKE:(\w+)\s*([\s\S]*)$/.exec(text);
+  const kind = directive ? directive[1] : loggedIn ? 'default' : 'unauthorized';
+  switch (kind) {
+    case 'hang':
+      hanging.set(turnId, threadId);
+      return;
+    case 'crash':
+      process.stderr.write('fake crash during turn\n');
+      process.exit(3);
+      return;
+    case 'limit':
+      completeTurn(
+        threadId,
+        turnId,
+        'failed',
+        turnError("You've hit your usage limit.", 'usageLimitExceeded'),
+      );
+      return;
+    case 'unauthorized':
+      completeTurn(
+        threadId,
+        turnId,
+        'failed',
+        turnError(
+          'unexpected status 401 Unauthorized: Missing bearer or basic authentication in header, url: https://api.openai.com/v1/responses',
+          'other',
+        ),
+      );
+      return;
+    default:
+  }
+  // 다른 스레드의 알림이 섞여 와도 이 턴의 결과에 들어가면 안 된다.
+  agentMessage('thread-other', 'turn-other', 'item-noise', '{"answer":"noise","n":0}', null);
+  if (kind !== 'silent') {
+    agentMessage(threadId, turnId, `${turnId}-c`, 'Working on it.', 'commentary');
+    const reply = kind === 'reply' ? directive[2] : defaultReply;
+    agentMessage(threadId, turnId, `${turnId}-f`, reply, 'final_answer');
+  }
+  send({
+    method: 'thread/tokenUsage/updated',
+    params: {
+      threadId,
+      turnId,
+      tokenUsage: { total: TOKEN_USAGE, last: TOKEN_USAGE, modelContextWindow: 200_000 },
+    },
+  });
+  completeTurn(threadId, turnId, 'completed');
 };
 const completeLogin = (loginId, success, error) => {
   send({
@@ -148,6 +259,42 @@ rl.on('line', (line) => {
       loggedIn = false;
       send({ id: msg.id, result: {} });
       break;
+    case 'thread/start': {
+      threadSeq += 1;
+      const id = `thread-${threadSeq}`;
+      send({
+        id: msg.id,
+        result: {
+          thread: { id, ephemeral: true },
+          model: 'fake-model',
+          sandbox: { type: 'readOnly', networkAccess: false },
+          approvalPolicy: 'never',
+        },
+      });
+      break;
+    }
+    case 'turn/start': {
+      const text = String(msg.params?.input?.[0]?.text ?? '');
+      if (text.startsWith('FAKE:rpcfail')) {
+        send({ id: msg.id, error: { code: -32600, message: 'thread not found' } });
+        break;
+      }
+      turnSeq += 1;
+      const turnId = `turn-${turnSeq}`;
+      send({ id: msg.id, result: { turn: turnOf(turnId, 'inProgress') } });
+      runTurn(String(msg.params?.threadId), turnId, text);
+      break;
+    }
+    case 'turn/interrupt': {
+      const turnId = msg.params?.turnId;
+      const threadId = hanging.get(turnId);
+      send({ id: msg.id, result: {} });
+      if (threadId !== undefined) {
+        hanging.delete(turnId);
+        completeTurn(threadId, turnId, 'interrupted');
+      }
+      break;
+    }
     case 'test/completeLogin': {
       const { loginId, success } = msg.params ?? {};
       pendingLogin = null;
