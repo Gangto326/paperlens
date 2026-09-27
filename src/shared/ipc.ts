@@ -26,6 +26,7 @@ export const IPC = {
   translateReadResults: 'translate:readResults',
   processStart: 'process:start',
   processStop: 'process:stop',
+  processPrioritize: 'process:prioritize',
   /** main → renderer 푸시(처리 단계·진행). */
   processEvent: 'process:event',
 } as const;
@@ -248,4 +249,9 @@ export interface TranslationSnapshot {
   chunks: { id: string; status: 'pending' | 'complete' | 'failed'; sentenceIds: string[] }[];
   /** 문장 ID → 번역. 완료된 문장만 들어 있다. */
   results: Record<string, SentenceTranslation>;
+}
+
+/** 미완료 문장을 골랐을 때 그 청크를 다음 순서로 올린 결과(C2.10). 처리 중이 아니면 빈 배열이다. */
+export interface ProcessPrioritize {
+  raisedChunkIds: string[];
 }

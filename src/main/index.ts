@@ -14,6 +14,7 @@ import {
   type ParserHealth,
   type PdfOpenDialogResult,
   type ProcessEvent,
+  type ProcessPrioritize,
   type ProcessStart,
   type ProcessStop,
   type ReadDocumentResult,
@@ -349,6 +350,16 @@ function registerIpc(): void {
     }
     return startProcessing(pdfSha256, 'renderer');
   });
+  ipcMain.handle(
+    IPC.processPrioritize,
+    (_event, pdfSha256: unknown, sentenceIds: unknown): ProcessPrioritize => {
+      if (typeof pdfSha256 !== 'string' || !Array.isArray(sentenceIds)) {
+        throw new Error('잘못된 요청');
+      }
+      const ids = sentenceIds.filter((id): id is string => typeof id === 'string').slice(0, 500);
+      return { raisedChunkIds: scheduler?.prioritizeSentences(pdfSha256, ids) ?? [] };
+    },
+  );
   ipcMain.handle(IPC.processStop, (): ProcessStop => ({
     accepted: scheduler?.requestStop() ?? false,
   }));

@@ -271,9 +271,31 @@ function onSelection(ev: SelectionEvent): void {
   console.info(
     `[paperlens] selection translated=${translated}/${ids.length} kind=${ev.kind} reason=${ev.result.reason} byRect=${ev.result.byRect} ranges=${JSON.stringify(ev.ranges.map((r) => [r.textItemId, r.start, r.end]))} sentences=${JSON.stringify(ids)} resolveMs=${ev.elapsedMs.toFixed(1)} renderMs=${renderMs.toFixed(1)} totalMs=${totalMs.toFixed(1)}`,
   );
+  // 아직 번역되지 않은 문장을 골랐고 처리 중이면 그 청크를 다음 순서로 올린다(C2.10).
+  const waiting = pendingSentenceIds(ids);
+  if (waiting.length > 0 && processModel.running && currentSha) {
+    void window.paperlens
+      .prioritizeSentences(currentSha, waiting)
+      .then((r) => {
+        if (r.raisedChunkIds.length === 0) return;
+        console.info(`[paperlens] prioritized ${r.raisedChunkIds.join(',')}`);
+        setStatus('고른 부분을 다음 순서로 번역합니다. 지금 번역 중인 부분이 끝난 뒤 시작합니다.');
+      })
+      .catch(showError);
+  }
   if (totalMs > PANEL_TARGET_MS) {
     console.warn(`[paperlens] selection display ${totalMs.toFixed(0)}ms > ${PANEL_TARGET_MS}ms`);
   }
+}
+
+/** 고른 문장 중 결과가 없고 실패로 끝나지도 않은 것. */
+function pendingSentenceIds(ids: string[]): string[] {
+  const snapshot = translations;
+  if (!snapshot) return [];
+  const pending = new Set(
+    snapshot.chunks.filter((c) => c.status === 'pending').flatMap((c) => c.sentenceIds),
+  );
+  return ids.filter((id) => snapshot.results[id] === undefined && pending.has(id));
 }
 
 function updateZoomLabel(): void {
