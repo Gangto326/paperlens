@@ -3,6 +3,7 @@ import { SCHEMA_VERSION, type Failure, type Page, type TextQuality } from '@shar
 import { createNormalizationMap } from '@shared/normalize/normalizer';
 import { classifyDocument, classifyPage, haltsPipeline, pageTextStats } from '@shared/text-quality';
 import type { PaperCacheStore } from '../cache/paper-cache-store';
+import { stateAfterExtractionStep } from '../state/paper-state';
 import { computeExtractionRevision, revisionInputFor } from './revision';
 
 const SHA256_RE = /^[0-9a-f]{64}$/;
@@ -117,7 +118,12 @@ export async function saveTextItems(
         m.state = 'failed';
         m.currentExtractionRevision = null;
       } else {
-        m.state = 'extracting';
+        // 같은 추출본을 다시 연 것이면 더 나아간 상태(mapping·translating·complete 등)를 되돌리지 않는다.
+        m.state = stateAfterExtractionStep(
+          m.state,
+          'extracting',
+          m.currentExtractionRevision === extractionRevision,
+        );
         m.currentExtractionRevision = extractionRevision;
       }
     },

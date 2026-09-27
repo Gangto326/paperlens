@@ -43,3 +43,32 @@ const RETRYABLE: readonly LlmJobFailureKind[] = [
 export function isRetryableLlmFailure(kind: LlmJobFailureKind): boolean {
   return RETRYABLE.includes(kind);
 }
+
+/** 문장 연결이 끝난 뒤의 상태들. 같은 추출본을 다시 열어도 이 상태는 되돌리지 않는다. */
+const AFTER_MAPPING: readonly PaperState[] = [
+  'context_pending',
+  'researching',
+  'translating',
+  'paused',
+  'waiting_quota',
+  'needs_login',
+  'complete',
+  'complete_with_gaps',
+];
+
+/**
+ * 추출·문장 연결 단계가 끝났을 때의 상태.
+ * 이미 처리한 논문을 다시 열면 같은 revision으로 추출과 문장 연결이 다시 돈다. 그때 상태를 `extracting`이나
+ * `mapping`으로 되돌리면 저장된 번역이 있어도 이어서 처리할 수 없다. 같은 revision이면 더 나아간 상태를 지킨다.
+ * revision이 바뀌었으면 새 추출본이므로 도달한 단계로 바꾼다. `failed`는 지키지 않는다(다시 시도할 수 있게).
+ */
+export function stateAfterExtractionStep(
+  current: PaperState,
+  reached: 'extracting' | 'mapping',
+  sameRevision: boolean,
+): PaperState {
+  if (!sameRevision) return reached;
+  if (AFTER_MAPPING.includes(current)) return current;
+  if (reached === 'extracting' && current === 'mapping') return current;
+  return reached;
+}

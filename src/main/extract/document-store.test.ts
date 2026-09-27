@@ -146,3 +146,77 @@ describe('readSentenceIndex', () => {
     });
   });
 });
+
+describe('이미 처리한 논문을 다시 열 때의 상태', () => {
+  const open = async (): Promise<void> => {
+    const rev = await extract();
+    await saveOriginalTei(store, TINY_SHA, rev, TINY_TEI);
+    await buildAndSaveDocument(store, TINY_SHA, buildOpts());
+  };
+  const setState = async (
+    state: 'translating' | 'complete' | 'paused' | 'failed',
+  ): Promise<void> => {
+    await store.updateManifest(TINY_SHA, (m) => {
+      m.state = state;
+      m.currentGenerationId = 'gen_1';
+    });
+  };
+
+  it('같은 추출본이면 추출과 문장 연결을 다시 해도 더 나아간 상태를 되돌리지 않는다', async () => {
+    await open();
+    for (const state of ['translating', 'complete', 'paused'] as const) {
+      await setState(state);
+      await extract();
+      expect((await store.readManifest(TINY_SHA)).state).toBe(state);
+      await buildAndSaveDocument(store, TINY_SHA, buildOpts());
+      const manifest = await store.readManifest(TINY_SHA);
+      expect(manifest.state).toBe(state);
+      expect(manifest.currentGenerationId).toBe('gen_1');
+    }
+  });
+
+  it('mapping에서 다시 추출하면 mapping에 머문다', async () => {
+    await open();
+    await extract();
+    expect((await store.readManifest(TINY_SHA)).state).toBe('mapping');
+  });
+
+  it('failed는 지키지 않는다. 다시 열면 처음 단계부터 간다', async () => {
+    await open();
+    await setState('failed');
+    await extract();
+    expect((await store.readManifest(TINY_SHA)).state).toBe('extracting');
+  });
+
+  it('추출 revision이 바뀌면 새 추출본이므로 extracting으로 간다', async () => {
+    await open();
+    await setState('complete');
+    const r = await saveTextItems(
+      store,
+      {
+        pdfSha256: TINY_SHA,
+        pdfjsVersion: '6.3.289',
+        textExtractorVersion: '3',
+        pages: tinyPages(),
+        textItems: tinyItems(),
+        fonts: tinyFonts(),
+      },
+      OPTS,
+    );
+    const manifest = await store.readManifest(TINY_SHA);
+    expect(manifest.currentExtractionRevision).toBe(r.extractionRevision);
+    expect(manifest.state).toBe('extracting');
+  });
+
+  it('캐시의 document.json으로 색인을 읽으면 extracting에 머문 상태를 mapping으로 올린다', async () => {
+    await open();
+    await store.updateManifest(TINY_SHA, (m) => {
+      m.state = 'extracting';
+    });
+    await readSentenceIndex(store, TINY_SHA);
+    expect((await store.readManifest(TINY_SHA)).state).toBe('mapping');
+    await setState('complete');
+    await readSentenceIndex(store, TINY_SHA);
+    expect((await store.readManifest(TINY_SHA)).state).toBe('complete');
+  });
+});

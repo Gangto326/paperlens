@@ -4,6 +4,7 @@ import type { MappingResult, ReadDocumentResult } from '@shared/ipc';
 import { sentenceIndexOf } from '@shared/mapping/selection';
 import type { Page } from '@shared/schema';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
+import { stateAfterExtractionStep } from '../state/paper-state';
 import { buildExtractionDocument, type BuildDocumentResult } from './build-document';
 
 export interface BuildAndSaveOptions {
@@ -68,7 +69,7 @@ export async function buildAndSaveDocument(
     pdfSha256,
     (m) => {
       store.recordFile(m, pdfSha256, documentPath, sha);
-      m.state = 'mapping';
+      m.state = stateAfterExtractionStep(m.state, 'mapping', m.currentExtractionRevision === rev);
       m.currentExtractionRevision = rev;
     },
     now,
@@ -109,5 +110,12 @@ export async function readSentenceIndex(
     throw new CacheReadError(documentPath, 'missing', ['문장 연결(document.json)이 아직 없습니다']);
   }
   const doc = await store.readJson('extractionDocument', documentPath, recorded.sha256);
+  // GROBID 없이 캐시의 document.json을 쓰는 경로(C1.16)에서는 buildDocument가 돌지 않는다.
+  // 문장 연결이 확정돼 있는데 상태가 extracting에 머물러 있으면 mapping으로 올린다.
+  if (manifest.state === 'extracting') {
+    await store.updateManifest(pdfSha256, (m) => {
+      if (m.state === 'extracting' && m.currentExtractionRevision === rev) m.state = 'mapping';
+    });
+  }
   return { ...sentenceIndexOf(doc), documentPath };
 }
