@@ -26,7 +26,9 @@ export const CONTEXT_NO_TOOLS_TEMPLATE: PromptTemplate = {
    조사가 필요한 배경 개념은 설명을 지어내지 말고 unresolved에 개념과 이유를 남긴다.
 6. 근거가 없거나 의미가 불명확하면 unresolved로 남긴다.
 7. 요약과 용어 설명은 사전 지식이 없는 독자가 이해할 수 있는 한국어로 쓴다.
-8. 최종 출력은 지정 스키마의 JSON 한 개다. 파일을 쓰지 않는다.`,
+8. 문장 id와 섹션 id는 evidenceSentenceIds와 coverage에만 쓴다.
+   요약·결과·한계·용어 설명·unresolved 같은 서술 글에는 id를 적지 않는다.
+9. 최종 출력은 지정 스키마의 JSON 한 개다. 파일을 쓰지 않는다.`,
   inputs: [
     { name: 'PAPER_METADATA', required: true, description: '제목·저자·초록 등 메타데이터' },
     { name: 'PAPER_BODY', required: true, description: '섹션별 본문 문장(id와 글)' },
