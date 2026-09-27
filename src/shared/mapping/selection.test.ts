@@ -191,6 +191,20 @@ describe('SentenceLookup.resolveCaret (클릭)', () => {
   });
 });
 
+describe('빈 범위 여러 개', () => {
+  it('각 caret의 문장을 order 순으로 모으고 범위 순서와 무관하다', () => {
+    // fast-check가 찾은 반례(seed -1449580875): 빈 범위 두 개가 서로 다른 문장에 놓인 경우.
+    const lookup = new SentenceLookup(index());
+    const a = lookup.resolveRanges([range('t_0_0', 15, 15), range('t_0_0', 1, 1)]);
+    const b = lookup.resolveRanges([range('t_0_0', 1, 1), range('t_0_0', 15, 15)]);
+    expect(a.sentences.map((s) => s.id)).toEqual(['s1', 's2']);
+    expect(b).toEqual(a);
+    expect(lookup.resolveRanges([range('t_0_0', 15, 15)]).sentences.map((s) => s.id)).toEqual([
+      's2',
+    ]);
+  });
+});
+
 describe('속성', () => {
   it('드래그 결과는 항상 order 오름차순·중복 없음이며, 범위 순서와 무관하다', () => {
     const lookup = new SentenceLookup(index());

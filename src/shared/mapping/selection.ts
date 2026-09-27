@@ -189,8 +189,14 @@ export class SentenceLookup {
     if (ranges.length === 0) return { sentences: [], reason: 'empty_selection', byRect: false };
     const dragged = ranges.filter((r) => r.end > r.start);
     if (dragged.length === 0) {
-      const caret = ranges[0]!;
-      return this.resolveCaret({ textItemId: caret.textItemId, offset: caret.start });
+      // 빈 범위가 여럿이면 각 caret의 문장을 모은다. 첫 범위만 보면 범위 순서에 따라 결과가 달라진다.
+      const found = new Map<string, SentenceIndexEntry>();
+      for (const caret of ranges) {
+        const hit = this.resolveCaret({ textItemId: caret.textItemId, offset: caret.start });
+        for (const sentence of hit.sentences) found.set(sentence.id, sentence);
+      }
+      const sentences = [...found.values()].sort((a, b) => a.order - b.order);
+      return { sentences, reason: sentences.length ? 'ok' : 'no_sentence', byRect: false };
     }
     if (dragged.every((r) => r.text.trim() === '')) {
       return { sentences: [], reason: 'whitespace_only', byRect: false };
