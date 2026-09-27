@@ -84,9 +84,30 @@ const goodOutput = (body: ContextBodySection[]): ContextModelOutput => ({
       term: 'retrieval',
       aliases: ['IR'],
       preferredKo: '검색',
+      acceptedKo: ['정보 검색', '검색'],
       displayRule: '첫 등장에 원어 병기',
       meaningInPaper: '문서를 찾아오는 단계',
       evidenceSentenceIds: [body[0]?.sentences[0]?.id ?? 's1'],
+    },
+  ],
+  concepts: [
+    {
+      name: 'Retrieval',
+      nameKo: '검색',
+      definitionKo: '질문과 관련된 문서를 찾아오는 일.',
+      whyItMatters: '이 논문의 첫 단계다.',
+      exampleKo: '질문 하나에 위키백과 문단 5개를 고른다.',
+      prerequisites: ['embedding'],
+      glossaryTerms: ['IR'],
+    },
+    {
+      name: 'embedding',
+      nameKo: '',
+      definitionKo: '글을 숫자 벡터로 바꾼 것.',
+      whyItMatters: '검색이 벡터 거리로 이뤄진다.',
+      exampleKo: '',
+      prerequisites: [],
+      glossaryTerms: [],
     },
   ],
   unresolved: ['dense retrieval의 배경'],
@@ -160,8 +181,18 @@ describe('runContextPass', () => {
     const saved = await store.readJson('contextDocument', result.contextPath);
     expect(saved).toEqual(result.context);
     expect(saved.glossary).toHaveLength(1);
-    expect(saved.glossary[0]).toMatchObject({ id: 'g_1', term: 'retrieval', conceptIds: [] });
-    expect(saved.concepts).toEqual([]);
+    expect(saved.glossary[0]).toMatchObject({
+      id: 'g_1',
+      term: 'retrieval',
+      acceptedKo: ['정보 검색'],
+      conceptIds: ['c_1'],
+    });
+    expect(saved.concepts.map((c) => [c.id, c.name, c.nameKo, c.researchStatus])).toEqual([
+      ['c_1', 'Retrieval', '검색', 'unresolved'],
+      ['c_2', 'embedding', null, 'unresolved'],
+    ]);
+    expect(saved.concepts[0]?.prerequisiteConceptIds).toEqual(['c_2']);
+    expect(saved.concepts[1]?.exampleKo).toBeNull();
     expect(saved.unresolved).toEqual(['dense retrieval의 배경']);
     expect(saved.promptVersion).toMatch(/^context\.no_tools@[0-9a-f]{12}$/);
 
@@ -394,6 +425,31 @@ describe('validateContextOutput', () => {
     ]);
     expect(checked.glossary[0]?.evidenceSentenceIds).toHaveLength(1);
     expect(checked.notes).toHaveLength(2);
+  });
+
+  it('개념 카드는 빈 것과 중복을 버리고, 없는 이름을 가리키는 연결만 버린다', async () => {
+    const input = await load();
+    const good = goodOutput(bodyFrom(input));
+    const card = good.concepts[0];
+    if (!card) throw new Error('fixture');
+    const checked = validateContextOutput(
+      {
+        ...good,
+        concepts: [
+          { ...card, definitionKo: ' ' },
+          { ...card, prerequisites: ['없는 개념', 'Retrieval'], glossaryTerms: ['없는 용어'] },
+          { ...card, name: 'retrieval' },
+        ],
+      },
+      input,
+    );
+    expect(checked.problems).toEqual([]);
+    expect(checked.concepts.map((c) => [c.id, c.name])).toEqual([['c_1', 'Retrieval']]);
+    expect(checked.concepts[0]?.prerequisiteConceptIds).toEqual([]);
+    // 카드가 용어를 잘못 적어도 이름이 같은 용어집 항목에는 이어진다.
+    expect(checked.glossary[0]?.conceptIds).toEqual(['c_1']);
+    expect(checked.notes).toHaveLength(4);
+    expect(validateContextOutput({ ...good, concepts: [] }, input).problems).toEqual([]);
   });
 
   it('서술 글에 남은 프롬프트용 id는 개수를 기록한다', async () => {

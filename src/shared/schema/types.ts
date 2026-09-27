@@ -248,6 +248,8 @@ export interface GlossaryEntry {
   term: string;
   aliases: string[];
   preferredKo: string;
+  /** 선호 표기 말고도 번역에 써도 되는 한국어 표기. 없는 옛 세대는 빈 목록으로 본다. */
+  acceptedKo?: string[];
   displayRule: string;
   meaningInPaper: string;
   evidenceSentenceIds: string[];
@@ -260,9 +262,12 @@ export interface Reference {
   supports: string;
 }
 
+/** researchStatus가 researched가 아닌 개념은 화면에 "일반 설명, 출처 미확인"으로 표시한다. */
 export interface Concept {
   id: string;
   name: string;
+  /** 통용되는 한국어 표기. 없으면 name만 보인다. */
+  nameKo?: string | null;
   definitionKo: string;
   whyItMatters: string;
   exampleKo?: string | null;
@@ -390,11 +395,25 @@ export interface Failure {
   nextRetryAt?: string | null;
 }
 
+/** 문장 해설의 칸. 쓸 말이 없는 칸은 빈 문자열이다. */
+export interface SentenceExplanation {
+  /** 쉬운 뜻 */
+  plain: string;
+  /** 이 문장이 논문 흐름에서 하는 역할 */
+  role: string;
+  /** 구체적 사례 */
+  example: string;
+  /** 더 깊은 설명 */
+  deeper: string;
+}
+
 /** 모델이 반환하고 앱이 검증한 문장 결과. */
 export interface SentenceResult {
   id: string;
   ko: string;
+  /** 칸으로 나누기 전 세대의 해설. 칸이 있는 세대에서는 빈 문자열이다. */
   note: string;
+  explanation?: SentenceExplanation | null;
   refs: Reference[];
   conceptIds: string[];
   warnings: string[];

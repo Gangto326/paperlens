@@ -252,21 +252,26 @@ export const sourceMapDocumentSchema = obj({
 
 const reference = obj({ sourceId: nonEmpty, evidenceIds: arr(nonEmpty), supports: str });
 
-const glossaryEntry = obj({
-  id: nonEmpty,
-  term: nonEmpty,
-  aliases: strArr,
-  preferredKo: str,
-  displayRule: str,
-  meaningInPaper: str,
-  evidenceSentenceIds: strArr,
-  conceptIds: strArr,
-});
+const glossaryEntry = obj(
+  {
+    id: nonEmpty,
+    term: nonEmpty,
+    aliases: strArr,
+    preferredKo: str,
+    acceptedKo: strArr,
+    displayRule: str,
+    meaningInPaper: str,
+    evidenceSentenceIds: strArr,
+    conceptIds: strArr,
+  },
+  ['acceptedKo'],
+);
 
 const concept = obj(
   {
     id: nonEmpty,
     name: nonEmpty,
+    nameKo: nullable(str),
     definitionKo: str,
     whyItMatters: str,
     exampleKo: nullable(str),
@@ -275,7 +280,7 @@ const concept = obj(
     researchStatus: enumOf(['researched', 'unresolved', 'not_needed']),
     contextVersion: int,
   },
-  ['exampleKo'],
+  ['nameKo', 'exampleKo'],
 );
 
 const coverage = obj({
@@ -402,14 +407,20 @@ const failure = obj(
   ['nextRetryAt'],
 );
 
-export const sentenceResultSchema = obj({
-  id: nonEmpty,
-  ko: str,
-  note: str,
-  refs: arr(reference),
-  conceptIds: strArr,
-  warnings: strArr,
-});
+const sentenceExplanation = obj({ plain: str, role: str, example: str, deeper: str });
+
+export const sentenceResultSchema = obj(
+  {
+    id: nonEmpty,
+    ko: str,
+    note: str,
+    explanation: nullable(sentenceExplanation),
+    refs: arr(reference),
+    conceptIds: strArr,
+    warnings: strArr,
+  },
+  ['explanation'],
+);
 
 export const chunkDocumentSchema = obj(
   {

@@ -275,8 +275,8 @@ export async function runContextPass(
     mainResults: trimAll(output.mainResults),
     limitations: trimAll(output.limitations),
     glossary: checked.glossary,
-    // 조사 도구가 없는 단계다. 배경 개념은 만들지 않고 unresolved에만 남긴다.
-    concepts: [],
+    // 조사 도구가 없는 단계다. 개념 카드는 출처 없는 일반 설명이다(researchStatus unresolved).
+    concepts: checked.concepts,
     sectionDigests: [],
     coverage: checked.coverage.map((c) => ({ ...c, jobId })),
     unresolved: trimAll(output.unresolved),
@@ -305,7 +305,7 @@ export async function runContextPass(
     createdAt,
   );
   log(
-    `context ${jobId} 저장 glossary=${context.glossary.length} unresolved=${context.unresolved.length} coverage=${context.coverage.length} notes=${checked.notes.length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
+    `context ${jobId} 저장 glossary=${context.glossary.length} concepts=${context.concepts.length} unresolved=${context.unresolved.length} coverage=${context.coverage.length} notes=${checked.notes.length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
   );
   return {
     ok: true,

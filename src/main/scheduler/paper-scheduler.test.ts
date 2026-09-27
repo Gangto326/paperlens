@@ -94,11 +94,13 @@ const contextValue = (request: LlmJobRequest): unknown => {
         term: 'sentence',
         aliases: [],
         preferredKo: '문장',
+        acceptedKo: [],
         displayRule: '',
         meaningInPaper: '',
         evidenceSentenceIds: [],
       },
     ],
+    concepts: [],
     unresolved: [],
     coverage: body.map((s) => ({
       sectionId: s.id,

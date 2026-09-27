@@ -1,4 +1,4 @@
-import type { Coverage, GlossaryEntry } from '@shared/schema';
+import type { Concept, Coverage, GlossaryEntry } from '@shared/schema';
 import type { ContextInput } from './context-input';
 import type { ContextModelOutput } from './context-output';
 
@@ -9,6 +9,8 @@ import type { ContextModelOutput } from './context-output';
  * - coverage가 입력에 없는 섹션·문장을 가리키거나 범위가 거꾸로다.
  * - 요약이 비었거나 용어집이 비었다.
  * 참고(notes): 저장은 하되 기록한다. 없는 근거 문장 id와 중복 용어는 버린다.
+ * 개념 카드는 이름이나 뜻이 비었거나 이름이 겹치면 버린다. 카드가 가리키는 이름이 없으면 그 연결만 버린다.
+ * 개념 카드가 하나도 없어도 실패는 아니다.
  * 서술 글에 프롬프트용 별칭(`s12`, `sec3`)이 남아 있으면 글은 그대로 두고 개수만 기록한다.
  */
 export type ContextProblemCode =
@@ -33,6 +35,12 @@ export interface ValidatedContext {
   coverage: Omit<Coverage, 'jobId'>[];
   /** 원래 ID로 되돌린 용어집. id는 `g_<n>`. */
   glossary: GlossaryEntry[];
+  /** 개념 카드. id는 `c_<n>`. 출처 없이 쓴 일반 설명이라 researchStatus는 unresolved다. */
+  concepts: Concept[];
+}
+
+function uniqueTrimmed(items: string[]): string[] {
+  return [...new Set(items.map((s) => s.trim()).filter((s) => s !== ''))];
 }
 
 /** 글에 든 별칭 모양(`s12`, `sec3`) 중 실제 입력에 있는 것의 수. 본문 기호와 헷갈리지 않게 입력에 있는 것만 센다. */
@@ -148,6 +156,7 @@ export function validateContextOutput(
       term,
       aliases: entry.aliases.map((a) => a.trim()).filter((a) => a !== ''),
       preferredKo: entry.preferredKo.trim(),
+      acceptedKo: uniqueTrimmed(entry.acceptedKo).filter((ko) => ko !== entry.preferredKo.trim()),
       displayRule: entry.displayRule.trim(),
       meaningInPaper: entry.meaningInPaper.trim(),
       evidenceSentenceIds: evidence,
@@ -155,6 +164,64 @@ export function validateContextOutput(
     });
   }
   if (glossary.length === 0) add('empty_glossary', '용어집에 쓸 수 있는 항목이 없습니다');
+
+  const kept = output.concepts.filter((c) => {
+    if (c.name.trim() !== '' && c.definitionKo.trim() !== '') return true;
+    notes.push(`이름 또는 뜻이 빈 개념 카드를 버렸습니다: "${c.name}"`);
+    return false;
+  });
+  const conceptIdOf = new Map<string, string>();
+  const concepts: Concept[] = [];
+  const links: { prerequisites: string[]; glossaryTerms: string[] }[] = [];
+  for (const c of kept) {
+    const name = c.name.trim();
+    const key = name.toLowerCase();
+    if (conceptIdOf.has(key)) {
+      notes.push(`중복 개념 카드를 버렸습니다: ${name}`);
+      continue;
+    }
+    const id = `c_${concepts.length + 1}`;
+    conceptIdOf.set(key, id);
+    const nameKo = c.nameKo.trim();
+    const exampleKo = c.exampleKo.trim();
+    concepts.push({
+      id,
+      name,
+      nameKo: nameKo === '' ? null : nameKo,
+      definitionKo: c.definitionKo.trim(),
+      whyItMatters: c.whyItMatters.trim(),
+      exampleKo: exampleKo === '' ? null : exampleKo,
+      prerequisiteConceptIds: [],
+      refs: [],
+      researchStatus: 'unresolved',
+      contextVersion: 1,
+    });
+    links.push({ prerequisites: c.prerequisites, glossaryTerms: c.glossaryTerms });
+  }
+  const glossaryByName = new Map<string, GlossaryEntry>();
+  for (const g of glossary) {
+    for (const t of [g.term, ...g.aliases]) {
+      const key = t.toLowerCase();
+      if (!glossaryByName.has(key)) glossaryByName.set(key, g);
+    }
+  }
+  concepts.forEach((concept, i) => {
+    for (const raw of uniqueTrimmed(links[i]?.prerequisites ?? [])) {
+      const id = conceptIdOf.get(raw.toLowerCase());
+      if (id === undefined)
+        notes.push(`개념 ${concept.name}의 선행 개념이 카드에 없습니다: ${raw}`);
+      else if (id !== concept.id) concept.prerequisiteConceptIds.push(id);
+    }
+    // 카드가 용어를 적지 않았어도 이름이 같은 용어집 항목에는 잇는다.
+    for (const raw of uniqueTrimmed([concept.name, ...(links[i]?.glossaryTerms ?? [])])) {
+      const entry = glossaryByName.get(raw.toLowerCase());
+      if (entry === undefined) {
+        if (raw !== concept.name) {
+          notes.push(`개념 ${concept.name}이 가리킨 용어가 용어집에 없습니다: ${raw}`);
+        }
+      } else if (!entry.conceptIds.includes(concept.id)) entry.conceptIds.push(concept.id);
+    }
+  });
 
   const prose = [
     output.summary,
@@ -165,9 +232,10 @@ export function validateContextOutput(
     ...output.limitations,
     ...output.unresolved,
     ...output.glossary.flatMap((g) => [g.meaningInPaper, g.displayRule]),
+    ...output.concepts.flatMap((c) => [c.definitionKo, c.whyItMatters, c.exampleKo]),
   ];
   const leaked = prose.reduce((n, text) => n + countAliases(text, input), 0);
   if (leaked > 0) notes.push(`서술 글에 프롬프트용 id가 ${leaked}개 남아 있습니다`);
 
-  return { problems, notes, coverage, glossary };
+  return { problems, notes, coverage, glossary, concepts };
 }
