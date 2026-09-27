@@ -1,4 +1,9 @@
-import type { Sentence, SentenceResult } from '@shared/schema';
+import {
+  EXPLANATION_FIELDS,
+  type Sentence,
+  type SentenceExplanation,
+  type SentenceResult,
+} from '@shared/schema';
 import type { ChunkModelOutput } from './chunk-output';
 
 /**
@@ -12,6 +17,7 @@ import type { ChunkModelOutput } from './chunk-output';
  * | citation_lost | fatal | 원문의 인용 표시가 번역에 없다 |
  * | neighbor_content | fatal | 문맥 문장에만 있는 인용·수치·원문이 번역에 들어 있다 |
  * | invented_url | fatal | 원문에 없는 URL이 번역이나 해설에 있다 |
+ * | unknown_concept | warning | 입력에 없는 개념 카드 id. 그 id만 버린다 |
  * | number_missing | warning | 원문의 수치가 번역에 없다(숫자를 글로 풀어 쓴 경우일 수 있다) |
  *   단위가 붙은 수(400M, 10k)는 비교하지 않는다. 실제 번역에서 4억, 2,100만으로 옮긴 것이 경고로 나왔기 때문이다.
  *
@@ -28,6 +34,7 @@ export type ChunkIssueCode =
   | 'citation_lost'
   | 'neighbor_content'
   | 'invented_url'
+  | 'unknown_concept'
   | 'number_missing';
 
 export interface ChunkIssue {
@@ -92,6 +99,8 @@ export function validateChunkOutput(
     neighbors: readonly Sentence[];
     /** 프롬프트용 별칭 → 원래 ID */
     toId: (alias: string) => string | undefined;
+    /** 입력으로 준 개념 카드 id. 없으면 개념 연결을 모두 버린다. */
+    conceptIds?: ReadonlySet<string>;
   },
 ): ChunkValidation {
   const issues: ChunkIssue[] = [];
@@ -100,7 +109,10 @@ export function validateChunkOutput(
   };
 
   const targetById = new Map(input.targets.map((s) => [s.id, s]));
-  const accepted = new Map<string, { ko: string; note: string; warnings: string[] }>();
+  const accepted = new Map<
+    string,
+    { ko: string; explanation: SentenceExplanation; conceptIds: string[]; warnings: string[] }
+  >();
   for (const r of output.results) {
     const id = input.toId(r.id);
     if (id === undefined || !targetById.has(id)) {
@@ -113,7 +125,13 @@ export function validateChunkOutput(
     }
     accepted.set(id, {
       ko: r.ko.trim(),
-      note: r.note.trim(),
+      explanation: {
+        plain: r.plain.trim(),
+        role: r.role.trim(),
+        example: r.example.trim(),
+        deeper: r.deeper.trim(),
+      },
+      conceptIds: [...new Set(r.conceptIds.map((c) => c.trim()).filter((c) => c !== ''))],
       warnings: r.warnings.map((w) => w.trim()).filter((w) => w !== ''),
     });
   }
@@ -153,7 +171,9 @@ export function validateChunkOutput(
     }
 
     const sourceUrls = new Set(urlsIn(sentence.en));
-    for (const url of urlsIn(`${got.ko}\n${got.note}`)) {
+    for (const url of urlsIn(
+      [got.ko, ...EXPLANATION_FIELDS.map((k) => got.explanation[k])].join('\n'),
+    )) {
       if (!sourceUrls.has(url)) {
         fatal('invented_url', sentence.id, `원문에 없는 URL: ${url}`);
       }
@@ -192,12 +212,26 @@ export function validateChunkOutput(
       }
     }
 
+    const conceptIds: string[] = [];
+    for (const conceptId of got.conceptIds) {
+      if (input.conceptIds?.has(conceptId)) conceptIds.push(conceptId);
+      else {
+        issues.push({
+          code: 'unknown_concept',
+          severity: 'warning',
+          sentenceId: sentence.id,
+          detail: `입력에 없는 개념 카드 id: ${conceptId}`,
+        });
+      }
+    }
+
     results.push({
       id: sentence.id,
       ko: got.ko,
-      note: got.note,
+      note: '',
+      explanation: got.explanation,
       refs: [],
-      conceptIds: [],
+      conceptIds,
       warnings,
     });
   }

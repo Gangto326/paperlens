@@ -117,7 +117,11 @@ const chunkValue = (request: LlmJobRequest): unknown => {
     results: inputs.TARGET_SENTENCES.map((s) => ({
       id: s.id,
       ko: `번역 ${s.id}`,
-      note: '',
+      plain: '',
+      role: '',
+      example: '',
+      deeper: '',
+      conceptIds: [],
       warnings: [],
     })),
   };

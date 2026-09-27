@@ -21,6 +21,7 @@ import { buildAliases, type IdAliases } from '../prompt/aliases';
 import { promptVersionOf, renderPrompt } from '../prompt/template';
 import { TRANSLATE_CHUNK_TEMPLATE, TRANSLATE_REPAIR_TEMPLATE } from '../prompt/templates';
 import { isRetryableLlmFailure, stateAfterLlmFailure } from '../state/paper-state';
+import { hasExplanation } from '@shared/schema';
 import { buildChunkInputs } from './chunk-input';
 import { CHUNK_RESULTS_SCHEMA, type ChunkModelOutput } from './chunk-output';
 import { summarizeIssues, validateChunkOutput, type ChunkIssue } from './chunk-validate';
@@ -337,6 +338,7 @@ export async function runChunk(
       targets: targetIds.map(need),
       neighbors: neighborIds.map(need),
       toId: (alias) => aliases.sentenceId(alias),
+      conceptIds: new Set(context.concepts.map((c) => c.id)),
     });
     const broken = new Set(
       checked.issues.filter((i) => i.severity === 'fatal').map((i) => i.sentenceId),
@@ -435,7 +437,7 @@ export async function runChunk(
     };
     const state = await save(doc, null);
     log(
-      `chunk ${chunk.id} 완료 results=${results.length} requests=${attempts.map((a) => a.kind).join('+')} warnings=${warnings.length} notes=${results.filter((r) => r.note !== '').length} in=${String(usage.inputTokens)} out=${String(usage.outputTokens)} elapsed=${usage.elapsedMs}ms`,
+      `chunk ${chunk.id} 완료 results=${results.length} requests=${attempts.map((a) => a.kind).join('+')} warnings=${warnings.length} explained=${results.filter((r) => hasExplanation(r)).length} in=${String(usage.inputTokens)} out=${String(usage.outputTokens)} elapsed=${usage.elapsedMs}ms`,
     );
     return {
       ok: true,

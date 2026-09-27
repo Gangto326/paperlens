@@ -45,10 +45,14 @@ const input = {
   toId: (alias: string): string | undefined => ALIAS[alias.trim()],
 };
 
-const row = (id: string, ko: string, note = ''): ChunkModelSentence => ({
+const row = (id: string, ko: string, deeper = ''): ChunkModelSentence => ({
   id,
   ko,
-  note,
+  plain: '',
+  role: '',
+  example: '',
+  deeper,
+  conceptIds: [],
   warnings: [],
 });
 const GOOD: ChunkModelSentence[] = [
@@ -60,8 +64,8 @@ const check = (results: ChunkModelSentence[]): ReturnType<typeof validateChunkOu
   validateChunkOutput({ kind: 'results', results } satisfies ChunkModelOutput, input);
 const codes = (results: ChunkModelSentence[]): [string, string | null][] =>
   check(results).issues.map((i) => [i.code, i.sentenceId]);
-const replaced = (index: number, ko: string, note = ''): ChunkModelSentence[] =>
-  GOOD.map((r, i) => (i === index ? row(r.id, ko, note) : r));
+const replaced = (index: number, ko: string, deeper = ''): ChunkModelSentence[] =>
+  GOOD.map((r, i) => (i === index ? row(r.id, ko, deeper) : r));
 
 describe('validateChunkOutput', () => {
   it('정상 결과는 문제가 없고 대상 문장 순서의 원래 ID로 나온다', () => {
@@ -153,6 +157,40 @@ describe('validateChunkOutput', () => {
     expect(
       codes(replaced(2, '정확도는 44.5%이고 코드는 https://example.org/rag2에 있다.')),
     ).toEqual([['invented_url', 'id_c']]);
+  });
+
+  it('해설 칸은 다듬어 저장하고, 입력에 없는 개념 id는 버리고 경고로 남긴다', () => {
+    const first = GOOD[0];
+    if (!first) throw new Error('fixture');
+    const v = validateChunkOutput(
+      {
+        kind: 'results',
+        results: [
+          {
+            ...first,
+            plain: ' 쉬운 뜻 ',
+            example: '사례',
+            conceptIds: ['c_2', ' c_1 ', 'c_404', 'c_2'],
+          },
+          ...GOOD.slice(1),
+        ],
+      },
+      { ...input, conceptIds: new Set(['c_1', 'c_2']) },
+    );
+    expect(v.ok).toBe(true);
+    expect(v.issues.map((i) => [i.code, i.severity, i.sentenceId])).toEqual([
+      ['unknown_concept', 'warning', 'id_a'],
+    ]);
+    expect(v.results[0]).toMatchObject({
+      note: '',
+      explanation: { plain: '쉬운 뜻', role: '', example: '사례', deeper: '' },
+      conceptIds: ['c_2', 'c_1'],
+      warnings: [],
+    });
+    // 개념 목록을 주지 않으면 연결을 모두 버린다.
+    expect(
+      check([{ ...first, conceptIds: ['c_1'] }, ...GOOD.slice(1)]).results[0]?.conceptIds,
+    ).toEqual([]);
   });
 
   it('수치 누락은 경고다. 저장은 하고 그 문장의 warnings에 남긴다', () => {

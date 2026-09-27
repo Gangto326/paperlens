@@ -126,9 +126,16 @@ const scripted = (
       }
       const value = {
         kind: 'results',
-        results: reply
-          .make(inputsOf(request))
-          .map((r) => ({ id: r.id, ko: r.ko, note: '', warnings: [] })),
+        results: reply.make(inputsOf(request)).map((r) => ({
+          id: r.id,
+          ko: r.ko,
+          plain: '',
+          role: '',
+          example: '',
+          deeper: '',
+          conceptIds: [],
+          warnings: [],
+        })),
       };
       return Promise.resolve({
         ok: true,

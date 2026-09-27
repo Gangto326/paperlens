@@ -130,7 +130,11 @@ const translate = (inputs: ChunkPromptInputs): unknown => ({
   results: inputs.TARGET_SENTENCES.map((s) => ({
     id: s.id,
     ko: `  번역: ${s.en}  `,
-    note: '',
+    plain: ' 쉬운 뜻 ',
+    role: '',
+    example: '',
+    deeper: '',
+    conceptIds: [],
     warnings: [' '],
   })),
 });
@@ -186,7 +190,13 @@ describe('runChunk', () => {
     expect(saved.results.map((r) => r.id)).toEqual(chunk.targetSentenceIds);
     const first = saved.results[0];
     expect(first?.ko.startsWith('번역: ')).toBe(true);
-    expect(first).toMatchObject({ note: '', refs: [], conceptIds: [], warnings: [] });
+    expect(first).toMatchObject({
+      note: '',
+      explanation: { plain: '쉬운 뜻', role: '', example: '', deeper: '' },
+      refs: [],
+      conceptIds: [],
+      warnings: [],
+    });
 
     const manifest = await store.readManifest(TINY_SHA);
     expect(manifest.usage).toMatchObject({ logicalJobs: 1, inputTokens: 500, outputTokens: 80 });

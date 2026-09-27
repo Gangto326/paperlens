@@ -407,6 +407,18 @@ export interface SentenceExplanation {
   deeper: string;
 }
 
+export const EXPLANATION_FIELDS = ['plain', 'role', 'example', 'deeper'] as const;
+
+/** 해설에 보여 줄 글이 하나라도 있는지. 칸으로 나누기 전 세대의 note도 본다. */
+export function hasExplanation(result: {
+  note: string;
+  explanation?: SentenceExplanation | null;
+}): boolean {
+  if (result.note.trim() !== '') return true;
+  const e = result.explanation;
+  return !!e && EXPLANATION_FIELDS.some((k) => e[k].trim() !== '');
+}
+
 /** 모델이 반환하고 앱이 검증한 문장 결과. */
 export interface SentenceResult {
   id: string;

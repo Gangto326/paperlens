@@ -177,6 +177,9 @@ describe('1차·2차 패스 템플릿', () => {
       inputs: {
         PAPER_CONTEXT: { summary: '작은 논문.' },
         GLOSSARY: [{ term: 'retrieval', ko: '검색', rule: '원어 병기' }],
+        CONCEPTS: [
+          { id: 'c_1', name: 'retrieval', nameKo: '검색', definitionKo: '문서를 찾는 일.' },
+        ],
         NEIGHBOR_CONTEXT: [{ id: 's_0', en: 'Before.' }],
         TARGET_SENTENCES: [
           {

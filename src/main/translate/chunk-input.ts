@@ -19,9 +19,12 @@ export interface ChunkPromptInputs {
     term: string;
     aliases: string[];
     preferredKo: string;
+    acceptedKo: string[];
     displayRule: string;
     meaningInPaper: string;
   }[];
+  /** 개념 카드 목록. 문장 해설이 같은 설명을 되풀이하지 않고 카드로 잇게 한다. */
+  CONCEPTS: { id: string; name: string; nameKo: string | null; definitionKo: string }[];
   SECTION_CONTEXT: { title: string; parent: string | null }[];
   NEIGHBOR_CONTEXT: { before: { en: string }[]; after: { en: string }[] } | null;
   TARGET_SENTENCES: {
@@ -94,8 +97,15 @@ export function buildChunkInputs(
       term: g.term,
       aliases: g.aliases,
       preferredKo: g.preferredKo,
+      acceptedKo: g.acceptedKo ?? [],
       displayRule: g.displayRule,
       meaningInPaper: g.meaningInPaper,
+    })),
+    CONCEPTS: context.concepts.map((c) => ({
+      id: c.id,
+      name: c.name,
+      nameKo: c.nameKo ?? null,
+      definitionKo: c.definitionKo,
     })),
     SECTION_CONTEXT: sections,
     // 문맥 문장에는 id를 주지 않는다. 결과에 끼워 넣을 id 자체가 없게 한다.
