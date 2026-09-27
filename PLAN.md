@@ -271,9 +271,22 @@ GROBID 좌표는 위쪽 원점·1부터 시작하는 페이지 번호 등을 사
 
 입력은 공통 개요·용어집, 해당 섹션 요약, 관련 배경 개념과 읽은 출처의 짧은 근거, 번역할 문장 ID 배열, 앞뒤 문맥이다.
 
-각 문장은 `id`, `ko`, `note`, `refs`, `conceptIds`, `warnings`를 반환한다. `note`는 필요 없으면 빈 문자열, `refs`는 근거가 없으면 빈 배열이다. 참고자료를 채우기 위해 관련 없는 링크를 넣지 않는다.
+각 문장은 `id`, `ko`, 해설 칸 넷(`plain`, `role`, `example`, `deeper`), `refs`, `conceptIds`, `warnings`를 반환한다. 쓸 말이 없는 칸은 빈 문자열, `refs`는 근거가 없으면 빈 배열이다. 참고자료를 채우기 위해 관련 없는 링크를 넣지 않는다.
 
-해설은 보통 2~4문장으로, “용어의 쉬운 뜻 → 이 문장에서의 역할 → 필요할 때만 짧은 예” 순서를 따른다. 설명에 새 전문용어를 쓰면 바로 풀어 쓴다. 논문 주장과 일반 배경 지식을 구분하고, 비유가 실제 연구 조건을 왜곡하지 않게 한다.
+**해설 기준(2026-09-27 사용자 의견으로 변경).** 목표는 이 번역과 해설만으로 공부를 끝낼 수 있는 수준이다. 처음 계획의 "보통 2~4문장, 필요할 때만 짧게"는 폐기한다. 정보는 충분히 담되 긴 줄글로 쓰지 않고 이름 붙은 칸으로 나눈다.
+
+| 칸 | 내용 | 화면 |
+|---|---|---|
+| `plain` 쉬운 뜻 | 문장이 말하는 바를 쉬운 말로 다시 쓴다 | 처음부터 보임 |
+| `role` 이 문장의 역할 | 논문 흐름에서 하는 일, 앞뒤 문장과의 관계 | 처음부터 보임 |
+| `example` 구체적 사례 | 숫자나 상황이 있는 예 | 눌러 펼침 |
+| `deeper` 더 깊은 설명 | 숨은 전제, 논리의 연결, 흔한 오해 | 눌러 펼침 |
+
+칸마다 1~3문장이다. 같은 개념의 뜻을 문장마다 되풀이하지 않는다. 개념 설명은 개념 카드(`Context.concepts`)에 한 번 충분히 쓰고 문장은 `conceptIds`로 잇는다. 설명에 새 전문용어를 쓰면 바로 풀어 쓴다. 논문 주장과 일반 배경 지식을 구분하고, 비유가 실제 연구 조건을 왜곡하지 않게 한다.
+
+**용어 표기.** 한국어 현업과 자료에서 통용되는 표기를 쓰고 처음 나올 때 괄호 안에 원어를 붙인다. 예: 파인튜닝(fine-tuning), 다운스트림 과제(downstream task). 낯선 직역을 새로 만들지 않는다. 용어집 항목은 선호 표기 하나와 허용 표기 목록을 가진다.
+
+**조사 전의 개념 카드.** 검색·출처 기능(M4) 전에는 모델 지식으로 쓴 일반 설명을 개념 카드에 담는다. `researchStatus`는 `unresolved`로 저장하고 화면은 "일반 설명, 출처 미확인"으로 표시한다. M4에서 읽고 확인한 출처가 붙으면 `researched`로 바뀐다.
 
 새 개념이 있으면 먼저 `needsResearch` 목록을 반환한다. 앱이 이미 조사된 개념과 비교하고 예산이 남아 있을 때만 별도 보충 조사 작업을 연다. 얻은 자료를 개념 저장소에 추가한 뒤 해당 청크를 도구 없이 완성한다. 청크마다 무조건 검색하는 구조가 아니다.
 
@@ -345,6 +358,8 @@ OUTPUT_SCHEMA: [Context 스키마]
 조사 턴과 최종 통합 턴을 분리할 때에는 조사 턴에서 확보한 자료를 입력으로 고정하고, 최종 통합 턴에서는 도구를 제거한다. 긴 논문의 부분 요약에는 “이번 입력 범위만 처리하고 전체를 읽었다고 쓰지 말 것”을 추가한다.
 
 ### 6.6 2차 패스 프롬프트 초안
+
+아래 초안의 규칙 4(해설은 막힐 때만 짧게)는 6.2의 해설 기준 변경으로 폐기했다. 실제 문구는 `src/main/prompt/templates.ts`가 기준이다.
 
 ```text
 역할: 아래 논문 문맥과 검증된 학습 자료를 사용하는 한국어 번역·해설자.
@@ -437,8 +452,8 @@ URL 정규화는 추적용 파라미터 정리 수준으로 보수적으로 수�
 | EquationPlaceholder | `id`, `token`, `rawText?`, `sourceSpans[]`, `rects[]`, `detectionStatus`, `warning?` |
 | ExcludedBlock | `id`, `type`, `pageIndices[]`, `rects[]`, `rawText?`, `reason`, `confidence?` |
 | Context | `version`, `summary`, `researchQuestion`, `contributions[]`, `methodOverview`, `mainResults[]`, `limitations[]`, `glossary[]`, `concepts[]`, `sectionDigests[]`, `coverage[]`, `unresolved[]`, `createdAt` |
-| GlossaryEntry | `id`, `term`, `aliases[]`, `preferredKo`, `displayRule`, `meaningInPaper`, `evidenceSentenceIds[]`, `conceptIds[]` |
-| Concept | `id`, `name`, `definitionKo`, `whyItMatters`, `exampleKo?`, `prerequisiteConceptIds[]`, `refs[]`, `researchStatus`, `contextVersion` |
+| GlossaryEntry | `id`, `term`, `aliases[]`, `preferredKo`, `acceptedKo[]?`, `displayRule`, `meaningInPaper`, `evidenceSentenceIds[]`, `conceptIds[]` |
+| Concept | `id`, `name`, `nameKo?`, `definitionKo`, `whyItMatters`, `exampleKo?`, `prerequisiteConceptIds[]`, `refs[]`, `researchStatus`, `contextVersion` |
 | Source | `id`, `discoveredUrl`, `finalUrl`, `title`, `publisher?`, `sourceType`, `discoveredBy`, `discoveredAt`, `fetchedAt`, `httpStatus`, `contentType`, `contentHash`, `fetchStatus`, `truncated`, `evidenceIds[]` |
 | Evidence | `id`, `sourceId`, `excerpt`, `documentLocation?`, `excerptHash`, `retrievalRequestId`, `deliveredToJobIds[]` |
 | Reference | `sourceId`, `evidenceIds[]`, `supports` (이 자료가 뒷받침하는 설명) |
@@ -459,6 +474,7 @@ URL 정규화는 추적용 파라미터 정리 수준으로 보수적으로 수�
 - Chunk/Section 상태: `pending`, `running`, `needs_research`, `waiting_retry`, `waiting_quota`, `complete`, `complete_with_gaps`, `failed`.
 - Sentence 상태: `pending`, `complete`, `needs_review`, `failed`. 매핑 상태는 별도 `mapped`, `uncertain`, `unmapped`로 관리한다.
 - Source 열람 상태: `read`, `partial`, `failed`. `partial`은 실제 전달된 근거 범위에 한해서만 인용할 수 있다.
+- 문장 결과는 `explanation?: {plain, role, example, deeper}`를 가진다. `note`는 칸으로 나누기 전 세대의 해설이고 새 세대에서는 빈 문자열이다. 새 필드는 모두 선택 필드라 스키마 버전은 1 그대로다.
 - 모델 출력의 `ko`·`note`는 문자열, `refs`는 Reference 배열이다. 처리 전에는 빈 값과 `pending`을 함께 사용해 실제 빈 해설과 미처리를 구분한다.
 
 중요한 불변 조건:
@@ -619,6 +635,8 @@ M2부터 PDF마다 파싱 시간, 첫 번역 표시 시간, 전체 시간, 청�
 | M3 — 긴 논문·재개·개요 | 계층형 컨텍스트, 개요·용어집, 점진 처리, 섹션 상태, 중단·재개 | 긴 논문도 앞부분부터 읽고 앱을 껐다 켜 이어서 처리함 | coverage 누락 없음, 완료 결과 보존, 한도 대기 상태 작동 | 2~4일 |
 | M4 — 조사된 초보자 해설 | 검색 MCP 제공자 평가·연결, 영속 예산, 실제 열람 근거, 개념 패널, 제한된 보충 조사 | 쉬운 설명과 실제 확인한 자료 링크가 문장에 붙음 | 예산 초과 0, 출처 검증 통과, 사용자 해설 표본 검토 | 4~7일 |
 | M5 — 개인용 완성·품질 검증 | macOS 실행 패키지, 의존 서비스 안내, 오류 복구·회전·캐시 검증, 샘플 3편 전체 평가 | 본인의 Mac에서 다시 실행해 일상적으로 논문을 읽음 | 전체 품질 체크리스트 검토, 알려진 실패 조건 명시 | 3~5일 |
+
+**순서 변경(2026-09-27 사용자 승인).** M2 뒤에 품질 묶음(해설 칸, 개념 카드, 통용 표기, 허용 표기)을 먼저 하고, 이어서 M4, M3, M5 순으로 진행한다. 공부에 쓸 수 있는 해설과 출처가 긴 논문 지원보다 먼저라는 판단이다. M3 전까지 본문 추정 25,000 토큰을 넘는 논문은 처리하지 않는다. M4에는 한국어 자료 우선 검색과 영상 자료(제목·설명·자막) 조사를 추가로 검토한다. 읽고 확인한 근거와 더 볼 자료는 구분해 표시한다.
 
 총 14~25 작업일은 관련 경험이 있는 개발자 1명이 집중 작업한다는 **일정 가정**이다. OCR 지원, 파서 교체, 호환되지 않는 구형 macOS, 무료 검색 제공자의 불안정성은 추가 작업을 만들 수 있다. AI 코딩 도구를 사용한다고 달력 일정이나 품질 검증 시간이 보장되지는 않는다.
 
