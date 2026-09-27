@@ -21,9 +21,13 @@ export interface ChunkerOptions {
   neighborSentences: number;
 }
 
+/**
+ * 해설을 칸 넷으로 받으면서 출력이 문장당 약 280 토큰으로 늘었다(실측 2026-09-27: 42문장에
+ * 출력 11,617 토큰, 5분 53초). 앞선 크기(1,500~2,500)에서는 61문장 청크가 제한 시간에 가까워진다.
+ */
 export const DEFAULT_CHUNKER_OPTIONS: ChunkerOptions = {
-  minTokens: 1_500,
-  maxTokens: 2_500,
+  minTokens: 1_000,
+  maxTokens: 1_800,
   neighborSentences: 2,
 };
 

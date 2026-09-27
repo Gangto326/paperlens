@@ -36,7 +36,7 @@ import { summarizeIssues, validateChunkOutput, type ChunkIssue } from './chunk-v
  * 완료로 저장하는 조건은 모든 대상 문장이 검증을 통과한 것이다. 실패한 청크에도 통과한 문장의 결과는 남긴다.
  * 실패한 요청의 원래 출력은 generations/<gid>/diagnostics/ 아래에 남긴다.
  */
-export const CHUNK_TIMEOUT_MS = 10 * 60_000;
+export const CHUNK_TIMEOUT_MS = 15 * 60_000;
 export const TRANSLATE_STAGE = 'translate';
 export const TRANSLATE_PROMPT_VERSION = promptVersionOf(TRANSLATE_CHUNK_TEMPLATE);
 /** 수정 턴에 참고로 넣는 앞선 출력의 최대 글자 수 */
