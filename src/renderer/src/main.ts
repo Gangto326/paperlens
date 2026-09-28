@@ -253,6 +253,9 @@ function screenshotSelectSentence(index: SentenceIndex): void {
   console.info(
     `[paperlens] screenshot partial drag target=${target.id} spans=${target.sourceSpans.length} → ${JSON.stringify(ev?.result.sentences.map((s) => s.id) ?? null)}`,
   );
+  // 캡처에 개념 카드의 내용과 자료 링크가 보이도록 첫 카드를 펼친다.
+  const card = document.querySelector<HTMLDetailsElement>('details.concept');
+  if (card) card.open = true;
 }
 
 /**
