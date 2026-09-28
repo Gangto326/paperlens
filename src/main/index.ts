@@ -44,6 +44,9 @@ const extractedPages = new Map<string, Page[]>();
 let grobidVersion: string | null = null;
 /** 앱이 소유하는 Codex App Server(C1.18). PAPERLENS_NO_CODEX=1이면 띄우지 않는다. */
 let codex: CodexRuntime | null = null;
+/** 조사 전용 런타임(PLAN 3.3.1). 내장 검색이 켜진 별도 프로세스다. 번역 작업은 이 런타임을 쓰지 않는다. */
+let codexResearch: CodexRuntime | null = null;
+const researchEnabled = !process.env['PAPERLENS_NO_RESEARCH'];
 /** 계정·로그인·한도 어댑터(C1.19). 런타임이 없어도 존재하며 그때는 unavailable을 돌려준다. */
 const account = new CodexAccount(() => codex?.client ?? null, {
   log: (line) => console.log(`[codex] ${line}`),
@@ -55,6 +58,15 @@ const jobs = new CodexJobRunner({
   startThread: (options) => {
     if (!codex) return Promise.reject(new Error('LLM 런타임이 실행 중이 아닙니다'));
     return codex.startThread(options);
+  },
+  research: {
+    transport: () => codexResearch?.client ?? null,
+    startThread: (options) => {
+      if (!codexResearch) {
+        return Promise.reject(new Error('조사 전용 LLM 런타임이 실행 중이 아닙니다'));
+      }
+      return codexResearch.startThread(options);
+    },
   },
   log: (line) => console.log(`[llm] ${line}`),
 });
@@ -72,6 +84,15 @@ function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
         type: 'context',
         pdfSha256: event.pdfSha256,
         status: event.status,
+        message: event.message,
+      };
+    case 'research':
+      return {
+        type: 'research',
+        pdfSha256: event.pdfSha256,
+        status: event.status,
+        researched: event.researched,
+        sources: event.sources,
         message: event.message,
       };
     case 'plan':
@@ -368,6 +389,7 @@ function registerIpc(): void {
     runner: jobs,
     provider: 'codex',
     runtimeVersion: () => codex?.startInfo?.binary.version ?? 'unknown',
+    research: researchEnabled ? 'builtin_web' : 'none',
     log: (line) => console.log(`[process] ${line}`),
   });
   scheduler.onEvent((event) => {
@@ -431,17 +453,44 @@ async function bootCodex(): Promise<void> {
   } catch (err) {
     console.error(`[codex] 시작 실패: ${err instanceof Error ? err.message : String(err)}`);
   }
+  if (!researchEnabled) {
+    console.log('[codex-research] PAPERLENS_NO_RESEARCH 설정으로 조사 런타임을 띄우지 않습니다');
+    return;
+  }
+  const research = new CodexRuntime({
+    userDataPath: app.getPath('userData'),
+    appVersion: app.getVersion(),
+    profile: 'research',
+    log: (line) => console.log(`[codex-research] ${line}`),
+  });
+  codexResearch = research;
+  try {
+    const info = await research.start();
+    const thread = await research.startThread();
+    console.log(
+      `[codex-research] app-server ${info.binary.version} 시작 ${info.startupMs}ms ${formatToolInventory(await research.toolInventory(thread.threadId))}`,
+    );
+  } catch (err) {
+    // 조사 런타임이 없어도 번역은 된다. 개념 카드는 일반 설명으로 남는다.
+    console.error(
+      `[codex-research] 시작 실패: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
 
 let quitting = false;
 app.on('before-quit', (event) => {
-  if (quitting || !codex || codex.client?.state === 'exited') return;
+  const live = [codex, codexResearch].filter(
+    (r): r is CodexRuntime => r !== null && r.client !== null && r.client.state !== 'exited',
+  );
+  if (quitting || live.length === 0) return;
   quitting = true;
   event.preventDefault();
-  void codex
-    .stop()
-    .catch((err: unknown) => console.error(`[codex] 종료 실패: ${String(err)}`))
-    .finally(() => app.quit());
+  void Promise.all(
+    live.map((r) =>
+      r.stop().catch((err: unknown) => console.error(`[codex] 종료 실패: ${String(err)}`)),
+    ),
+  ).finally(() => app.quit());
 });
 
 void app.whenReady().then(() => {

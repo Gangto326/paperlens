@@ -10,6 +10,7 @@ import { stableStringify } from '../cache/hash';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { planChunks, type ChunkerOptions, type PlannedChunk } from '../chunk/chunker';
 import { runContextPass } from '../context/context-pass';
+import { runConceptResearch, type ResearchBatchReport } from '../research/concept-research';
 import type { LlmJobRunner } from '../llm/job';
 import { promptVersionOf } from '../prompt/template';
 import { CONTEXT_NO_TOOLS_TEMPLATE } from '../prompt/templates';
@@ -63,6 +64,15 @@ export type SchedulerEvent =
       generationId: string | null;
       message: string | null;
     }
+  | {
+      /** 개념 카드 조사 단계(PLAN 3.3.1). skipped는 돌 필요가 없거나 조사 런타임이 없는 경우다. */
+      type: 'research';
+      pdfSha256: string;
+      status: 'running' | 'done' | 'skipped' | 'stopped';
+      researched: number;
+      sources: number;
+      message: string | null;
+    }
   | { type: 'plan'; pdfSha256: string; generationId: string; chunkIds: string[] }
   | { type: 'chunk_started'; pdfSha256: string; chunkId: string; index: number; total: number }
   | {
@@ -99,6 +109,9 @@ export interface RunOutcome {
   failedChunks: number;
   metrics: ChunkMetric[];
   contextUsage: Usage | null;
+  /** 개념 카드 조사 단계의 사용량과 묶음별 기록. 돌지 않았으면 null */
+  researchUsage: Usage | null;
+  researchBatches: ResearchBatchReport[];
   /** 컨텍스트 시작부터 첫 청크 완료까지. 첫 청크가 이번에 새로 완료됐을 때만 값이 있다. */
   firstTranslationMs: number | null;
   elapsedMs: number;
@@ -110,6 +123,11 @@ export interface PaperSchedulerDeps {
   provider: string;
   runtimeVersion: () => string;
   chunker?: Partial<ChunkerOptions>;
+  /**
+   * 개념 카드 조사 방식. 기본은 `none`으로 조사하지 않는다.
+   * `builtin_web`은 1차 패스 뒤에 런타임의 내장 검색으로 조사한다. runner에 조사 전용 런타임이 연결돼 있어야 한다.
+   */
+  research?: 'none' | 'builtin_web';
   maxFailedChunks?: number;
   now?: () => Date;
   log?: (line: string) => void;
@@ -238,6 +256,8 @@ export class PaperScheduler {
       failedChunks: 0,
       metrics: [],
       contextUsage: null,
+      researchUsage: null,
+      researchBatches: [],
       firstTranslationMs: null,
       elapsedMs: Date.now() - t0,
       ...extra,
@@ -353,6 +373,73 @@ export class PaperScheduler {
         generationId: ready.generationId,
         message: null,
       });
+    }
+
+    let researchUsage: Usage | null = null;
+    let researchBatches: ResearchBatchReport[] = [];
+    if (this.deps.research === 'builtin_web') {
+      this.emit({
+        type: 'research',
+        pdfSha256,
+        status: 'running',
+        researched: 0,
+        sources: 0,
+        message: null,
+      });
+      const research = await runConceptResearch(
+        { store, runner, now: this.now, log: this.log },
+        { pdfSha256, generationId: ready.generationId },
+      );
+      if (research.status === 'done') {
+        researchUsage = research.usage;
+        researchBatches = research.batches;
+        const after = await store.readManifest(pdfSha256);
+        ready = await this.usableContext(pdfSha256, after);
+        if (!ready) {
+          return outcome('context_failed', '조사 뒤 저장한 컨텍스트를 다시 읽을 수 없습니다', {
+            contextUsage,
+            researchUsage,
+            researchBatches,
+          });
+        }
+        this.emit({
+          type: 'research',
+          pdfSha256,
+          status: 'done',
+          researched: research.researched,
+          sources: research.sources,
+          message: null,
+        });
+      } else if (research.status === 'stopped') {
+        researchUsage = research.usage;
+        researchBatches = research.batches;
+        this.emit({
+          type: 'research',
+          pdfSha256,
+          status: 'stopped',
+          researched: 0,
+          sources: 0,
+          message: research.message,
+        });
+        if (research.reason === 'needs_login' || research.reason === 'quota') {
+          return outcome(
+            research.reason === 'quota' ? 'waiting_quota' : 'needs_login',
+            research.message,
+            { contextUsage, researchUsage, researchBatches },
+          );
+        }
+        // 조사 런타임이 없으면 일반 설명 그대로 번역을 계속한다.
+        this.log(`scheduler 개념 조사를 건너뜀: ${research.reason} ${research.message}`);
+      } else {
+        this.emit({
+          type: 'research',
+          pdfSha256,
+          status: 'skipped',
+          researched: 0,
+          sources: 0,
+          message: research.reason,
+        });
+      }
     }
 
     const { generationId, context } = ready;
@@ -497,6 +584,8 @@ export class PaperScheduler {
       failedChunks: failed,
       metrics,
       contextUsage,
+      researchUsage,
+      researchBatches,
       firstTranslationMs,
     });
     const at = this.now();

@@ -47,6 +47,25 @@ describe('processView', () => {
     });
     model = play(model, [
       { type: 'context', pdfSha256: SHA, status: 'done', message: null },
+      {
+        type: 'research',
+        pdfSha256: SHA,
+        status: 'running',
+        researched: 0,
+        sources: 0,
+        message: null,
+      },
+    ]);
+    expect(processView(model).stage).toBe('개념 자료 조사 중');
+    model = play(model, [
+      {
+        type: 'research',
+        pdfSha256: SHA,
+        status: 'done',
+        researched: 3,
+        sources: 7,
+        message: null,
+      },
       { type: 'state', pdfSha256: SHA, state: 'translating' },
       { type: 'plan', pdfSha256: SHA, total: 3 },
       { type: 'chunkStarted', pdfSha256: SHA, chunkId: 'chunk_0', total: 3 },

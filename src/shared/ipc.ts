@@ -214,6 +214,15 @@ export type ProcessEvent =
       status: 'running' | 'reused' | 'done' | 'failed';
       message: string | null;
     }
+  | {
+      /** 개념 카드 조사 단계. researched는 읽은 자료가 붙은 카드 수, sources는 저장한 출처 수다. */
+      type: 'research';
+      pdfSha256: string;
+      status: 'running' | 'done' | 'skipped' | 'stopped';
+      researched: number;
+      sources: number;
+      message: string | null;
+    }
   | { type: 'plan'; pdfSha256: string; total: number }
   | { type: 'chunkStarted'; pdfSha256: string; chunkId: string; total: number }
   | {

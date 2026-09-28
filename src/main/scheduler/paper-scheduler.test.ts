@@ -175,7 +175,10 @@ const runnerOf = (
 
 // 청크 하나에 문장 2개(한 섹션)가 들어가도록 나눈다.
 const CHUNKER = { minTokens: 150, maxTokens: 250, neighborSentences: 1 };
-const scheduler = (runner: LlmJobRunner, over: { maxFailedChunks?: number } = {}): PaperScheduler =>
+const scheduler = (
+  runner: LlmJobRunner,
+  over: { maxFailedChunks?: number; research?: 'none' | 'builtin_web' } = {},
+): PaperScheduler =>
   new PaperScheduler({
     store,
     runner,
@@ -468,5 +471,156 @@ describe('PaperScheduler', () => {
     });
     expect(await scheduler(runner).run(SHA)).toMatchObject({ reason: 'no_document' });
     expect(runner.requests).toEqual([]);
+  });
+
+  it('조사를 켜면 컨텍스트 뒤, 번역 앞에 개념 조사가 돌고 고친 컨텍스트로 번역한다', async () => {
+    const withConcepts = (request: LlmJobRequest): unknown => ({
+      ...(contextValue(request) as object),
+      concepts: [
+        {
+          name: 'sentence',
+          nameKo: '문장',
+          definitionKo: '일반 뜻',
+          whyItMatters: '이유',
+          exampleKo: '',
+          prerequisites: [],
+          glossaryTerms: [],
+        },
+      ],
+    });
+    const requests: LlmJobRequest[] = [];
+    const base = runnerOf();
+    const runner: LlmJobRunner = {
+      ...base,
+      run: async (request, onEvent) => {
+        requests.push(request);
+        if (request.jobId.startsWith('rs_')) {
+          const value = {
+            concepts: [
+              {
+                id: 'c_1',
+                definitionKo: '확인한 뜻',
+                whyItMatters: '',
+                exampleKo: '',
+                sources: [
+                  {
+                    url: 'https://read.example/s',
+                    title: 't',
+                    kind: 'article',
+                    language: 'ko',
+                    supports: '뜻',
+                  },
+                ],
+              },
+            ],
+          };
+          return {
+            ok: true,
+            jobId: request.jobId,
+            value,
+            rawText: JSON.stringify(value),
+            model: 'fake-model',
+            usage: USAGE,
+            research: {
+              queries: ['q'],
+              openRequests: [],
+              results: [
+                {
+                  url: 'https://read.example/s',
+                  title: '교재',
+                  domain: 'read.example',
+                  viewed: true,
+                },
+              ],
+              searchItems: 1,
+              failedViews: 0,
+            },
+          };
+        }
+        if (isContext(request)) {
+          const value = withConcepts(request);
+          return {
+            ok: true,
+            jobId: request.jobId,
+            value,
+            rawText: JSON.stringify(value),
+            model: 'fake-model',
+            usage: USAGE,
+          };
+        }
+        return base.run(request, onEvent);
+      },
+    };
+    const s = scheduler(runner, { research: 'builtin_web' });
+    const events: SchedulerEvent[] = [];
+    s.onEvent((e) => events.push(e));
+    const outcome = await s.run(SHA);
+    expect(outcome).toMatchObject({ reason: 'complete', researchUsage: { logicalJobs: 1 } });
+    expect(outcome.researchBatches).toHaveLength(1);
+    const kinds = requests.map((r) => r.jobId.slice(0, 3));
+    expect(kinds.slice(0, 3)).toEqual(['ctx', 'rs_', 'tr_']);
+    expect(requests[1]?.research).toEqual({ kind: 'builtin_web' });
+    expect(events.filter((e) => e.type === 'research')).toMatchObject([
+      { status: 'running' },
+      { status: 'done', researched: 1, sources: 1 },
+    ]);
+    // 번역 요청에는 조사로 고친 뜻이 들어간다.
+    const firstChunk = requests.find((r) => r.jobId.startsWith('tr_'));
+    expect(JSON.stringify(dataOf(firstChunk as LlmJobRequest)['CONCEPTS'])).toContain('확인한 뜻');
+    expect(await store.verifyFiles(SHA)).toEqual([]);
+
+    // 다시 시작해도 조사를 다시 하지 않는다.
+    const again = await scheduler(runner, { research: 'builtin_web' }).run(SHA);
+    expect(again.reason).toBe('complete');
+    expect(requests.filter((r) => r.jobId.startsWith('rs_'))).toHaveLength(1);
+  });
+
+  it('조사가 한도에 걸리면 번역을 시작하지 않고 멈춘다', async () => {
+    const base = runnerOf();
+    const runner: LlmJobRunner = {
+      ...base,
+      run: async (request, onEvent) => {
+        if (isContext(request)) {
+          const value = {
+            ...(contextValue(request) as object),
+            concepts: [
+              {
+                name: 'sentence',
+                nameKo: '',
+                definitionKo: '뜻',
+                whyItMatters: '',
+                exampleKo: '',
+                prerequisites: [],
+                glossaryTerms: [],
+              },
+            ],
+          };
+          return {
+            ok: true,
+            jobId: request.jobId,
+            value,
+            rawText: JSON.stringify(value),
+            model: 'fake-model',
+            usage: USAGE,
+          };
+        }
+        if (request.jobId.startsWith('rs_')) {
+          return {
+            ok: false,
+            jobId: request.jobId,
+            kind: 'quota',
+            message: '한도',
+            errors: [],
+            rawText: null,
+            model: null,
+            usage: USAGE,
+          };
+        }
+        return base.run(request, onEvent);
+      },
+    };
+    const outcome = await scheduler(runner, { research: 'builtin_web' }).run(SHA);
+    expect(outcome).toMatchObject({ reason: 'waiting_quota', completedChunks: 0 });
+    expect((await store.readManifest(SHA)).state).toBe('waiting_quota');
   });
 });

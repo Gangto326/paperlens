@@ -11,7 +11,7 @@ export interface ProcessModel {
   running: boolean;
   stopRequested: boolean;
   state: PaperState | null;
-  phase: 'idle' | 'context' | 'translating' | 'finished';
+  phase: 'idle' | 'context' | 'research' | 'translating' | 'finished';
   completed: number;
   failed: number;
   total: number;
@@ -54,6 +54,12 @@ export function applyProcessEvent(model: ProcessModel, event: ProcessEvent): Pro
         return { ...model, running: true, phase: 'context', message: null };
       }
       if (event.status === 'failed') return { ...model, message: event.message };
+      return { ...model, running: true, phase: 'translating' };
+    case 'research':
+      if (event.status === 'running') {
+        return { ...model, running: true, phase: 'research', message: null };
+      }
+      if (event.status === 'stopped') return { ...model, message: event.message };
       return { ...model, running: true, phase: 'translating' };
     case 'plan':
       return { ...model, running: true, phase: 'translating', total: event.total };
@@ -102,7 +108,11 @@ export function processView(model: ProcessModel): ProcessView {
   const failed = model.failed > 0 ? ` · 실패 ${model.failed}` : '';
   if (model.running) {
     const stage =
-      model.phase === 'context' ? '논문 문맥 작성 중' : `번역 중${progress} 청크${failed}`;
+      model.phase === 'context'
+        ? '논문 문맥 작성 중'
+        : model.phase === 'research'
+          ? '개념 자료 조사 중'
+          : `번역 중${progress} 청크${failed}`;
     return {
       stage: model.stopRequested ? `${stage} · 이 청크가 끝나면 멈춤` : stage,
       button: { label: '멈춤', action: 'stop', disabled: model.stopRequested },
