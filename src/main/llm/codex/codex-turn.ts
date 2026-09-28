@@ -1,3 +1,5 @@
+import type { ResearchTrace } from '../research-trace';
+import { FORBIDDEN_ITEM_TYPES, researchTraceOf } from './codex-research';
 import Ajv, { type ValidateFunction } from 'ajv';
 import { formatAjvErrors, type Usage } from '@shared/schema';
 import { AppServerError } from './app-server-client';
@@ -51,12 +53,15 @@ export type TurnFailureKind =
   | 'schema_mismatch'
   | 'invalid_schema'
   | 'timeout'
-  | 'transport';
+  | 'transport'
+  | 'forbidden_tool';
 
 export interface StructuredTurnParams {
   threadId: string;
   prompt: string;
   outputSchema: Record<string, unknown>;
+  /** 조사 턴인지. 조사 턴만 웹 검색 항목을 허용하고 검색 기록을 돌려준다. */
+  research?: boolean;
   /** 턴 전체 제한 시간. 기본 120초. */
   timeoutMs?: number;
 }
@@ -93,6 +98,8 @@ export type StructuredTurnResult =
       usage: Usage;
       /** 받은 thread/tokenUsage/updated 알림 수 */
       tokenUsageUpdates: number;
+      /** 조사 턴의 검색 기록. 조사 턴이 아니면 null */
+      research: ResearchTrace | null;
     }
   | {
       ok: false;
@@ -216,6 +223,8 @@ export async function runStructuredTurn(
   let total: TokenUsageBreakdown | null = null;
   let tokenUsageUpdates = 0;
   let outputChars = 0;
+  const completedItems: unknown[] = [];
+  const forbidden: string[] = [];
 
   const fail = (
     kind: TurnFailureKind,
@@ -282,6 +291,9 @@ export async function runStructuredTurn(
       const p = raw as ItemCompletedNotification;
       if (!mine(p)) return;
       if (p.item.type === 'agentMessage') lastAgentText = p.item.text;
+      completedItems.push(p.item);
+      const allowed = p.item.type === 'webSearch' ? params.research === true : true;
+      if (!allowed || FORBIDDEN_ITEM_TYPES.has(p.item.type)) forbidden.push(p.item.type);
       emit({ type: 'item', state: 'completed', itemType: p.item.type, phase: phaseOf(p.item) });
     }),
     transport.onNotification('thread/tokenUsage/updated', (raw) => {
@@ -390,6 +402,14 @@ export async function runStructuredTurn(
     if (turn.status !== 'completed') {
       return fail('turn_failed', `예상하지 않은 턴 상태 ${turn.status}`);
     }
+    if (forbidden.length > 0) {
+      const names = [...new Set(forbidden)];
+      return fail(
+        'forbidden_tool',
+        `허용하지 않은 도구 항목이 있어 결과를 쓰지 않습니다: ${names.join(', ')}`,
+        names,
+      );
+    }
     const parsed = parseStructuredOutput(lastAgentText, validate);
     if (!parsed.ok) {
       const messages: Record<typeof parsed.kind, string> = {
@@ -406,6 +426,7 @@ export async function runStructuredTurn(
       rawText: lastAgentText ?? '',
       usage: toUsage(total, Date.now() - t0, 1),
       tokenUsageUpdates,
+      research: params.research === true ? researchTraceOf(completedItems) : null,
     };
   } finally {
     clearTimeout(timer);

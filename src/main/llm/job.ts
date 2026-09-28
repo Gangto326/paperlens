@@ -1,12 +1,16 @@
 import type { Usage } from '@shared/schema';
+import type { ResearchTrace } from './research-trace';
 
 /**
  * LLM 어댑터의 앱 내부 계약 중 "구조화 작업 실행"과 "중단"(PLAN 4.2 표, COMMIT_PLAN C2.1).
  * 스케줄러·캐시·UI는 이 파일의 타입만 본다. 런타임 고유 값(스레드·턴 id, 프로토콜 알림)은 여기 나오지 않는다.
  */
 
-/** 조사 정책. M2까지는 도구 없는 작업만 있다. 조사 도구가 붙는 정책은 M4에서 추가한다. */
-export type LlmResearchPolicy = { kind: 'none' };
+/**
+ * 조사 정책. `none`은 도구 없는 작업이다. `builtin_web`은 런타임의 내장 웹 검색을 쓰는 조사 작업이다(PLAN 3.3.1).
+ * 검색 횟수는 앱이 막지 못한다. 결과의 `research`에 실제 검색 기록이 온다.
+ */
+export type LlmResearchPolicy = { kind: 'none' } | { kind: 'builtin_web' };
 
 export interface LlmJobRequest {
   /** 호출자가 정하는 작업 ID. 실행 중인 작업과 같은 ID로는 시작할 수 없다. */
@@ -34,7 +38,9 @@ export type LlmJobFailureKind =
   | 'timeout'
   | 'transport'
   | 'duplicate_job'
-  | 'unsupported_policy';
+  | 'unsupported_policy'
+  /** 그 작업에 허용하지 않은 도구를 모델이 썼다. 결과를 쓰지 않는다. */
+  | 'forbidden_tool';
 
 export type LlmJobStage = 'thinking' | 'commentary' | 'answer' | 'other';
 
@@ -48,7 +54,16 @@ export type LlmJobEvent =
   | { type: 'finished'; jobId: string; outcome: 'ok' | LlmJobFailureKind; elapsedMs: number };
 
 export type LlmJobResult =
-  | { ok: true; jobId: string; value: unknown; rawText: string; model: string | null; usage: Usage }
+  | {
+      ok: true;
+      jobId: string;
+      value: unknown;
+      rawText: string;
+      model: string | null;
+      usage: Usage;
+      /** 조사 작업의 검색 기록. 도구 없는 작업에는 없다. */
+      research?: ResearchTrace;
+    }
   | {
       ok: false;
       jobId: string;

@@ -4,7 +4,7 @@ import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import type { LlmJobEvent, LlmJobRequest } from '../job';
 import { AppServerClient } from './app-server-client';
-import { CodexJobRunner, stageOf } from './codex-jobs';
+import { type CodexJobRunnerDeps, CodexJobRunner, stageOf } from './codex-jobs';
 import { CodexRuntime } from './codex-runtime';
 
 const FIXTURE = join(__dirname, '__fixtures__', 'fake-app-server.mjs');
@@ -50,7 +50,7 @@ describe('CodexJobRunner (가짜 App Server)', () => {
   });
 
   const setup = (
-    over: { interruptGraceMs?: number } = {},
+    over: Partial<Pick<CodexJobRunnerDeps, 'interruptGraceMs' | 'research'>> = {},
   ): { runner: CodexJobRunner; c: AppServerClient; threads: unknown[] } => {
     const child = spawn(process.execPath, [FIXTURE], { stdio: ['pipe', 'pipe', 'pipe'] });
     const c = new AppServerClient(child, { requestTimeoutMs: 5_000 });
@@ -241,6 +241,47 @@ describe('CodexJobRunner (가짜 App Server)', () => {
     const result = await runner.run(request as unknown as LlmJobRequest);
     expect(result).toMatchObject({ ok: false, kind: 'unsupported_policy' });
     expect(threads).toEqual([]);
+  });
+
+  it('조사 작업은 조사 전용 런타임으로만 돌고 검색 기록을 돌려준다', async () => {
+    const plain = setup();
+    const refused = await plain.runner.run({
+      ...job('j7', 'FAKE:search {"answer":"a","n":1}'),
+      research: { kind: 'builtin_web' },
+    });
+    expect(refused).toMatchObject({ ok: false, kind: 'unsupported_policy' });
+    expect(plain.threads).toEqual([]);
+    await plain.c.close({ graceMs: 500, termMs: 500 });
+
+    const researchThreads: unknown[] = [];
+    const wired = setup({
+      research: {
+        transport: () => client,
+        startThread: async (options) => {
+          researchThreads.push(options);
+          const res = await (client as AppServerClient).request<{
+            thread: { id: string };
+            model: string;
+          }>('thread/start', {});
+          return { threadId: res.thread.id, model: res.model };
+        },
+      },
+    });
+    const result = await wired.runner.run({
+      ...job('j8', 'FAKE:search {"answer":"a","n":1}', { instructions: '조사 지침' }),
+      research: { kind: 'builtin_web' },
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      value: { answer: 'a', n: 1 },
+      research: { queries: ['bm25 설명'], searchItems: 2 },
+    });
+    // 조사 작업은 도구 없는 런타임의 스레드를 쓰지 않는다.
+    expect(wired.threads).toEqual([]);
+    expect(researchThreads).toEqual([{ developerInstructions: '조사 지침' }]);
+    // 도구 없는 작업에서 검색 항목이 보이면 결과를 쓰지 않는다.
+    const leaked = await wired.runner.run(job('j9', 'FAKE:search {"answer":"a","n":1}'));
+    expect(leaked).toMatchObject({ ok: false, kind: 'forbidden_tool' });
   });
 
   it('이벤트 처리기가 던져도 작업은 끝까지 간다', async () => {

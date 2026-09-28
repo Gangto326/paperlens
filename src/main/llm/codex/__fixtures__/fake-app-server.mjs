@@ -6,6 +6,7 @@
 //       account/login/completed(+성공 시 account/updated·account/rateLimits/updated)를 보낸다.
 // 턴(C1.20, 0.157.1 실측 순서를 흉내): thread/start, turn/start(응답 뒤 turn/started → item/completed → thread/tokenUsage/updated →
 //       turn/completed), turn/interrupt. 입력 글의 지시어로 동작을 고른다: `FAKE:reply <글>` 그 글로 응답, `FAKE:silent` agent message 없음,
+//       `FAKE:search <글>` 웹 검색 항목 둘 뒤에 그 글로 응답, `FAKE:shell <글>` 명령 실행 항목 뒤에 그 글로 응답,
 //       `FAKE:hang` turn/interrupt가 올 때까지 대기, `FAKE:limit` usageLimitExceeded 실패, `FAKE:rpcfail` turn/start 오류, `FAKE:crash` 턴 중 종료.
 //       지시어가 없으면 미로그인일 때 401 실패, 로그인 상태면 스모크 기대값으로 응답한다.
 // 진행·중단(C2.1, 0.157.1 실측을 흉내): `FAKE:stream <글>`은 reasoning 항목 → agentMessage item/started →
@@ -171,13 +172,80 @@ const runTurn = (threadId, turnId, text) => {
         ),
       );
       return;
+    case 'search': {
+      // 내장 웹 검색 흉내(0.157.1 실측 모양): 검색 항목 하나와 열람 항목 하나.
+      const items = [
+        {
+          type: 'webSearch',
+          id: `${turnId}-w1`,
+          query: 'bm25',
+          action: { type: 'search', query: null, queries: ['bm25 설명'] },
+          results: [
+            {
+              type: 'text_result',
+              domain: 'example.org',
+              ref_id: 'turn0search0',
+              title: 'BM25',
+              url: 'https://example.org/bm25',
+              snippet: 's',
+            },
+            {
+              type: 'text_result',
+              domain: 'video.example',
+              ref_id: 'turn0search1',
+              title: 'BM25 강의',
+              url: 'https://video.example/watch?v=1',
+              snippet: 's',
+            },
+          ],
+        },
+        {
+          type: 'webSearch',
+          id: `${turnId}-w2`,
+          query: 'https://example.org/bm25',
+          action: { type: 'openPage', url: 'https://example.org/bm25' },
+          results: [
+            {
+              type: 'text_result',
+              domain: 'example.org',
+              ref_id: 'turn1view0',
+              title: 'BM25',
+              url: 'https://example.org/bm25',
+              snippet: 'Total lines: 10',
+            },
+          ],
+        },
+      ];
+      for (const item of items) {
+        itemStarted(threadId, turnId, item);
+        send({
+          method: 'item/completed',
+          params: { item, threadId, turnId, completedAtMs: Date.now() },
+        });
+      }
+      break;
+    }
+    case 'shell': {
+      const item = {
+        type: 'commandExecution',
+        id: `${turnId}-x`,
+        command: 'ls',
+        status: 'completed',
+      };
+      itemStarted(threadId, turnId, item);
+      send({
+        method: 'item/completed',
+        params: { item, threadId, turnId, completedAtMs: Date.now() },
+      });
+      break;
+    }
     default:
   }
   // 다른 스레드의 알림이 섞여 와도 이 턴의 결과에 들어가면 안 된다.
   agentMessage('thread-other', 'turn-other', 'item-noise', '{"answer":"noise","n":0}', null);
   if (kind !== 'silent') {
     agentMessage(threadId, turnId, `${turnId}-c`, 'Working on it.', 'commentary');
-    const reply = kind === 'reply' ? directive[2] : defaultReply;
+    const reply = ['reply', 'search', 'shell'].includes(kind) ? directive[2] : defaultReply;
     agentMessage(threadId, turnId, `${turnId}-f`, reply, 'final_answer');
   }
   tokenUsage(threadId, turnId);

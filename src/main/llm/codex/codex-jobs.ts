@@ -28,6 +28,16 @@ export interface CodexJobRunnerDeps {
   startThread: (options: {
     developerInstructions?: string;
   }) => Promise<{ threadId: string; model: string }>;
+  /**
+   * 조사 전용 런타임(PLAN 3.3.1). 내장 검색이 켜진 별도 프로세스다.
+   * 없으면 조사 작업은 `unsupported_policy`로 거절한다. 도구 없는 런타임으로 바꿔 돌리지 않는다.
+   */
+  research?: {
+    transport: () => TurnTransport | null;
+    startThread: (options: {
+      developerInstructions?: string;
+    }) => Promise<{ threadId: string; model: string }>;
+  };
   log?: (line: string) => void;
   /** 중단 요청 뒤 턴 종료를 기다리는 시간. 테스트에서 줄인다. */
   interruptGraceMs?: number;
@@ -54,6 +64,7 @@ const FAILURE_KIND: Record<TurnFailureKind, LlmJobFailureKind> = {
   invalid_schema: 'invalid_schema',
   timeout: 'timeout',
   transport: 'transport',
+  forbidden_tool: 'forbidden_tool',
 };
 
 /** 런타임의 항목 종류·단계 → 앱의 단계 이름. 모르는 값은 other. */
@@ -113,8 +124,12 @@ export class CodexJobRunner implements LlmJobRunner {
       return reject('duplicate_job', `작업 ${jobId}가 이미 실행 중입니다`);
     }
     // 타입에 없는 정책이 런타임에 들어와도 도구 없는 턴으로 조용히 바꿔 돌리지 않는다.
-    if ((request.research as { kind: string }).kind !== 'none') {
-      return reject('unsupported_policy', '이 어댑터는 아직 도구 없는 작업만 실행합니다');
+    const policy = (request.research as { kind: string }).kind;
+    if (policy !== 'none' && policy !== 'builtin_web') {
+      return reject('unsupported_policy', `이 어댑터가 모르는 조사 정책입니다: ${policy}`);
+    }
+    if (policy === 'builtin_web' && !this.deps.research) {
+      return reject('unsupported_policy', '조사 전용 런타임이 연결돼 있지 않습니다');
     }
 
     const controller = new AbortController();
@@ -178,13 +193,20 @@ export class CodexJobRunner implements LlmJobRunner {
       usage: toUsage(null, Date.now() - t0, 0),
     });
 
-    const transport = this.deps.transport();
+    const researching = request.research.kind === 'builtin_web';
+    const runtime = researching && this.deps.research ? this.deps.research : this.deps;
+    const transport = runtime.transport();
     if (!transport || transport.state !== 'running') {
-      return failure('unavailable', 'LLM 런타임이 실행 중이 아닙니다');
+      return failure(
+        'unavailable',
+        researching
+          ? '조사 전용 LLM 런타임이 실행 중이 아닙니다'
+          : 'LLM 런타임이 실행 중이 아닙니다',
+      );
     }
     let threadId: string;
     try {
-      const thread = await this.deps.startThread(
+      const thread = await runtime.startThread(
         request.instructions !== undefined ? { developerInstructions: request.instructions } : {},
       );
       threadId = thread.threadId;
@@ -225,6 +247,7 @@ export class CodexJobRunner implements LlmJobRunner {
         threadId,
         prompt: request.prompt,
         outputSchema: request.outputSchema,
+        research: researching,
         ...(request.timeoutMs !== undefined ? { timeoutMs: request.timeoutMs } : {}),
       },
       {
@@ -238,7 +261,15 @@ export class CodexJobRunner implements LlmJobRunner {
     );
     const usage = { ...turn.usage, elapsedMs: Date.now() - t0 };
     if (turn.ok) {
-      return { ok: true, jobId, value: turn.value, rawText: turn.rawText, model, usage };
+      return {
+        ok: true,
+        jobId,
+        value: turn.value,
+        rawText: turn.rawText,
+        model,
+        usage,
+        ...(turn.research ? { research: turn.research } : {}),
+      };
     }
     if (turn.kind === 'cancelled') this.confirmed.set(jobId, turn.interruptConfirmed ?? false);
     return {

@@ -176,6 +176,56 @@ describe('runStructuredTurn (가짜 App Server)', () => {
     if (!mismatch.ok) expect(mismatch.errors.join(' ')).toContain('n');
   });
 
+  it('조사 턴은 검색 기록을 돌려주고, 조사 턴이 아니면 검색 항목을 허용하지 않는다', async () => {
+    const { c, threadId } = await setup();
+    const result = await runStructuredTurn(c, {
+      threadId,
+      prompt: 'FAKE:search {"answer":"a","n":1}',
+      outputSchema: SCHEMA,
+      timeoutMs: 3_000,
+      research: true,
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      value: { answer: 'a', n: 1 },
+      research: {
+        queries: ['bm25 설명'],
+        openRequests: ['https://example.org/bm25'],
+        searchItems: 2,
+        failedViews: 0,
+        results: [
+          { url: 'https://example.org/bm25', viewed: true },
+          { url: 'https://video.example/watch?v=1', viewed: false },
+        ],
+      },
+    });
+    await client?.close({ graceMs: 500, termMs: 500 });
+    const plain = await run('FAKE:search {"answer":"a","n":1}');
+    expect(plain).toMatchObject({ ok: false, kind: 'forbidden_tool', errors: ['webSearch'] });
+    await client?.close({ graceMs: 500, termMs: 500 });
+    expect(await run('FAKE:reply {"answer":"a","n":1}')).toMatchObject({
+      ok: true,
+      research: null,
+    });
+  });
+
+  it('조사 턴이라도 검색 말고 다른 도구 항목이 있으면 결과를 쓰지 않는다', async () => {
+    const { c, threadId } = await setup();
+    const result = await runStructuredTurn(c, {
+      threadId,
+      prompt: 'FAKE:shell {"answer":"a","n":1}',
+      outputSchema: SCHEMA,
+      timeoutMs: 3_000,
+      research: true,
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      kind: 'forbidden_tool',
+      errors: ['commandExecution'],
+      rawText: '{"answer":"a","n":1}',
+    });
+  });
+
   it('agent message 없이 끝나면 no_output', async () => {
     expect(await run('FAKE:silent')).toMatchObject({ ok: false, kind: 'no_output', rawText: null });
   });
