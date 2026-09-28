@@ -169,7 +169,78 @@ describe('readTranslations', () => {
         exampleKo: null,
         prerequisiteConceptIds: [],
         sourced: false,
+        sources: [],
+        further: [],
       },
+    });
+  });
+
+  it('개념 카드의 자료 링크를 research.json에서 찾아 읽은 자료와 더 볼 자료로 나눈다', async () => {
+    const source = (id: string, url: string, fetchStatus: 'read' | 'not_read') => ({
+      id,
+      discoveredUrl: url,
+      finalUrl: url,
+      title: `제목 ${id}`,
+      publisher: 'read.example',
+      sourceType: id === 'src_2' ? 'video' : 'article',
+      discoveredBy: 'search' as const,
+      discoveredAt: '2026-09-28T00:00:00.000Z',
+      fetchStatus,
+      evidenceIds: [],
+      language: 'ko',
+      jobId: 'rs_1',
+    });
+    const researchPath = store.generationPath(SHA, GEN, 'research.json');
+    const researchSha = await store.writeJson('researchDocument', researchPath, {
+      schemaVersion: 1,
+      sources: [
+        source('src_1', 'https://read.example/a', 'read'),
+        source('src_2', 'https://video.example/b', 'not_read'),
+        source('src_3', 'file:///etc/passwd', 'read'),
+      ],
+      evidence: [],
+    });
+    const ref = (sourceId: string) => ({ sourceId, evidenceIds: [], supports: '뜻' });
+    const contextPath = store.generationPath(SHA, GEN, 'context.json');
+    const contextSha = await store.writeJson('contextDocument', contextPath, {
+      ...sampleContext,
+      concepts: [
+        {
+          id: 'c_1',
+          name: 'BM25',
+          nameKo: null,
+          definitionKo: '뜻',
+          whyItMatters: '',
+          exampleKo: null,
+          prerequisiteConceptIds: [],
+          refs: [ref('src_1'), ref('src_3'), ref('src_404'), ref('src_2')],
+          furtherRefs: [ref('src_2')],
+          researchStatus: 'researched',
+          contextVersion: 1,
+        },
+      ],
+    });
+    await store.updateManifest(SHA, (m) => {
+      store.recordFile(m, SHA, researchPath, researchSha);
+      store.recordFile(m, SHA, contextPath, contextSha);
+      m.currentGenerationId = GEN;
+    });
+    const snapshot = await readTranslations(store, SHA, CHUNKER);
+    expect(snapshot.concepts?.['c_1']).toMatchObject({
+      sourced: true,
+      // 읽지 않은 자료, 없는 출처, http(s)가 아닌 주소는 읽은 자료에 들지 않는다.
+      sources: [
+        {
+          sourceId: 'src_1',
+          url: 'https://read.example/a',
+          title: '제목 src_1',
+          publisher: 'read.example',
+          kind: 'article',
+          language: 'ko',
+          supports: '뜻',
+        },
+      ],
+      further: [{ sourceId: 'src_2', url: 'https://video.example/b', kind: 'video' }],
     });
   });
 

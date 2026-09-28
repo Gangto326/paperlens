@@ -260,6 +260,20 @@ export interface SentenceTranslation {
   chunkId: string;
 }
 
+/** 개념 카드에 붙는 자료 링크. 주소는 조사 턴의 검색 기록과 대조해 통과한 것이다. */
+export interface ConceptSourceLink {
+  sourceId: string;
+  url: string;
+  title: string;
+  /** 자료가 있는 곳. 예: www.elastic.co */
+  publisher: string | null;
+  /** article · paper · docs · video */
+  kind: string;
+  language: string | null;
+  /** 이 자료가 뒷받침하는 내용 */
+  supports: string;
+}
+
 /** 화면에 보이는 개념 카드. */
 export interface ConceptCard {
   id: string;
@@ -271,6 +285,10 @@ export interface ConceptCard {
   prerequisiteConceptIds: string[];
   /** 읽고 확인한 출처가 있는 설명이면 true. 아니면 "일반 설명, 출처 미확인"으로 표시한다. */
   sourced: boolean;
+  /** 읽은 자료. 조사 턴에 열람 기록이 있다. */
+  sources?: ConceptSourceLink[];
+  /** 더 볼 자료. 검색 결과에 나왔지만 앱이 내용을 확인하지 못했다. */
+  further?: ConceptSourceLink[];
 }
 
 /** 캐시에 저장된 번역 상태 전체. 선택 시 표시는 이 값을 메모리에서 조회한다. */

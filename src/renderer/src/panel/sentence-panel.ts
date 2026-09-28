@@ -1,10 +1,13 @@
 import type { SelectionResult } from '@shared/mapping/selection';
 import {
+  FURTHER_SOURCES_TITLE,
   NO_TRANSLATIONS,
+  READ_SOURCES_TITLE,
   selectionView,
   type ConceptView,
   type ExplanationSectionView,
   type SentenceView,
+  type SourceLinkView,
   type TranslationLookup,
 } from './selection-view';
 
@@ -161,5 +164,44 @@ function renderConcept(concept: ConceptView): HTMLElement {
     rows.append(label, text);
   }
   details.append(rows);
+  if (concept.sources.length > 0) details.append(renderLinks(READ_SOURCES_TITLE, concept.sources));
+  if (concept.further.length > 0) {
+    details.append(renderLinks(FURTHER_SOURCES_TITLE, concept.further));
+  }
   return details;
+}
+
+/** 자료 링크 목록. 링크는 새 창 요청으로 나가고 메인 프로세스가 시스템 브라우저로 연다. */
+function renderLinks(title: string, links: SourceLinkView[]): HTMLElement {
+  const section = document.createElement('div');
+  section.className = 'concept-sources';
+  const heading = document.createElement('p');
+  heading.className = 'concept-sources-title';
+  heading.textContent = title;
+  const list = document.createElement('ul');
+  for (const link of links) {
+    const item = document.createElement('li');
+    const anchor = document.createElement('a');
+    anchor.href = link.url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+    anchor.textContent = link.title;
+    item.append(anchor);
+    if (link.meta !== '') {
+      const meta = document.createElement('span');
+      meta.className = 'muted concept-source-meta';
+      meta.textContent = ` ${link.meta}`;
+      item.append(meta);
+    }
+    if (link.supports !== null) {
+      const supports = document.createElement('p');
+      supports.className = 'concept-source-supports';
+      supports.lang = 'ko';
+      supports.textContent = link.supports;
+      item.append(supports);
+    }
+    list.append(item);
+  }
+  section.append(heading, list);
+  return section;
 }

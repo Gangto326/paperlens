@@ -1,6 +1,6 @@
 import { relative } from 'node:path';
-import type { ConceptCard, TranslationSnapshot } from '@shared/ipc';
-import type { ExtractionDocument } from '@shared/schema';
+import type { ConceptCard, ConceptSourceLink, TranslationSnapshot } from '@shared/ipc';
+import type { ExtractionDocument, Reference, Source } from '@shared/schema';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { planChunks, type ChunkerOptions } from '../chunk/chunker';
 
@@ -10,7 +10,29 @@ import { planChunks, type ChunkerOptions } from '../chunk/chunker';
  * - 파일 해시가 manifest와 다르거나 스키마가 맞지 않는 청크는 없는 것으로 본다.
  * - 청크 계획은 document.json에서 다시 계산한다. 아직 파일이 없는 청크는 pending이다.
  * - 개념 카드는 같은 세대의 context.json에서 읽는다. 읽지 못하면 카드 없이 번역만 돌려준다.
+ * - 카드의 자료 링크는 같은 세대의 research.json에서 찾는다. 거기 없는 출처와 http(s)가 아닌 주소는 보이지 않는다.
  */
+const linksOf = (
+  refs: readonly Reference[] | undefined,
+  sources: ReadonlyMap<string, Source>,
+  wanted: (source: Source) => boolean,
+): ConceptSourceLink[] =>
+  (refs ?? []).flatMap((ref) => {
+    const source = sources.get(ref.sourceId);
+    if (!source || !wanted(source) || !/^https?:\/\//i.test(source.finalUrl)) return [];
+    return [
+      {
+        sourceId: source.id,
+        url: source.finalUrl,
+        title: source.title,
+        publisher: source.publisher ?? null,
+        kind: source.sourceType,
+        language: source.language ?? null,
+        supports: ref.supports,
+      },
+    ];
+  });
+
 export async function readTranslations(
   store: PaperCacheStore,
   pdfSha256: string,
@@ -42,12 +64,25 @@ export async function readTranslations(
   const snapshot: TranslationSnapshot = { ...empty, chunks: [], results: {}, concepts: {} };
   const concepts: Record<string, ConceptCard> = {};
   if (generationId !== null) {
+    const sources = new Map<string, Source>();
+    const researchPath = store.generationPath(pdfSha256, generationId, 'research.json');
+    const researchSha = hashOf(researchPath);
+    if (researchSha !== undefined) {
+      try {
+        const research = await store.readJson('researchDocument', researchPath, researchSha);
+        for (const source of research.sources) sources.set(source.id, source);
+      } catch (err) {
+        if (!(err instanceof CacheReadError)) throw err;
+      }
+    }
     const path = store.generationPath(pdfSha256, generationId, 'context.json');
     const sha = hashOf(path);
     if (sha !== undefined) {
       try {
         const context = await store.readJson('contextDocument', path, sha);
         for (const c of context.concepts) {
+          const read = linksOf(c.refs, sources, (s) => s.fetchStatus === 'read');
+          const further = linksOf(c.furtherRefs, sources, (s) => s.fetchStatus !== 'failed');
           concepts[c.id] = {
             id: c.id,
             name: c.name,
@@ -56,7 +91,9 @@ export async function readTranslations(
             whyItMatters: c.whyItMatters,
             exampleKo: c.exampleKo ?? null,
             prerequisiteConceptIds: c.prerequisiteConceptIds,
-            sourced: c.researchStatus === 'researched' && c.refs.length > 0,
+            sourced: c.researchStatus === 'researched' && read.length > 0,
+            sources: read,
+            further,
           };
         }
       } catch (err) {

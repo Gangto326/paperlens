@@ -171,6 +171,18 @@ describe('번역 표시', () => {
       exampleKo: null,
       prerequisiteConceptIds: ['c_2', 'c_404'],
       sourced: false,
+      sources: [],
+      further: [
+        {
+          sourceId: 'src_2',
+          url: 'https://video.example/b',
+          title: ' ',
+          publisher: 'video.example',
+          kind: 'video',
+          language: 'KO',
+          supports: '',
+        },
+      ],
     };
     const concepts = {
       c_1: card,
@@ -181,6 +193,18 @@ describe('번역 표시', () => {
         nameKo: null,
         prerequisiteConceptIds: [],
         sourced: true,
+        sources: [
+          {
+            sourceId: 'src_1',
+            url: 'https://read.example/a',
+            title: 'BM25 교재',
+            publisher: null,
+            kind: 'book',
+            language: null,
+            supports: '뜻을 설명한다',
+          },
+        ],
+        further: [],
       },
     };
     const v = translationView(
@@ -197,12 +221,30 @@ describe('번역 표시', () => {
           { label: '뜻', text: '학습된 모델을 더 학습시키는 것.' },
           { label: '먼저 알 것', text: 'pre-training' },
         ],
+        sources: [],
+        further: [
+          {
+            url: 'https://video.example/b',
+            title: 'https://video.example/b',
+            meta: '영상 · 한국어 · video.example',
+            supports: null,
+          },
+        ],
       },
       {
         id: 'c_2',
         title: 'pre-training',
         badge: null,
         rows: [{ label: '뜻', text: '학습된 모델을 더 학습시키는 것.' }],
+        sources: [
+          {
+            url: 'https://read.example/a',
+            title: 'BM25 교재',
+            meta: 'book',
+            supports: '뜻을 설명한다',
+          },
+        ],
+        further: [],
       },
     ]);
   });

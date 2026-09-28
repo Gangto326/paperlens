@@ -1,4 +1,9 @@
-import type { ConceptCard, SentenceTranslation, TranslationSnapshot } from '@shared/ipc';
+import type {
+  ConceptCard,
+  ConceptSourceLink,
+  SentenceTranslation,
+  TranslationSnapshot,
+} from '@shared/ipc';
 import type { SelectionResult, SentenceIndexEntry } from '@shared/mapping/selection';
 
 /**
@@ -16,6 +21,39 @@ export const FAILED_TRANSLATION =
   '번역·해설: 이 부분은 만들지 못했습니다. 번역을 이어서 하면 다시 시도합니다';
 
 export const UNSOURCED_BADGE = '일반 설명, 출처 미확인';
+export const READ_SOURCES_TITLE = '읽은 자료';
+export const FURTHER_SOURCES_TITLE = '더 볼 자료 (앱이 내용을 확인하지 않음)';
+
+const KIND_LABEL: Record<string, string> = {
+  article: '글',
+  paper: '논문',
+  docs: '문서',
+  video: '영상',
+};
+const LANGUAGE_LABEL: Record<string, string> = { ko: '한국어', en: '영어' };
+
+export interface SourceLinkView {
+  url: string;
+  title: string;
+  /** "영상 · 한국어 · www.youtube.com" */
+  meta: string;
+  supports: string | null;
+}
+
+export function sourceLinkView(link: ConceptSourceLink): SourceLinkView {
+  const language = link.language?.trim().toLowerCase() ?? '';
+  const meta = [
+    KIND_LABEL[link.kind] ?? link.kind,
+    language === '' ? '' : (LANGUAGE_LABEL[language] ?? language),
+    link.publisher ?? '',
+  ].filter((part) => part.trim() !== '');
+  return {
+    url: link.url,
+    title: link.title.trim() === '' ? link.url : link.title.trim(),
+    meta: meta.join(' · '),
+    supports: link.supports.trim() === '' ? null : link.supports.trim(),
+  };
+}
 
 export type ExplanationKey = 'plain' | 'role' | 'example' | 'deeper';
 
@@ -41,6 +79,10 @@ export interface ConceptView {
   /** 출처 없는 설명이면 표시 문구, 아니면 null */
   badge: string | null;
   rows: { label: string; text: string }[];
+  /** 읽은 자료 */
+  sources: SourceLinkView[];
+  /** 더 볼 자료 */
+  further: SourceLinkView[];
 }
 
 export type TranslationView =
@@ -106,6 +148,8 @@ export function conceptView(
     title: conceptTitle(card),
     badge: card.sourced ? null : UNSOURCED_BADGE,
     rows,
+    sources: (card.sources ?? []).map(sourceLinkView),
+    further: (card.further ?? []).map(sourceLinkView),
   };
 }
 
