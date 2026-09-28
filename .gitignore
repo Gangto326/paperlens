@@ -26,3 +26,6 @@ session-router-log.md
 
 # 개인 환경의 라우터 훅 등록(절대 경로 포함)
 .codex/
+
+# 세션 사이 작업 인계 문서 (개인 작업용)
+HANDOFF.md
