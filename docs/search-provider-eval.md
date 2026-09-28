@@ -26,3 +26,40 @@ COMMIT_PLAN C4.2의 평가 기록이다. 실행 방법은 `src/main/research/sea
 차단을 피하려는 조작(식별 정보 바꾸기 등)은 하지 않는다. 제공자를 다시 정한다(PLAN 13절).
 
 확인하지 못한 것: 간격을 크게 늘렸을 때(예: 30초 이상)의 차단율, 차단이 풀리는 데 걸리는 시간.
+
+## 2026-09-28 Codex 내장 검색 실험
+
+사용자 제안: 앱이 검색 창구를 따로 두지 않고, 모델이 설명을 쓰면서 내장 검색으로 찾은 자료의 출처를 함께 돌려받는다.
+
+- 런타임: `@openai/codex` 0.157.1 app-server, 모델 gpt-6-astra, 앱 전용 CODEX_HOME(로그인 상태).
+- 과제: 개념 2개(Dense Passage Retrieval, BM25)의 개념 카드를 쓰고 읽은 자료만 `sources`에 적기. 구조화 출력.
+- 앱의 `config.toml`은 바꾸지 않았다. 실험용 프로세스에만 설정을 주었다.
+
+| 시도 | 설정을 준 방법 | 결과 |
+|---|---|---|
+| 1 | `thread/start`의 `config: {web_search: "live"}` | 검색 실패. 모델이 "웹 도구가 실행 오류로 막혔다"고 하고 출처를 비워 돌려줌 |
+| 2 | 위에 `features.code_mode_host: true` 추가 | 같음. 스레드별 설정으로는 이 기능이 켜지지 않음 |
+| 3 | 실행 인자 `-c features.code_mode_host=true -c web_search="live"` | 검색 동작 |
+
+시도 1과 2에서 경고 "Code Mode is unavailable because code-mode host is disabled"가 왔다.
+내장 검색은 `code_mode_host` 기능과 `codex-code-mode-host` 실행 파일(npm 패키지에 들어 있음)이 있어야 돈다.
+
+시도 3의 수치:
+
+| 항목 | 값 |
+|---|---:|
+| 걸린 시간 | 99초 |
+| `webSearch` 항목 | 6 (search 4, openPage 1, other 1) |
+| 검색어 | 11 |
+| 입력 토큰 | 252,033 (캐시 189,184) |
+| 출력 토큰 | 2,508 |
+| 돌려준 출처 | 6 (개념당 3) |
+| 검색 기록에 있는 출처 | 6 |
+| 열람 기록(`ref_id`에 view)이 있는 출처 | 6 |
+
+- `item/completed`의 `webSearch` 항목에 검색어(`action.queries`), 연 주소(`action.url`), 결과 목록(`results[].url`, `title`, `domain`, `snippet`, `ref_id`)이 온다. 앱이 출처를 이 기록과 대조할 수 있다.
+- 출처에는 한국어 글 2건(Elastic 블로그 한국어판, 한국어 DPR 저장소)이 들었다.
+- 영상: 모델이 한국어 유튜브 영상을 검색으로 찾았고 1건을 열려 했으나 열람이 "Internal Error"로 실패했다. 모델은 그 영상을 출처에 넣지 않았다.
+- 검색이 막힌 시도 1과 2에서 모델은 출처를 지어내지 않았다. 표본이 작아 일반화할 수 없다.
+
+확인하지 못한 것: 개념 20개 규모에서의 시간과 토큰, 검색 횟수를 설정으로 제한할 수 있는지, 영상 열람이 늘 실패하는지.
