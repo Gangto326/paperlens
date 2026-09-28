@@ -3,10 +3,13 @@ import { join } from 'node:path';
 import { AppServerClient, AppServerError, type ExitInfo } from './app-server-client';
 import { resolveCodexBinary, type CodexBinary } from './codex-binary';
 import {
+  appServerArgs,
   CODEX_TOP_LEVEL_CONFIG,
   DISABLED_FEATURES,
   ensureCodexHome,
+  expectedConfigOf,
   type CodexHome,
+  type CodexProfile,
 } from './codex-home';
 import type { InitializeParams } from './protocol/InitializeParams';
 import type { InitializeResponse } from './protocol/InitializeResponse';
@@ -38,6 +41,8 @@ export type SpawnFn = (
 export interface CodexRuntimeOptions {
   userDataPath: string;
   appVersion: string;
+  /** 기본은 검색 없는 `plain`. 조사 전용 프로세스는 `research`. */
+  profile?: CodexProfile;
   log?: (line: string) => void;
   /** 테스트 주입용 */
   spawn?: SpawnFn;
@@ -118,7 +123,8 @@ const featureMap = (config: Config): Record<string, unknown> => {
 };
 
 /** config/read 결과가 앱 규칙과 다른 점. 비어 있어야 시작한다. */
-export function verifyEffectiveConfig(config: Config): string[] {
+export function verifyEffectiveConfig(config: Config, profile: CodexProfile = 'plain'): string[] {
+  const expected = expectedConfigOf(profile);
   const mismatches: string[] = [];
   if (config.approval_policy !== CODEX_TOP_LEVEL_CONFIG.approval_policy) {
     mismatches.push(`approval_policy=${JSON.stringify(config.approval_policy)}`);
@@ -126,12 +132,13 @@ export function verifyEffectiveConfig(config: Config): string[] {
   if (config.sandbox_mode !== CODEX_TOP_LEVEL_CONFIG.sandbox_mode) {
     mismatches.push(`sandbox_mode=${JSON.stringify(config.sandbox_mode)}`);
   }
-  if (config.web_search !== CODEX_TOP_LEVEL_CONFIG.web_search) {
+  if (config.web_search !== expected.webSearch) {
     mismatches.push(`web_search=${JSON.stringify(config.web_search)}`);
   }
   const features = featureMap(config);
   for (const name of DISABLED_FEATURES) {
-    if (features[name] !== false)
+    const want = expected.enabledFeatures.includes(name);
+    if (features[name] !== want)
       mismatches.push(`features.${name}=${JSON.stringify(features[name])}`);
   }
   const mcp = config['mcp_servers'];
@@ -188,8 +195,10 @@ export class CodexRuntime {
   effectiveConfig: Config | null = null;
   private readonly log: (line: string) => void;
   private readonly spawnFn: SpawnFn;
+  readonly profile: CodexProfile;
 
   constructor(private readonly options: CodexRuntimeOptions) {
+    this.profile = options.profile ?? 'plain';
     this.log = options.log ?? (() => undefined);
     this.spawnFn =
       options.spawn ??
@@ -213,14 +222,11 @@ export class CodexRuntime {
     const home = await ensureCodexHome(join(this.options.userDataPath, 'codex-home'));
     if (home.configWritten) this.log(`config.toml 기록 ${home.configPath}`);
 
-    const child = this.spawnFn(
-      binary.path,
-      ['app-server', '--strict-config', '--listen', 'stdio://'],
-      {
-        env: buildChildEnv(this.options.parentEnv ?? process.env, home),
-        cwd: home.workspaceDir,
-      },
-    );
+    const profile = this.profile;
+    const child = this.spawnFn(binary.path, appServerArgs(profile), {
+      env: buildChildEnv(this.options.parentEnv ?? process.env, home),
+      cwd: home.workspaceDir,
+    });
     const client = new AppServerClient(child, {
       log: (line) => this.log(`client: ${line}`),
       ...(this.options.requestTimeoutMs !== undefined
@@ -237,7 +243,7 @@ export class CodexRuntime {
       } satisfies InitializeParams);
       client.notify('initialized');
       const config = await this.readConfig();
-      const mismatches = verifyEffectiveConfig(config);
+      const mismatches = verifyEffectiveConfig(config, profile);
       if (mismatches.length > 0) {
         throw new CodexRuntimeError(
           'config_mismatch',

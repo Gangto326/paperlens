@@ -60,6 +60,41 @@ export const DISABLED_FEATURES = [
 
 export type DisabledFeature = (typeof DISABLED_FEATURES)[number];
 
+/**
+ * 실행 방식(PLAN 3.3.1). `plain`은 번역과 도구 없는 패스용으로 검색이 없다.
+ * `research`는 조사 전용 프로세스다. 내장 검색을 쓰려면 `code_mode_host` 기능과 `web_search = "live"`를
+ * 프로세스 실행 인자로 켜야 한다. 스레드별 설정으로는 켜지지 않는다(0.157.1 실측, docs/search-provider-eval.md).
+ * config.toml은 두 방식이 함께 쓰므로 바꾸지 않고 실행 인자로 덮어쓴다.
+ */
+export type CodexProfile = 'plain' | 'research';
+
+export const RESEARCH_ENABLED_FEATURES = ['code_mode_host'] as const satisfies DisabledFeature[];
+export const RESEARCH_WEB_SEARCH = 'live';
+
+/** 방식별 기대 설정. 유효 설정 검증과 실행 인자가 같은 값을 본다. */
+export function expectedConfigOf(profile: CodexProfile): {
+  webSearch: string;
+  enabledFeatures: readonly DisabledFeature[];
+} {
+  return profile === 'research'
+    ? { webSearch: RESEARCH_WEB_SEARCH, enabledFeatures: RESEARCH_ENABLED_FEATURES }
+    : { webSearch: CODEX_TOP_LEVEL_CONFIG.web_search, enabledFeatures: [] };
+}
+
+/** `codex app-server`에 줄 인자. */
+export function appServerArgs(profile: CodexProfile): string[] {
+  const expected = expectedConfigOf(profile);
+  const overrides =
+    profile === 'research'
+      ? [
+          ...expected.enabledFeatures.flatMap((name) => ['-c', `features.${name}=true`]),
+          '-c',
+          `web_search="${expected.webSearch}"`,
+        ]
+      : [];
+  return ['app-server', ...overrides, '--strict-config', '--listen', 'stdio://'];
+}
+
 export function renderConfigToml(): string {
   const lines = [
     '# PaperLens가 생성하는 파일입니다. 앱을 시작할 때마다 덮어씁니다 (편집하지 마세요).',

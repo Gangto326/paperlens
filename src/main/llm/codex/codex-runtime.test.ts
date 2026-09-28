@@ -12,7 +12,7 @@ import {
   verifyEffectiveConfig,
 } from './codex-runtime';
 import { resolveCodexBinary, type CodexBinary } from './codex-binary';
-import { DISABLED_FEATURES, renderConfigToml, type CodexHome } from './codex-home';
+import { appServerArgs, DISABLED_FEATURES, renderConfigToml, type CodexHome } from './codex-home';
 import type { Config } from './protocol/v2/Config';
 
 const goodConfig = (): Config =>
@@ -51,6 +51,47 @@ describe('CodexRuntime 순수 부분', () => {
     const none = goodConfig();
     delete (none as Record<string, unknown>)['features'];
     expect(verifyEffectiveConfig(none).length).toBe(DISABLED_FEATURES.length);
+  });
+
+  it('조사용 방식은 내장 검색과 code_mode_host만 켜고 나머지는 번역용과 같다', () => {
+    expect(appServerArgs('plain')).toEqual([
+      'app-server',
+      '--strict-config',
+      '--listen',
+      'stdio://',
+    ]);
+    expect(appServerArgs('research')).toEqual([
+      'app-server',
+      '-c',
+      'features.code_mode_host=true',
+      '-c',
+      'web_search="live"',
+      '--strict-config',
+      '--listen',
+      'stdio://',
+    ]);
+    const research = goodConfig();
+    research.web_search = 'live';
+    (research as Record<string, unknown>)['features'] = {
+      ...(research['features'] as object),
+      code_mode_host: true,
+    };
+    expect(verifyEffectiveConfig(research, 'research')).toEqual([]);
+    // 같은 설정이 번역용으로는 통과하지 못한다. 반대도 같다.
+    expect(verifyEffectiveConfig(research, 'plain')).toEqual([
+      'web_search="live"',
+      'features.code_mode_host=true',
+    ]);
+    expect(verifyEffectiveConfig(goodConfig(), 'research')).toEqual([
+      'web_search="disabled"',
+      'features.code_mode_host=false',
+    ]);
+    // 조사용이라도 다른 기능이 켜져 있으면 시작하지 않는다.
+    (research as Record<string, unknown>)['features'] = {
+      ...(research['features'] as object),
+      shell_tool: true,
+    };
+    expect(verifyEffectiveConfig(research, 'research')).toEqual(['features.shell_tool=true']);
   });
 
   it('buildChildEnv: OPENAI_*·CODEX_*를 넘기지 않고 HOME·CODEX_HOME을 앱 디렉터리로 둔다', () => {
@@ -168,6 +209,30 @@ describe.skipIf(!binary)('CodexRuntime (실제 app-server)', () => {
       const exit = await rt.stop();
       expect(exit).toMatchObject({ code: 0, expected: true });
       expect(rt.status).toBe('stopped');
+    }
+  }, 40_000);
+
+  it('조사용 방식으로 시작하면 유효 설정에 내장 검색이 켜져 있고 config.toml은 그대로다', async () => {
+    const userData = await fs.mkdtemp(join(tmpdir(), 'paperlens-userdata-'));
+    const rt = new CodexRuntime({
+      userDataPath: userData,
+      appVersion: '0.0.0-test',
+      profile: 'research',
+    });
+    const info = await rt.start();
+    try {
+      expect(rt.status).toBe('running');
+      expect(await fs.readFile(info.home.configPath, 'utf8')).toBe(renderConfigToml());
+      const config = rt.effectiveConfig as Config;
+      expect(config.web_search).toBe('live');
+      expect((config['features'] as Record<string, unknown>)['code_mode_host']).toBe(true);
+      expect(verifyEffectiveConfig(config, 'research')).toEqual([]);
+      const inv = await rt.toolInventory((await rt.startThread()).threadId);
+      expect(inv.builtin.filter((b) => b.enabled).map((b) => b.name)).toEqual(['web_search']);
+      expect(inv.mcp).toEqual([]);
+    } finally {
+      const exit = await rt.stop();
+      expect(exit).toMatchObject({ code: 0, expected: true });
     }
   }, 40_000);
 
