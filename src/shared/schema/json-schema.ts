@@ -56,7 +56,7 @@ export const WORK_STATUSES = [
   'failed',
 ] as const;
 export const MAPPING_STATUSES = ['mapped', 'uncertain', 'unmapped'] as const;
-export const FETCH_STATUSES = ['read', 'partial', 'failed'] as const;
+export const FETCH_STATUSES = ['read', 'partial', 'failed', 'not_read'] as const;
 export const TEXT_QUALITIES = ['ok', 'sparse', 'garbled', 'needs_ocr'] as const;
 export const COORDINATE_SPACES = ['grobid_top_left_pdf_units', 'pdf_user_space'] as const;
 export const EXCLUDED_BLOCK_TYPES = [
@@ -277,10 +277,11 @@ const concept = obj(
     exampleKo: nullable(str),
     prerequisiteConceptIds: strArr,
     refs: arr(reference),
+    furtherRefs: arr(reference),
     researchStatus: enumOf(['researched', 'unresolved', 'not_needed']),
     contextVersion: int,
   },
-  ['nameKo', 'exampleKo'],
+  ['nameKo', 'exampleKo', 'furtherRefs'],
 );
 
 const coverage = obj({
@@ -329,15 +330,26 @@ const source = obj(
     sourceType: str,
     discoveredBy: enumOf(['search', 'bibliography']),
     discoveredAt: isoDate,
-    fetchedAt: isoDate,
-    httpStatus: int,
-    contentType: str,
-    contentHash: str,
+    fetchedAt: nullable(isoDate),
+    httpStatus: nullable(int),
+    contentType: nullable(str),
+    contentHash: nullable(str),
     fetchStatus: enumOf(FETCH_STATUSES),
-    truncated: bool,
+    truncated: nullable(bool),
     evidenceIds: arr(nonEmpty),
+    language: nullable(str),
+    jobId: nullable(str),
   },
-  ['publisher'],
+  [
+    'publisher',
+    'fetchedAt',
+    'httpStatus',
+    'contentType',
+    'contentHash',
+    'truncated',
+    'language',
+    'jobId',
+  ],
 );
 
 const evidence = obj(

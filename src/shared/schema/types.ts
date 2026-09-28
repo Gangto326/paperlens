@@ -38,7 +38,8 @@ export type WorkStatus =
 
 export type SentenceStatus = 'pending' | 'complete' | 'needs_review' | 'failed';
 export type MappingStatus = 'mapped' | 'uncertain' | 'unmapped';
-export type FetchStatus = 'read' | 'partial' | 'failed';
+/** `not_read`는 검색 결과에만 나오고 열람 기록이 없는 자료다(더 볼 자료). */
+export type FetchStatus = 'read' | 'partial' | 'failed' | 'not_read';
 export type SentenceKind = 'sentence' | 'fragment';
 export type TextQuality = 'ok' | 'sparse' | 'garbled' | 'needs_ocr';
 export type CoordinateSpace = 'grobid_top_left_pdf_units' | 'pdf_user_space';
@@ -272,7 +273,10 @@ export interface Concept {
   whyItMatters: string;
   exampleKo?: string | null;
   prerequisiteConceptIds: string[];
+  /** 읽은 자료. 열람 기록이 있는 출처만 든다. */
   refs: Reference[];
+  /** 더 볼 자료. 검색 결과에 나왔지만 앱이 열람을 확인하지 못한 출처다. */
+  furtherRefs?: Reference[];
   researchStatus: ResearchStatus;
   contextVersion: number;
 }
@@ -323,13 +327,20 @@ export interface Source {
   sourceType: string;
   discoveredBy: DiscoveredBy;
   discoveredAt: string;
-  fetchedAt: string;
-  httpStatus: number;
-  contentType: string;
-  contentHash: string;
+  /**
+   * 아래 다섯은 앱이 직접 내려받아 읽을 때만 안다. 런타임의 내장 검색으로 읽은 자료에는 없다(PLAN 3.3.1).
+   */
+  fetchedAt?: string | null;
+  httpStatus?: number | null;
+  contentType?: string | null;
+  contentHash?: string | null;
+  truncated?: boolean | null;
   fetchStatus: FetchStatus;
-  truncated: boolean;
   evidenceIds: string[];
+  /** 자료의 언어. 모델이 적은 값이다. 예: ko, en */
+  language?: string | null;
+  /** 이 자료를 찾은 조사 작업 */
+  jobId?: string | null;
 }
 
 export interface Evidence {
