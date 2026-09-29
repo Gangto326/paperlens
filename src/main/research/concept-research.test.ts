@@ -152,11 +152,52 @@ afterEach(async () => {
   await fs.rm(root, { recursive: true, force: true });
 });
 
-const run = (runner: LlmJobRunner, batchSize = 2): ReturnType<typeof runConceptResearch> =>
+// 요청 순서를 보는 테스트가 많아 기본은 하나씩 돌린다.
+const run = (
+  runner: LlmJobRunner,
+  batchSize = 2,
+  concurrency = 1,
+): ReturnType<typeof runConceptResearch> =>
   runConceptResearch(
     { store, runner, now: () => NOW },
-    { pdfSha256: SHA, generationId: GEN, batchSize },
+    { pdfSha256: SHA, generationId: GEN, batchSize, concurrency },
   );
+
+/** 요청을 붙잡아 두는 실행기. `release`에 묶음의 첫 카드 id를 주면 그 요청이 끝난다. */
+const gatedRunner = (
+  reply: Reply,
+): LlmJobRunner & {
+  requests: LlmJobRequest[];
+  waiting: () => string[];
+  release: (firstId: string) => void;
+  peak: () => number;
+} => {
+  const base = runnerOf(reply);
+  const gates = new Map<string, () => void>();
+  let open = 0;
+  let peak = 0;
+  return {
+    ...base,
+    run: async (request, onEvent) => {
+      open += 1;
+      peak = Math.max(peak, open);
+      await new Promise<void>((resolve) => gates.set(idsOf(request)[0] ?? '', resolve));
+      open -= 1;
+      return base.run(request, onEvent);
+    },
+    waiting: () => [...gates.keys()],
+    release: (firstId) => {
+      const gate = gates.get(firstId);
+      gates.delete(firstId);
+      gate?.();
+    },
+    peak: () => peak,
+  };
+};
+const until = async (condition: () => boolean): Promise<void> => {
+  for (let i = 0; i < 500 && !condition(); i += 1) await new Promise((r) => setTimeout(r, 2));
+  if (!condition()) throw new Error('기다린 조건이 되지 않았습니다');
+};
 
 describe('runConceptResearch', () => {
   it('카드를 묶어 조사하고, 검색 기록과 맞는 출처만 저장한다', async () => {
@@ -320,6 +361,73 @@ describe('runConceptResearch', () => {
         m.state = 'context_pending';
       });
     }
+  });
+
+  it('묶음을 동시에 돌려도 출처 번호와 결과는 하나씩 돌린 것과 같다', async () => {
+    const runner = gatedRunner((request) => answer(idsOf(request)));
+    const running = run(runner, 2, 3);
+    await until(() => runner.waiting().length === 3);
+    // 뒤의 묶음부터 끝낸다.
+    for (const id of ['c_5', 'c_3', 'c_1']) {
+      const before = runner.requests.length;
+      runner.release(id);
+      await until(() => runner.requests.length > before);
+    }
+    const result = await running;
+    if (result.status !== 'done') throw new Error(result.status);
+    expect(runner.peak()).toBe(3);
+    expect(runner.requests.map(idsOf)).toEqual([['c_5'], ['c_3', 'c_4'], ['c_1', 'c_2']]);
+    expect(result.batches.map((b) => b.conceptIds)).toEqual([
+      ['c_1', 'c_2'],
+      ['c_3', 'c_4'],
+      ['c_5'],
+    ]);
+    expect(result.batches.map((b) => b.jobId.slice(-2))).toEqual(['_1', '_2', '_3']);
+    expect(result).toMatchObject({ researched: 5, sources: 10 });
+    const research = await store.readJson(
+      'researchDocument',
+      store.generationPath(SHA, GEN, 'research.json'),
+    );
+    expect(research.sources.map((s) => [s.id, s.finalUrl])).toEqual(
+      [1, 2, 3, 4, 5].flatMap((n) => [
+        [`src_${2 * n - 1}`, `https://read.example/c_${n}`],
+        [`src_${2 * n}`, `https://video.example/c_${n}`],
+      ]),
+    );
+    expect(result.context.concepts.map((c) => c.refs[0]?.sourceId)).toEqual([
+      'src_1',
+      'src_3',
+      'src_5',
+      'src_7',
+      'src_9',
+    ]);
+    expect((await store.readManifest(SHA)).usage.inputTokens).toBe(3000);
+    expect(await store.verifyFiles(SHA)).toEqual([]);
+  });
+
+  it('동시에 돌던 묶음 하나가 한도에 걸리면 새 묶음을 보내지 않고 멈춘다', async () => {
+    const runner = gatedRunner((request) =>
+      idsOf(request)[0] === 'c_1' ? 'quota' : answer(idsOf(request)),
+    );
+    const running = run(runner, 2, 2);
+    await until(() => runner.waiting().length === 2);
+    runner.release('c_1');
+    await until(() => runner.requests.length === 1);
+    runner.release('c_3');
+    const result = await running;
+    expect(result).toMatchObject({ status: 'stopped', reason: 'quota', state: 'waiting_quota' });
+    if (result.status !== 'stopped') throw new Error(result.status);
+    expect(runner.requests.map(idsOf)).toEqual([
+      ['c_1', 'c_2'],
+      ['c_3', 'c_4'],
+    ]);
+    expect(result.batches.map((b) => [b.conceptIds[0], b.ok])).toEqual([
+      ['c_1', false],
+      ['c_3', true],
+    ]);
+    const manifest = await store.readManifest(SHA);
+    expect(manifest.files.map((f) => f.path)).toEqual([join('generations', GEN, 'context.json')]);
+    expect(manifest.usage.inputTokens).toBe(2000);
   });
 
   it('끝난 패스, 카드 없는 세대, 청크가 이미 있는 세대에서는 돌지 않는다', async () => {

@@ -133,7 +133,7 @@ export interface PaperSchedulerDeps {
    */
   research?: 'none' | 'builtin_web';
   maxFailedChunks?: number;
-  /** 동시에 도는 청크 수. 기본 `DEFAULT_CONCURRENCY`. 1이면 하나씩 돈다. */
+  /** 동시에 도는 청크 수와 조사 묶음 수. 기본 `DEFAULT_CONCURRENCY`. 1이면 하나씩 돈다. */
   concurrency?: number;
   now?: () => Date;
   log?: (line: string) => void;
@@ -366,7 +366,11 @@ export class PaperScheduler {
       });
       const research = await runConceptResearch(
         { store, runner, now: this.now, log: this.log },
-        { pdfSha256, generationId: ready.generationId },
+        {
+          pdfSha256,
+          generationId: ready.generationId,
+          ...(this.deps.concurrency !== undefined ? { concurrency: this.deps.concurrency } : {}),
+        },
       );
       if (research.status === 'done') {
         researchUsage = research.usage;

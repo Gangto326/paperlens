@@ -10,7 +10,7 @@ import {
 } from '@shared/schema';
 import Ajv from 'ajv';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
-import type { LlmJobEvent, LlmJobFailureKind, LlmJobRunner } from '../llm/job';
+import type { LlmJobEvent, LlmJobFailureKind, LlmJobResult, LlmJobRunner } from '../llm/job';
 import { EMPTY_RESEARCH_TRACE } from '../llm/research-trace';
 import { addUsage } from '../llm/usage';
 import { renderPrompt } from '../prompt/template';
@@ -24,7 +24,10 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
  *
  * - 개념 카드를 몇 개씩 묶어 조사 작업을 보낸다. 작업 하나가 실패해도 나머지는 계속한다.
  *   실패한 묶음의 카드는 1차 패스가 쓴 일반 설명으로 남는다.
- * - 로그인 필요, 한도 초과, 런타임 없음은 패스를 멈춘다. 아무것도 저장하지 않는다. 다음 실행에서 처음부터 다시 한다.
+ * - 묶음은 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 묶음은 서로의 결과를 입력으로 받지 않는다.
+ *   결과는 모두 끝난 뒤에 묶음 순서대로 장부에 넣는다. 그래서 출처 번호(src_N)는 끝나는 순서와 무관하다.
+ * - 로그인 필요, 한도 초과, 런타임 없음은 패스를 멈춘다. 새 묶음을 보내지 않고 돌던 묶음이 끝나기를 기다린다.
+ *   아무것도 저장하지 않는다. 다음 실행에서 처음부터 다시 한다.
  * - 출처는 그 작업의 검색 기록과 대조해 통과한 것만 저장한다(source-check.ts).
  * - 번역 중인 논문 자체는 출처로 저장하지 않는다(self-source.ts). 논문 정보를 읽지 못하면 거르지 않는다.
  * - 읽은 자료가 하나라도 붙은 카드는 researchStatus가 researched가 된다.
@@ -34,6 +37,8 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
 export const CONCEPT_RESEARCH_STAGE = 'concept_research';
 export const RESEARCH_TIMEOUT_MS = 10 * 60_000;
 export const RESEARCH_BATCH_SIZE = 3;
+/** 동시에 도는 조사 묶음 수. 번역 청크의 기본값과 같게 두었다. 조사 묶음으로 잰 값은 아니다. */
+export const RESEARCH_CONCURRENCY = 3;
 
 export interface ConceptResearchModelOutput {
   concepts: {
@@ -97,6 +102,8 @@ export interface ConceptResearchOptions {
   pdfSha256: string;
   generationId: string;
   batchSize?: number;
+  /** 동시에 도는 묶음 수. 기본 `RESEARCH_CONCURRENCY`. 1이면 하나씩 돈다. */
+  concurrency?: number;
   timeoutMs?: number;
   onEvent?: (event: LlmJobEvent) => void;
 }
@@ -230,46 +237,66 @@ export async function runConceptResearch(
   const isSelf = identity
     ? (source: { url: string; title: string }): boolean => isSelfSource(identity, source)
     : undefined;
+  const stamp = compact(now());
+  const batches = batchesOf(context.concepts, options.batchSize ?? RESEARCH_BATCH_SIZE);
+  const concurrency = Math.max(1, Math.floor(options.concurrency ?? RESEARCH_CONCURRENCY));
+
+  const results = new Map<number, { jobId: string; result: LlmJobResult }>();
+  const queue = [...batches.entries()];
+  let halted = false;
+  const worker = async (): Promise<void> => {
+    for (;;) {
+      if (halted) return;
+      const entry = queue.shift();
+      if (entry === undefined) return;
+      const [index, batch] = entry;
+      const jobId = `rs_${generationId}_${stamp}_${index + 1}`;
+      const rendered = renderPrompt(CONCEPT_RESEARCH_TEMPLATE, {
+        inputs: {
+          PAPER_CONTEXT: {
+            title: identity?.title ?? null,
+            summary: context.summary,
+            researchQuestion: context.researchQuestion,
+          },
+          CONCEPTS: batch.map((c) => ({
+            id: c.id,
+            name: c.name,
+            nameKo: c.nameKo ?? null,
+            definitionKo: c.definitionKo,
+            whyItMatters: c.whyItMatters,
+            exampleKo: c.exampleKo ?? '',
+          })),
+        },
+      });
+      log(`research ${jobId} 시작 concepts=${batch.map((c) => c.id).join(',')}`);
+      const result = await runner.run(
+        {
+          jobId,
+          prompt: rendered.prompt,
+          instructions: rendered.instructions,
+          outputSchema: CONCEPT_RESEARCH_OUTPUT_SCHEMA,
+          research: { kind: 'builtin_web' },
+          timeoutMs: options.timeoutMs ?? RESEARCH_TIMEOUT_MS,
+        },
+        options.onEvent,
+      );
+      results.set(index, { jobId, result });
+      if (!result.ok && STOPPING[result.kind]) halted = true;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, batches.length) }, worker));
+
   const registry = new SourceRegistry([], now);
   const updated = new Map<string, Concept>();
   const reports: ResearchBatchReport[] = [];
   let usage = ZERO_USAGE;
-  const stamp = compact(now());
+  let stopped: { kind: LlmJobFailureKind; message: string } | null = null;
 
-  for (const [index, batch] of batchesOf(
-    context.concepts,
-    options.batchSize ?? RESEARCH_BATCH_SIZE,
-  ).entries()) {
-    const jobId = `rs_${generationId}_${stamp}_${index + 1}`;
-    const rendered = renderPrompt(CONCEPT_RESEARCH_TEMPLATE, {
-      inputs: {
-        PAPER_CONTEXT: {
-          title: identity?.title ?? null,
-          summary: context.summary,
-          researchQuestion: context.researchQuestion,
-        },
-        CONCEPTS: batch.map((c) => ({
-          id: c.id,
-          name: c.name,
-          nameKo: c.nameKo ?? null,
-          definitionKo: c.definitionKo,
-          whyItMatters: c.whyItMatters,
-          exampleKo: c.exampleKo ?? '',
-        })),
-      },
-    });
-    log(`research ${jobId} 시작 concepts=${batch.map((c) => c.id).join(',')}`);
-    const result = await runner.run(
-      {
-        jobId,
-        prompt: rendered.prompt,
-        instructions: rendered.instructions,
-        outputSchema: CONCEPT_RESEARCH_OUTPUT_SCHEMA,
-        research: { kind: 'builtin_web' },
-        timeoutMs: options.timeoutMs ?? RESEARCH_TIMEOUT_MS,
-      },
-      options.onEvent,
-    );
+  for (const [index, batch] of batches.entries()) {
+    const done = results.get(index);
+    // 멈춘 뒤라 보내지 않은 묶음이다.
+    if (!done) continue;
+    const { jobId, result } = done;
     usage = addUsage(usage, result.usage);
     const report: ResearchBatchReport = {
       jobId,
@@ -288,29 +315,8 @@ export async function runConceptResearch(
     if (!result.ok) {
       report.failure = result.kind;
       log(`research ${jobId} 실패 kind=${result.kind} ${result.message}`);
-      const stopping = STOPPING[result.kind];
-      if (stopping) {
-        const state = await recordFailure(
-          deps,
-          pdfSha256,
-          `llm_${result.kind}`,
-          result.message,
-          isRetryableLlmFailure(result.kind),
-          usage,
-          (current) =>
-            stateAfterLlmFailure(
-              current === 'researching' ? 'context_pending' : current,
-              result.kind,
-            ),
-        );
-        return {
-          status: 'stopped',
-          reason: stopping,
-          message: result.message,
-          batches: reports,
-          usage,
-          state,
-        };
+      if (STOPPING[result.kind] && stopped === null) {
+        stopped = { kind: result.kind, message: result.message };
       }
       continue;
     }
@@ -353,6 +359,28 @@ export async function runConceptResearch(
     log(
       `research ${jobId} 완료 queries=${report.queries} searchItems=${report.searchItems} accepted=${report.accepted} rejected=${report.rejected.length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
     );
+  }
+
+  if (stopped !== null) {
+    const { kind, message } = stopped;
+    const state = await recordFailure(
+      deps,
+      pdfSha256,
+      `llm_${kind}`,
+      message,
+      isRetryableLlmFailure(kind),
+      usage,
+      (current) =>
+        stateAfterLlmFailure(current === 'researching' ? 'context_pending' : current, kind),
+    );
+    return {
+      status: 'stopped',
+      reason: STOPPING[kind] ?? 'unavailable',
+      message,
+      batches: reports,
+      usage,
+      state,
+    };
   }
 
   const next: ContextDocument = {
