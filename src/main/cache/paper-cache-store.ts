@@ -62,6 +62,14 @@ export class PaperCacheStore {
     return join(this.paperDir(pdfSha256), 'generations', generationId, 'diagnostics', name);
   }
 
+  /**
+   * 돌던 작업의 출력을 두는 자리(COMMIT_PLAN M3 P2). 검증 전의 글이라 완료 결과와 섞지 않는다.
+   * manifest.files에 기록하지 않는다. 읽고 쓰는 것은 resume/inflight-store.ts가 한다.
+   */
+  inflightDir(pdfSha256: string, generationId: string): string {
+    return join(this.paperDir(pdfSha256), 'generations', generationId, 'inflight');
+  }
+
   async exists(path: string): Promise<boolean> {
     try {
       await fs.access(path);
