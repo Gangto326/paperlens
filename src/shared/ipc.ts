@@ -33,7 +33,6 @@ export const IPC = {
   translateReadResults: 'translate:readResults',
   processStart: 'process:start',
   processStop: 'process:stop',
-  processPrioritize: 'process:prioritize',
   /** main → renderer 푸시(처리 단계·진행). */
   processEvent: 'process:event',
 } as const;
@@ -302,9 +301,4 @@ export interface TranslationSnapshot {
   results: Record<string, SentenceTranslation>;
   /** 개념 카드 id → 카드. 컨텍스트를 읽지 못했거나 카드가 없는 세대는 비어 있다. */
   concepts?: Record<string, ConceptCard>;
-}
-
-/** 미완료 문장을 골랐을 때 그 청크를 다음 순서로 올린 결과(C2.10). 처리 중이 아니면 빈 배열이다. */
-export interface ProcessPrioritize {
-  raisedChunkIds: string[];
 }

@@ -23,8 +23,7 @@ import { runChunk } from '../translate/chunk-run';
  * - 로그인·한도 문제가 나면 멈춘다. 상태는 `needs_login`·`waiting_quota`로 남고 다시 시작하면 이어서 한다.
  * - 멈춤 요청은 돌고 있는 요청을 취소하지 않는다. 그 청크가 끝난 뒤 멈추고 상태는 `paused`가 된다.
  * - 실패한 청크가 `maxFailedChunks`개가 되면 남은 청크를 보내지 않고 `failed`로 멈춘다.
- * - 사용자가 아직 번역되지 않은 문장을 고르면 그 청크를 다음 순서로 올린다(C2.10, PLAN 9절).
- *   돌고 있는 요청은 취소하지 않는다. 올린 청크가 끝나면 남은 청크를 원래 순서대로 이어 간다.
+ * - 청크의 순서는 바꾸지 않는다. 고른 문장의 청크를 먼저 돌리는 기능(C2.10)은 뺐다(2026-09-29 사용자 결정).
  * 청크별 입력·출력 토큰과 시간은 로그와 diagnostics/run-<시각>.json에 남긴다(PLAN 11.2).
  */
 export const START_STATES: readonly PaperState[] = [
@@ -142,11 +141,6 @@ const compact = (d: Date): string =>
 export class PaperScheduler {
   private running: string | null = null;
   private stopRequested = false;
-  /** 다음에 먼저 돌릴 청크. 앞이 먼저다. */
-  private readonly priority: string[] = [];
-  /** 지금 실행의 남은 청크(돌고 있는 것 제외)와 문장 → 청크 대응. 실행 중에만 값이 있다. */
-  private pending: PlannedChunk[] = [];
-  private chunkOfSentence = new Map<string, string>();
   private readonly listeners = new Set<(event: SchedulerEvent) => void>();
   private readonly log: (line: string) => void;
   private readonly now: () => Date;
@@ -170,26 +164,6 @@ export class PaperScheduler {
     if (this.running === null) return false;
     this.stopRequested = true;
     return true;
-  }
-
-  /**
-   * 문장이 든 청크 가운데 아직 시작하지 않은 것을 다음 순서로 올린다. 여러 청크면 읽기 순서를 지킨다.
-   * 돌고 있거나 이미 끝난 청크, 다른 논문의 문장은 무시한다. 올린 청크 ID를 돌려준다.
-   */
-  prioritizeSentences(pdfSha256: string, sentenceIds: readonly string[]): string[] {
-    if (this.running !== pdfSha256) return [];
-    const wanted = new Set<string>();
-    for (const id of sentenceIds) {
-      const chunkId = this.chunkOfSentence.get(id);
-      if (chunkId !== undefined) wanted.add(chunkId);
-    }
-    const raised = this.pending.filter((c) => wanted.has(c.id)).map((c) => c.id);
-    if (raised.length === 0) return [];
-    const rest = this.priority.filter((id) => !raised.includes(id));
-    this.priority.length = 0;
-    this.priority.push(...raised, ...rest);
-    this.log(`scheduler 우선 처리 ${raised.join(',')}`);
-    return raised;
   }
 
   private emit(event: SchedulerEvent): void {
@@ -274,9 +248,6 @@ export class PaperScheduler {
     } finally {
       this.running = null;
       this.stopRequested = false;
-      this.priority.length = 0;
-      this.pending = [];
-      this.chunkOfSentence = new Map();
     }
     const state = (await this.deps.store.readManifest(pdfSha256)).state;
     this.log(
@@ -445,11 +416,6 @@ export class PaperScheduler {
     const { generationId, context } = ready;
     await this.setState(pdfSha256, 'translating');
     const plan = planChunks(document, this.deps.chunker);
-    // plan 이벤트를 받자마자 우선 처리를 요청할 수 있으므로 이벤트보다 먼저 채운다.
-    this.pending = [...plan.chunks];
-    this.chunkOfSentence = new Map(
-      plan.chunks.flatMap((c) => c.targetSentenceIds.map((id) => [id, c.id] as const)),
-    );
     this.emit({
       type: 'plan',
       pdfSha256,
@@ -467,14 +433,8 @@ export class PaperScheduler {
     let firstTranslationMs: number | null = null;
     let stop: { reason: RunStopReason; message: string | null } | null = null;
 
-    const takeNext = (): PlannedChunk | undefined => {
-      while (this.priority.length > 0) {
-        const id = this.priority.shift();
-        const at = this.pending.findIndex((c) => c.id === id);
-        if (at >= 0) return this.pending.splice(at, 1)[0];
-      }
-      return this.pending.shift();
-    };
+    const pending = [...plan.chunks];
+    const takeNext = (): PlannedChunk | undefined => pending.shift();
 
     for (let chunk = takeNext(); chunk !== undefined; chunk = takeNext()) {
       if (this.stopRequested) {

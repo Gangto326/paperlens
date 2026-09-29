@@ -12,7 +12,6 @@ import {
   type ParserHealth,
   type PdfOpenDialogResult,
   type ProcessEvent,
-  type ProcessPrioritize,
   type ProcessStart,
   type ProcessStop,
   type ReadDocumentResult,
@@ -56,9 +55,6 @@ const api = {
   startProcessing: (pdfSha256: string): Promise<ProcessStart> =>
     ipcRenderer.invoke(IPC.processStart, pdfSha256),
   stopProcessing: (): Promise<ProcessStop> => ipcRenderer.invoke(IPC.processStop),
-  /** 고른 문장이 든 미완료 청크를 다음 순서로 올린다(C2.10). 돌고 있는 요청은 취소하지 않는다. */
-  prioritizeSentences: (pdfSha256: string, sentenceIds: string[]): Promise<ProcessPrioritize> =>
-    ipcRenderer.invoke(IPC.processPrioritize, pdfSha256, sentenceIds),
   onProcessEvent: (handler: (event: ProcessEvent) => void): (() => void) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: ProcessEvent): void =>
       handler(payload);
