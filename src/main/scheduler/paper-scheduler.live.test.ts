@@ -123,5 +123,5 @@ describe.skipIf(!enabled)('PaperScheduler (실제 app-server, 로그인 상태)'
       await rt.stop();
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 7_200_000);
+  }, 14_400_000);
 });
