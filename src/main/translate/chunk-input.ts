@@ -5,7 +5,8 @@ import type { IdAliases } from '../prompt/aliases';
 /**
  * 2차 패스 입력(PLAN 6.2). 청크마다 독립 작업이므로 공통 문맥을 매번 명시적으로 넣는다(PLAN 6.3).
  * 용어집은 이 청크의 대상·문맥 문장에 용어나 별칭이 나오는 항목만 넣는다.
- * 섹션 요약(sectionDigests)은 M3에서 생긴다. 그 전에는 섹션 제목만 넣는다.
+ * 섹션 요약(sectionDigests)은 긴 논문의 컨텍스트에만 있다(COMMIT_PLAN C3.1). 있으면 그 섹션의 요약을 넣는다.
+ * 한 번에 읽은 논문에는 없으므로 섹션 제목만 들어간다. 그 논문들의 입력은 앞서와 같다.
  */
 export interface ChunkPromptInputs {
   PAPER_CONTEXT: {
@@ -25,7 +26,7 @@ export interface ChunkPromptInputs {
   }[];
   /** 개념 카드 목록. 문장 해설이 같은 설명을 되풀이하지 않고 카드로 잇게 한다. */
   CONCEPTS: { id: string; name: string; nameKo: string | null; definitionKo: string }[];
-  SECTION_CONTEXT: { title: string; parent: string | null }[];
+  SECTION_CONTEXT: { title: string; parent: string | null; summary?: string }[];
   NEIGHBOR_CONTEXT: { before: { en: string }[]; after: { en: string }[] } | null;
   TARGET_SENTENCES: {
     id: string;
@@ -80,10 +81,18 @@ export function buildChunkInputs(
   const sections = (chunk.sectionIds.length > 0 ? chunk.sectionIds : [chunk.sectionId])
     .map((id) => sectionById.get(id))
     .filter((s) => s !== undefined)
-    .map((s) => ({
-      title: s.title,
-      parent: s.parentId ? (sectionById.get(s.parentId)?.title ?? null) : null,
-    }));
+    .map((s) => {
+      // 섹션이 두 부분에 걸쳐 읽혔으면 요약이 둘이다. 읽기 순서로 잇는다.
+      const summary = context.sectionDigests
+        .filter((d) => d.sectionId === s.id)
+        .map((d) => d.summary)
+        .join('\n\n');
+      return {
+        title: s.title,
+        parent: s.parentId ? (sectionById.get(s.parentId)?.title ?? null) : null,
+        ...(summary === '' ? {} : { summary }),
+      };
+    });
 
   return {
     PAPER_CONTEXT: {

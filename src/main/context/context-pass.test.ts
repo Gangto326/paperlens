@@ -311,10 +311,8 @@ describe('runContextPass', () => {
     expect(again).toMatchObject({ ok: true, state: 'context_pending' });
   });
 
-  it('시작할 수 없는 상태, 너무 긴 본문은 모델을 부르지 않는다', async () => {
+  it('시작할 수 없는 상태에서는 모델을 부르지 않는다', async () => {
     const runner = runnerOf(okWith(goodOutput));
-    const long = await runContextPass(deps(runner), { pdfSha256: TINY_SHA, maxInputTokens: 1 });
-    expect(long).toMatchObject({ ok: false, code: 'body_too_long', state: 'mapping' });
     await store.updateManifest(TINY_SHA, (m) => {
       m.state = 'translating';
     });

@@ -9,11 +9,10 @@ import type {
 import { stableStringify } from '../cache/hash';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { planChunks, type ChunkerOptions } from '../chunk/chunker';
-import { runContextPass } from '../context/context-pass';
+import { buildContextInput } from '../context/context-input';
+import { contextPromptVersionOf, runContextPass } from '../context/context-pass';
 import { runConceptResearch, type ResearchBatchReport } from '../research/concept-research';
 import type { LlmJobRunner } from '../llm/job';
-import { promptVersionOf } from '../prompt/template';
-import { CONTEXT_NO_TOOLS_TEMPLATE } from '../prompt/templates';
 import { runChunk } from '../translate/chunk-run';
 
 /**
@@ -135,7 +134,7 @@ export interface PaperSchedulerDeps {
    */
   research?: 'none' | 'builtin_web';
   maxFailedChunks?: number;
-  /** 동시에 도는 청크 수와 조사 묶음 수. 기본 `DEFAULT_CONCURRENCY`. 1이면 하나씩 돈다. */
+  /** 동시에 도는 청크, 조사 묶음, 긴 논문의 부분 작업 수. 기본 `DEFAULT_CONCURRENCY`. 1이면 하나씩 돈다. */
   concurrency?: number;
   now?: () => Date;
   log?: (line: string) => void;
@@ -196,17 +195,21 @@ export class PaperScheduler {
     this.emit({ type: 'state', pdfSha256, state: updated.state });
   }
 
-  /** 지금 추출본과 지금 프롬프트로 만든 컨텍스트가 저장돼 있으면 돌려준다. */
+  /**
+   * 지금 추출본과 지금 프롬프트로 만든 컨텍스트가 저장돼 있으면 돌려준다.
+   * `promptVersion`은 이 논문의 길이에 맞는 지침의 버전이다. 긴 논문은 통합·부분 지침의 버전이다.
+   */
   private async usableContext(
     pdfSha256: string,
     manifest: Manifest,
+    promptVersion: string,
   ): Promise<{ generationId: string; context: ContextDocument; sha256: string } | null> {
     const { store } = this.deps;
     const generationId = manifest.currentGenerationId;
     if (!generationId) return null;
     const info = manifest.generations.find((g) => g.generationId === generationId);
     if (!info || info.extractionRevision !== manifest.currentExtractionRevision) return null;
-    if (info.promptVersion !== promptVersionOf(CONTEXT_NO_TOOLS_TEMPLATE)) return null;
+    if (info.promptVersion !== promptVersion) return null;
     const path = store.generationPath(pdfSha256, generationId, 'context.json');
     const recorded = manifest.files.find(
       (f) => f.path === relative(store.paperDir(pdfSha256), path),
@@ -295,8 +298,9 @@ export class PaperScheduler {
       throw err;
     }
 
+    const promptVersion = contextPromptVersionOf(buildContextInput(document).estimatedTokens);
     let contextUsage: Usage | null = null;
-    let ready = await this.usableContext(pdfSha256, manifest);
+    let ready = await this.usableContext(pdfSha256, manifest, promptVersion);
     if (ready) {
       this.emit({
         type: 'context',
@@ -324,7 +328,10 @@ export class PaperScheduler {
           now: this.now,
           log: this.log,
         },
-        { pdfSha256 },
+        {
+          pdfSha256,
+          ...(this.deps.concurrency !== undefined ? { concurrency: this.deps.concurrency } : {}),
+        },
       );
       if (!pass.ok) {
         this.emit({
@@ -344,7 +351,7 @@ export class PaperScheduler {
       }
       contextUsage = pass.usage;
       const after = await store.readManifest(pdfSha256);
-      ready = await this.usableContext(pdfSha256, after);
+      ready = await this.usableContext(pdfSha256, after, promptVersion);
       if (!ready) return outcome('context_failed', '저장한 컨텍스트를 다시 읽을 수 없습니다');
       this.emit({
         type: 'context',
@@ -378,7 +385,7 @@ export class PaperScheduler {
         researchUsage = research.usage;
         researchBatches = research.batches;
         const after = await store.readManifest(pdfSha256);
-        ready = await this.usableContext(pdfSha256, after);
+        ready = await this.usableContext(pdfSha256, after, promptVersion);
         if (!ready) {
           return outcome('context_failed', '조사 뒤 저장한 컨텍스트를 다시 읽을 수 없습니다', {
             contextUsage,

@@ -162,3 +162,15 @@ export const CONTEXT_OUTPUT_SCHEMA = {
     },
   },
 } as const;
+
+/** 긴 논문의 통합 턴이 돌려주는 JSON(COMMIT_PLAN C3.1). coverage가 없다. 앱이 부분 작업의 장부로 채운다. */
+export type ContextMergeModelOutput = Omit<ContextModelOutput, 'coverage'>;
+
+export const CONTEXT_MERGE_OUTPUT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: CONTEXT_OUTPUT_SCHEMA.required.filter((name) => name !== 'coverage'),
+  properties: Object.fromEntries(
+    Object.entries(CONTEXT_OUTPUT_SCHEMA.properties).filter(([name]) => name !== 'coverage'),
+  ),
+};

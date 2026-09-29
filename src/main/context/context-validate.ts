@@ -1,6 +1,7 @@
 import type { Concept, Coverage, GlossaryEntry } from '@shared/schema';
 import type { ContextInput } from './context-input';
-import type { ContextModelOutput } from './context-output';
+import type { IdAliases } from '../prompt/aliases';
+import type { ContextModelCoverage, ContextModelOutput } from './context-output';
 
 /**
  * 1차 패스 출력의 의미 검증(COMMIT_PLAN C2.3). 스키마를 통과한 값에 대해 본다.
@@ -56,30 +57,31 @@ export function countAliases(text: string, input: ContextInput): number {
   return n;
 }
 
-export function validateContextOutput(
-  output: ContextModelOutput,
-  input: ContextInput,
-): ValidatedContext {
+/**
+ * coverage 장부 검사. `sections`의 모든 섹션과 문장이 covered인 범위에 들어 있어야 한다.
+ * 1차 패스 전체에도, 긴 논문의 부분 작업 하나에도 쓴다(COMMIT_PLAN C3.1). 부분 작업에는 그 부분의 섹션만 준다.
+ */
+export function validateCoverage(
+  entries: readonly ContextModelCoverage[],
+  sections: ContextInput['sections'],
+  aliases: IdAliases,
+): { problems: ContextProblem[]; coverage: Omit<Coverage, 'jobId'>[] } {
   const problems: ContextProblem[] = [];
-  const notes: string[] = [];
   const add = (code: ContextProblemCode, message: string): void => {
     problems.push({ code, message });
   };
-
-  if (output.summary.trim() === '') add('empty_summary', '요약이 비어 있습니다');
-
-  const sentencesOf = new Map(input.sections.map((s) => [s.sectionId, s.sentenceIds]));
+  const sentencesOf = new Map(sections.map((s) => [s.sectionId, s.sentenceIds]));
   const covered = new Map<string, Set<number>>();
   const coverage: Omit<Coverage, 'jobId'>[] = [];
-  for (const entry of output.coverage) {
-    const sectionId = input.aliases.sectionId(entry.sectionId);
+  for (const entry of entries) {
+    const sectionId = aliases.sectionId(entry.sectionId);
     const ids = sectionId === undefined ? undefined : sentencesOf.get(sectionId);
     if (sectionId === undefined || ids === undefined) {
       add('unknown_section', `coverage가 입력에 없는 섹션을 가리킵니다: ${entry.sectionId}`);
       continue;
     }
-    const start = input.aliases.sentenceId(entry.startSentenceId);
-    const end = input.aliases.sentenceId(entry.endSentenceId);
+    const start = aliases.sentenceId(entry.startSentenceId);
+    const end = aliases.sentenceId(entry.endSentenceId);
     if (start === undefined || end === undefined) {
       add(
         'unknown_sentence',
@@ -115,8 +117,8 @@ export function validateContextOutput(
     for (let i = from; i <= to; i += 1) set.add(i);
     covered.set(sectionId, set);
   }
-  for (const section of input.sections) {
-    const alias = input.aliases.sectionAlias(section.sectionId) ?? section.sectionId;
+  for (const section of sections) {
+    const alias = aliases.sectionAlias(section.sectionId) ?? section.sectionId;
     const set = covered.get(section.sectionId);
     if (!set) {
       add('section_not_covered', `coverage에 covered인 범위가 없는 섹션: ${alias}`);
@@ -130,6 +132,24 @@ export function validateContextOutput(
       );
     }
   }
+  return { problems, coverage };
+}
+
+export function validateContextOutput(
+  output: ContextModelOutput,
+  input: ContextInput,
+): ValidatedContext {
+  const problems: ContextProblem[] = [];
+  const notes: string[] = [];
+  const add = (code: ContextProblemCode, message: string): void => {
+    problems.push({ code, message });
+  };
+
+  if (output.summary.trim() === '') add('empty_summary', '요약이 비어 있습니다');
+
+  const ledger = validateCoverage(output.coverage, input.sections, input.aliases);
+  problems.push(...ledger.problems);
+  const coverage = ledger.coverage;
 
   const glossary: GlossaryEntry[] = [];
   const seen = new Set<string>();
