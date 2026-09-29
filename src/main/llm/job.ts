@@ -47,8 +47,11 @@ export type LlmJobStage = 'thinking' | 'commentary' | 'answer' | 'other';
 export type LlmJobEvent =
   | { type: 'started'; jobId: string; model: string | null }
   | { type: 'stage'; jobId: string; stage: LlmJobStage; state: 'started' | 'completed' }
-  /** 지금까지 받은 출력 글자 수(누적). 출력 글 자체는 최종 검증 전이라 내보내지 않는다. */
-  | { type: 'output'; jobId: string; chars: number }
+  /**
+   * 지금까지 받은 출력 글자 수(누적)와 이번에 받은 조각. `item`은 이 작업에서 몇 번째 메시지인지(1부터)다.
+   * 조각은 검증 전의 글이다. 끊겼을 때 이어 가려고 저장하는 데만 쓰고 화면에 보이지 않는다(COMMIT_PLAN M3 P2).
+   */
+  | { type: 'output'; jobId: string; chars: number; item: number; delta: string }
   | { type: 'usage'; jobId: string; usage: Usage }
   | { type: 'cancel_requested'; jobId: string }
   | { type: 'finished'; jobId: string; outcome: 'ok' | LlmJobFailureKind; elapsedMs: number };
@@ -72,6 +75,10 @@ export type LlmJobResult =
       errors: string[];
       /** 진단용 원래 출력. 받은 것이 없으면 null. */
       rawText: string | null;
+      /** 끝나지 못한 메시지의 글(받은 데까지). 검증 전의 글이다. 없거나 어댑터가 주지 않으면 null */
+      partialText?: string | null;
+      /** 조사 작업이 실패하기까지의 검색 기록 */
+      research?: ResearchTrace;
       model: string | null;
       usage: Usage;
     };

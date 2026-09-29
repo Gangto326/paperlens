@@ -230,7 +230,13 @@ export class CodexJobRunner implements LlmJobRunner {
           break;
         }
         case 'output':
-          emit({ type: 'output', jobId, chars: event.chars });
+          emit({
+            type: 'output',
+            jobId,
+            chars: event.chars,
+            item: event.item,
+            delta: event.delta,
+          });
           break;
         case 'usage':
           emit({ type: 'usage', jobId, usage: event.usage });
@@ -279,8 +285,10 @@ export class CodexJobRunner implements LlmJobRunner {
       message: turn.message,
       errors: turn.errors,
       rawText: turn.rawText,
+      partialText: turn.partialText,
       model,
       usage,
+      ...(turn.research ? { research: turn.research } : {}),
     };
   }
 }

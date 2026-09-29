@@ -88,7 +88,14 @@ describe('CodexJobRunner (가짜 App Server)', () => {
 
     const outputs = events.filter((e) => e.type === 'output');
     expect(outputs.length).toBe(Math.ceil(reply.length / 4));
-    expect(outputs.at(-1)).toEqual({ type: 'output', jobId: 'job-a', chars: reply.length });
+    expect(outputs.at(-1)).toEqual({
+      type: 'output',
+      jobId: 'job-a',
+      chars: reply.length,
+      item: 1,
+      delta: reply.slice(-(reply.length % 4 || 4)),
+    });
+    expect(outputs.map((e) => (e.type === 'output' ? e.delta : '')).join('')).toBe(reply);
     const shape = events
       .filter((e) => e.type !== 'output')
       .map((e) => (e.type === 'stage' ? `${e.type}:${e.stage}:${e.state}` : e.type));

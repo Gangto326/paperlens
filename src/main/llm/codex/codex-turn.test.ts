@@ -226,6 +226,67 @@ describe('runStructuredTurn (가짜 App Server)', () => {
     });
   });
 
+  it('출력 도중 실패한 턴은 받은 데까지의 글을 돌려주고, 진행 알림에 조각을 싣는다', async () => {
+    const { c, threadId } = await setup();
+    const cut = '{"answer":"hel';
+    const pieces: [number, string][] = [];
+    const result = await runStructuredTurn(
+      c,
+      { threadId, prompt: `FAKE:cut ${cut}`, outputSchema: SCHEMA, timeoutMs: 3_000 },
+      { onProgress: (e) => (e.type === 'output' ? pieces.push([e.item, e.delta]) : undefined) },
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      kind: 'quota',
+      // 끝난 메시지는 rawText에, 끝나지 못한 메시지는 partialText에 있다.
+      rawText: 'Working on it.',
+      partialText: cut,
+      research: null,
+    });
+    expect(pieces[0]).toEqual([1, 'Working on it.']);
+    expect(pieces.slice(1).every(([item]) => item === 2)).toBe(true);
+    expect(
+      pieces
+        .slice(1)
+        .map(([, delta]) => delta)
+        .join(''),
+    ).toBe(cut);
+  });
+
+  it('출력을 모두 받은 턴과 출력이 없던 턴의 partialText는 null', async () => {
+    expect(await run('FAKE:reply Sure! Here is the answer.')).toMatchObject({
+      ok: false,
+      kind: 'invalid_json',
+      partialText: null,
+    });
+    await client?.close({ graceMs: 500, termMs: 500 });
+    expect(await run('FAKE:limit')).toMatchObject({ ok: false, partialText: null });
+  });
+
+  it('조사 턴이 도중에 실패해도 그때까지의 검색 기록을 돌려준다', async () => {
+    const { c, threadId } = await setup();
+    const result = await runStructuredTurn(c, {
+      threadId,
+      prompt: 'FAKE:searchcut {"answer":"a"',
+      outputSchema: SCHEMA,
+      timeoutMs: 3_000,
+      research: true,
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      kind: 'quota',
+      partialText: '{"answer":"a"',
+      research: {
+        queries: ['bm25 설명'],
+        searchItems: 2,
+        results: [
+          { url: 'https://example.org/bm25', viewed: true },
+          { url: 'https://video.example/watch?v=1', viewed: false },
+        ],
+      },
+    });
+  });
+
   it('agent message 없이 끝나면 no_output', async () => {
     expect(await run('FAKE:silent')).toMatchObject({ ok: false, kind: 'no_output', rawText: null });
   });

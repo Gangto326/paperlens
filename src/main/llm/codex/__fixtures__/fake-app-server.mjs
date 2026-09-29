@@ -13,6 +13,8 @@
 //       4글자씩 15ms 간격 item/agentMessage/delta → item/completed → 사용량 → turn/completed. 도중에 turn/interrupt가 오면
 //       delta를 멈추고 item/completed·사용량 없이 turn/completed status:'interrupted'만 보낸다.
 //       `FAKE:deaf`는 turn/interrupt에 응답만 하고 턴을 끝내지 않는다(중단 확인 실패 경로).
+// 끊긴 출력(M3 P2): `FAKE:cut <글>`은 commentary 메시지 하나를 delta와 함께 끝낸 뒤, 최종 메시지를 delta로만 보내고
+//       item/completed 없이 usageLimitExceeded 실패로 끝낸다. `FAKE:searchcut <글>`은 그 앞에 웹 검색 항목 둘을 보낸다.
 // 인자 --default-reply=<글>: 지시어 없는 턴의 응답 글을 바꾼다.
 // 인자 --ignore-stdin-close: stdin이 닫혀도 종료하지 않는다 (SIGTERM 경로 확인용).
 import { createInterface } from 'node:readline';
@@ -172,59 +174,33 @@ const runTurn = (threadId, turnId, text) => {
         ),
       );
       return;
-    case 'search': {
-      // 내장 웹 검색 흉내(0.157.1 실측 모양): 검색 항목 하나와 열람 항목 하나.
-      const items = [
-        {
-          type: 'webSearch',
-          id: `${turnId}-w1`,
-          query: 'bm25',
-          action: { type: 'search', query: null, queries: ['bm25 설명'] },
-          results: [
-            {
-              type: 'text_result',
-              domain: 'example.org',
-              ref_id: 'turn0search0',
-              title: 'BM25',
-              url: 'https://example.org/bm25',
-              snippet: 's',
-            },
-            {
-              type: 'text_result',
-              domain: 'video.example',
-              ref_id: 'turn0search1',
-              title: 'BM25 강의',
-              url: 'https://video.example/watch?v=1',
-              snippet: 's',
-            },
-          ],
-        },
-        {
-          type: 'webSearch',
-          id: `${turnId}-w2`,
-          query: 'https://example.org/bm25',
-          action: { type: 'openPage', url: 'https://example.org/bm25' },
-          results: [
-            {
-              type: 'text_result',
-              domain: 'example.org',
-              ref_id: 'turn1view0',
-              title: 'BM25',
-              url: 'https://example.org/bm25',
-              snippet: 'Total lines: 10',
-            },
-          ],
-        },
-      ];
-      for (const item of items) {
-        itemStarted(threadId, turnId, item);
+    case 'cut':
+    case 'searchcut': {
+      if (kind === 'searchcut') emitSearch(threadId, turnId);
+      const note = 'Working on it.';
+      send({
+        method: 'item/agentMessage/delta',
+        params: { threadId, turnId, itemId: `${turnId}-c`, delta: note },
+      });
+      agentMessage(threadId, turnId, `${turnId}-c`, note, 'commentary');
+      const reply = directive[2];
+      for (let at = 0; at < reply.length; at += 4) {
         send({
-          method: 'item/completed',
-          params: { item, threadId, turnId, completedAtMs: Date.now() },
+          method: 'item/agentMessage/delta',
+          params: { threadId, turnId, itemId: `${turnId}-f`, delta: reply.slice(at, at + 4) },
         });
       }
-      break;
+      completeTurn(
+        threadId,
+        turnId,
+        'failed',
+        turnError("You've hit your usage limit.", 'usageLimitExceeded'),
+      );
+      return;
     }
+    case 'search':
+      emitSearch(threadId, turnId);
+      break;
     case 'shell': {
       const item = {
         type: 'commandExecution',
@@ -251,6 +227,58 @@ const runTurn = (threadId, turnId, text) => {
   tokenUsage(threadId, turnId);
   completeTurn(threadId, turnId, 'completed');
 };
+// 내장 웹 검색 흉내(0.157.1 실측 모양): 검색 항목 하나와 열람 항목 하나.
+function emitSearch(threadId, turnId) {
+  const items = [
+    {
+      type: 'webSearch',
+      id: `${turnId}-w1`,
+      query: 'bm25',
+      action: { type: 'search', query: null, queries: ['bm25 설명'] },
+      results: [
+        {
+          type: 'text_result',
+          domain: 'example.org',
+          ref_id: 'turn0search0',
+          title: 'BM25',
+          url: 'https://example.org/bm25',
+          snippet: 's',
+        },
+        {
+          type: 'text_result',
+          domain: 'video.example',
+          ref_id: 'turn0search1',
+          title: 'BM25 강의',
+          url: 'https://video.example/watch?v=1',
+          snippet: 's',
+        },
+      ],
+    },
+    {
+      type: 'webSearch',
+      id: `${turnId}-w2`,
+      query: 'https://example.org/bm25',
+      action: { type: 'openPage', url: 'https://example.org/bm25' },
+      results: [
+        {
+          type: 'text_result',
+          domain: 'example.org',
+          ref_id: 'turn1view0',
+          title: 'BM25',
+          url: 'https://example.org/bm25',
+          snippet: 'Total lines: 10',
+        },
+      ],
+    },
+  ];
+  for (const item of items) {
+    itemStarted(threadId, turnId, item);
+    send({
+      method: 'item/completed',
+      params: { item, threadId, turnId, completedAtMs: Date.now() },
+    });
+  }
+}
 const completeLogin = (loginId, success, error) => {
   send({
     method: 'account/login/completed',

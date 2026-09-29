@@ -32,6 +32,10 @@ import type { TurnStartResponse } from './protocol/v2/TurnStartResponse';
  * 0.157.1 실측(로그인 상태): 출력 도중 `turn/interrupt`를 보내면 응답 `{}`와 `turn/completed status:'interrupted'`가
  * 약 10ms 안에 온다. 중단된 턴에는 진행 중이던 항목의 `item/completed`도 `thread/tokenUsage/updated`도 오지 않는다.
  * 그래서 중단된 턴의 토큰 값은 null이다. 제한 시간을 넘긴 턴은 `turn/interrupt`만 보내고 기다리지 않는다.
+ * 받는 도중의 출력(COMMIT_PLAN M3 P2): `item/agentMessage/delta`의 글을 메시지별로 모은다. 진행 알림 `output`에
+ * 조각(`delta`)과 메시지 번호(`item`)를 실어 호출자가 턴이 도는 동안 저장할 수 있게 한다. 턴이 실패로 끝나면
+ * 끝나지 못한 메시지의 글을 `partialText`로, 조사 턴이면 그때까지의 검색 기록을 `research`로 돌려준다.
+ * 검증을 거치지 않은 글이다. 쓰는 쪽이 검증한다.
  * Codex 고유 타입은 이 파일 안에서만 쓴다.
  */
 export interface TurnTransport {
@@ -66,7 +70,10 @@ export interface StructuredTurnParams {
   timeoutMs?: number;
 }
 
-/** 턴 진행 알림. `chars`는 이 턴에서 받은 agent message delta의 누적 글자 수다. */
+/**
+ * 턴 진행 알림. `chars`는 이 턴에서 받은 agent message delta의 누적 글자 수다.
+ * `item`은 이 턴에서 몇 번째 agent message인지(1부터)이고 `delta`는 이번에 받은 조각이다.
+ */
 export type TurnProgress =
   | { type: 'started'; turnId: string }
   | {
@@ -75,7 +82,7 @@ export type TurnProgress =
       itemType: string;
       phase: string | null;
     }
-  | { type: 'output'; chars: number }
+  | { type: 'output'; chars: number; item: number; delta: string }
   | { type: 'usage'; usage: Usage }
   | { type: 'interrupt_requested'; turnId: string };
 
@@ -109,6 +116,10 @@ export type StructuredTurnResult =
       errors: string[];
       turnId: string | null;
       rawText: string | null;
+      /** 끝나지 못한 agent message의 글. delta로 받은 데까지다. 없으면 null */
+      partialText: string | null;
+      /** 조사 턴이 실패하기까지의 검색 기록. 조사 턴이 아니면 null */
+      research: ResearchTrace | null;
       usage: Usage;
       tokenUsageUpdates: number;
       /** kind가 cancelled일 때만. 서버가 `turn/completed status:'interrupted'`로 중단을 확인했는지. */
@@ -223,6 +234,8 @@ export async function runStructuredTurn(
   let total: TokenUsageBreakdown | null = null;
   let tokenUsageUpdates = 0;
   let outputChars = 0;
+  let messageCount = 0;
+  let partial: { itemId: string; text: string } | null = null;
   const completedItems: unknown[] = [];
   const forbidden: string[] = [];
 
@@ -237,6 +250,8 @@ export async function runStructuredTurn(
     errors,
     turnId,
     rawText: lastAgentText,
+    partialText: partial === null || partial.text === '' ? null : partial.text,
+    research: params.research === true ? researchTraceOf(completedItems) : null,
     usage: toUsage(total, Date.now() - t0, turnId === null ? 0 : 1),
     tokenUsageUpdates,
   });
@@ -285,12 +300,20 @@ export async function runStructuredTurn(
       const p = raw as AgentMessageDeltaNotification;
       if (!mine(p)) return;
       outputChars += p.delta.length;
-      emit({ type: 'output', chars: outputChars });
+      if (partial?.itemId !== p.itemId) {
+        messageCount += 1;
+        partial = { itemId: p.itemId, text: '' };
+      }
+      partial.text += p.delta;
+      emit({ type: 'output', chars: outputChars, item: messageCount, delta: p.delta });
     }),
     transport.onNotification('item/completed', (raw) => {
       const p = raw as ItemCompletedNotification;
       if (!mine(p)) return;
-      if (p.item.type === 'agentMessage') lastAgentText = p.item.text;
+      if (p.item.type === 'agentMessage') {
+        lastAgentText = p.item.text;
+        if (partial?.itemId === p.item.id) partial = null;
+      }
       completedItems.push(p.item);
       const allowed = p.item.type === 'webSearch' ? params.research === true : true;
       if (!allowed || FORBIDDEN_ITEM_TYPES.has(p.item.type)) forbidden.push(p.item.type);
