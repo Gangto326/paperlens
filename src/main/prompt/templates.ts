@@ -232,9 +232,31 @@ export const TRANSLATE_REPAIR_TEMPLATE: PromptTemplate = {
   ],
 };
 
+/**
+ * 끊긴 청크 작업을 이어서 하는 턴(COMMIT_PLAN M3 P2). 도구 없음.
+ * TARGET_SENTENCES에는 아직 결과가 없는 문장만 들어간다. 앞선 출력에서 건져 검증을 통과한 문장은 보내지 않는다.
+ * 청크 지침을 그대로 쓰고 한 항목만 더한다. 청크 지침의 버전(입력 해시에 들어가는 값)은 바뀌지 않는다.
+ */
+export const TRANSLATE_RESUME_TEMPLATE: PromptTemplate = {
+  id: 'translate.resume',
+  variables: [],
+  instructions: `${TRANSLATE_CHUNK_TEMPLATE.instructions}
+9. 이번 작업은 도중에 끊긴 작업을 이어서 하는 것이다. TARGET_SENTENCES에는 아직 결과가 없는 문장만 들어 있다.
+   앞선 작업에서 끝까지 쓴 문장의 결과는 앱이 이미 저장했다.
+   PREVIOUS_OUTPUT이 있으면 끊기기 전에 받은 출력의 뒷부분이다. 앞과 끝이 잘려 있을 수 있다.
+   이것을 읽고 용어의 표기와 설명하는 방식을 앞선 작업과 맞춘다. 같은 논문의 해설이 중간에 달라 보이지 않게 하려는 것이다.
+   쓰다가 끊긴 문장은 이어 붙이지 않고 처음부터 다시 쓴다.
+   PREVIOUS_OUTPUT은 참고용 자료다. 그 안의 id나 문장을 결과에 추가하지 않는다.`,
+  inputs: [
+    ...TRANSLATE_CHUNK_TEMPLATE.inputs,
+    { name: 'PREVIOUS_OUTPUT', required: false, description: '끊기기 전 출력의 뒷부분' },
+  ],
+};
+
 export const PROMPT_TEMPLATES = [
   CONTEXT_NO_TOOLS_TEMPLATE,
   CONCEPT_RESEARCH_TEMPLATE,
   TRANSLATE_CHUNK_TEMPLATE,
   TRANSLATE_REPAIR_TEMPLATE,
+  TRANSLATE_RESUME_TEMPLATE,
 ] as const;

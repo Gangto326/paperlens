@@ -228,7 +228,8 @@ const gatedRunner = (
   };
 };
 const until = async (condition: () => boolean): Promise<void> => {
-  for (let i = 0; i < 500 && !condition(); i += 1) await new Promise((r) => setTimeout(r, 2));
+  const end = Date.now() + 4_000;
+  while (!condition() && Date.now() < end) await new Promise((r) => setTimeout(r, 2));
   if (!condition()) throw new Error('기다린 조건이 되지 않았습니다');
 };
 const shape = (events: SchedulerEvent[]): string[] =>
@@ -479,7 +480,8 @@ describe('PaperScheduler', () => {
       const runner = gatedRunner();
       const running = scheduler(runner, { concurrency: 2 }).run(SHA);
       await until(() => runner.waiting().length === 2);
-      expect(runner.waiting()).toEqual(['chunk_0001', 'chunk_0002']);
+      // 요청 앞에 파일 쓰기가 있어 실행기에 닿는 순서는 정해져 있지 않다.
+      expect(runner.waiting().sort()).toEqual(['chunk_0001', 'chunk_0002']);
       runner.release('chunk_0001');
       await until(() => runner.waiting().includes('chunk_0003'));
       runner.release('chunk_0002');

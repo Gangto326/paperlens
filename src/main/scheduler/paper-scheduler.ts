@@ -51,6 +51,8 @@ export interface ChunkMetric {
   estimatedTokens: number;
   outcome: 'complete' | 'reused' | 'failed';
   requests: number;
+  /** 앞선 실행에서 남은 것으로 채워 다시 요청하지 않은 문장 수(COMMIT_PLAN M3 P2) */
+  recovered: number;
   inputTokens: number | null;
   outputTokens: number | null;
   reasoningTokens: number | null;
@@ -498,6 +500,7 @@ export class PaperScheduler {
           estimatedTokens: chunk.estimatedTokens,
           outcome: run.ok ? (run.reused ? 'reused' : 'complete') : 'failed',
           requests: run.attempts.length,
+          recovered: run.recovered,
           inputTokens: run.usage?.inputTokens ?? null,
           outputTokens: run.usage?.outputTokens ?? null,
           reasoningTokens: run.usage?.reasoningTokens ?? null,
@@ -506,7 +509,7 @@ export class PaperScheduler {
         };
         metrics.push(metric);
         this.log(
-          `scheduler chunk ${chunk.id} ${metric.outcome} sentences=${metric.sentences} requests=${metric.requests} in=${String(metric.inputTokens)} out=${String(metric.outputTokens)} elapsed=${metric.elapsedMs}ms`,
+          `scheduler chunk ${chunk.id} ${metric.outcome} sentences=${metric.sentences} recovered=${metric.recovered} requests=${metric.requests} in=${String(metric.inputTokens)} out=${String(metric.outputTokens)} elapsed=${metric.elapsedMs}ms`,
         );
         if (run.ok) {
           completed += 1;

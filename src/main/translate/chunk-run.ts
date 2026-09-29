@@ -19,11 +19,21 @@ import type { LlmJobEvent, LlmJobFailureKind, LlmJobRunner } from '../llm/job';
 import { addUsage } from '../llm/usage';
 import { buildAliases, type IdAliases } from '../prompt/aliases';
 import { promptVersionOf, renderPrompt } from '../prompt/template';
-import { TRANSLATE_CHUNK_TEMPLATE, TRANSLATE_REPAIR_TEMPLATE } from '../prompt/templates';
+import {
+  TRANSLATE_CHUNK_TEMPLATE,
+  TRANSLATE_REPAIR_TEMPLATE,
+  TRANSLATE_RESUME_TEMPLATE,
+} from '../prompt/templates';
+import { InflightStore } from '../resume/inflight-store';
+import { salvageArrayItems } from '../resume/salvage';
 import { isRetryableLlmFailure, stateAfterLlmFailure } from '../state/paper-state';
 import { hasExplanation } from '@shared/schema';
 import { buildChunkInputs } from './chunk-input';
-import { CHUNK_RESULTS_SCHEMA, type ChunkModelOutput } from './chunk-output';
+import {
+  CHUNK_RESULTS_SCHEMA,
+  type ChunkModelOutput,
+  type ChunkModelSentence,
+} from './chunk-output';
 import { summarizeIssues, validateChunkOutput, type ChunkIssue } from './chunk-validate';
 
 /**
@@ -35,6 +45,17 @@ import { summarizeIssues, validateChunkOutput, type ChunkIssue } from './chunk-v
  * - 로그인·한도·런타임 문제는 다시 요청해도 같으므로 거기서 멈춘다.
  * 완료로 저장하는 조건은 모든 대상 문장이 검증을 통과한 것이다. 실패한 청크에도 통과한 문장의 결과는 남긴다.
  * 실패한 요청의 원래 출력은 generations/<gid>/diagnostics/ 아래에 남긴다.
+ *
+ * 돌던 작업의 보존과 이어 하기(COMMIT_PLAN M3 P2):
+ * - 요청이 도는 동안 받은 출력을 generations/<gid>/inflight/에 둔다(resume/inflight-store.ts).
+ *   한도 초과, 로그인 만료, 제한 시간, 앱 종료, 강제 종료에서 남는다.
+ * - 다시 실행하면 먼저 남은 것을 건진다. 입력 해시가 같은 것만 쓴다.
+ *   저장된 미완료 청크의 결과는 저장할 때 검증을 통과한 문장이고 manifest의 해시로 확인한다.
+ *   inflight의 출력은 검증 전의 글이다. 끝까지 쓰인 문장만 골라 검증기에 넣고 통과한 문장만 받는다.
+ * - 건진 문장은 다시 요청하지 않는다. 요청을 보내기 전에 청크 파일에 저장한다(상태는 pending).
+ * - 남은 문장은 이어 하기 턴으로 요청한다. 끊기기 전 출력의 뒷부분을 함께 준다.
+ *   모두 건졌으면 요청 없이 완료로 저장한다.
+ * - 청크가 완료되면 그 청크의 inflight 기록을 지운다.
  */
 export const CHUNK_TIMEOUT_MS = 15 * 60_000;
 export const TRANSLATE_STAGE = 'translate';
@@ -68,7 +89,7 @@ export interface ChunkRunOptions {
 }
 
 export type ChunkRunFailureCode = 'llm_failed' | 'output_shape' | 'validation_failed';
-export type ChunkAttemptKind = 'initial' | 'repair' | 'split';
+export type ChunkAttemptKind = 'initial' | 'resume' | 'repair' | 'split';
 
 export interface ChunkAttempt {
   jobId: string;
@@ -94,6 +115,8 @@ export type ChunkRunResult =
       attempts: ChunkAttempt[];
       usage: Usage | null;
       state: PaperState;
+      /** 앞선 실행에서 남은 것으로 채운 문장 수. 이 문장들은 요청하지 않았다. */
+      recovered: number;
     }
   | {
       ok: false;
@@ -109,6 +132,7 @@ export type ChunkRunResult =
       attempts: ChunkAttempt[];
       usage: Usage | null;
       state: PaperState;
+      recovered: number;
     };
 
 const compact = (d: Date): string =>
@@ -117,6 +141,9 @@ const compact = (d: Date): string =>
     .replace(/[-:]/g, '')
     .replace(/\.\d+Z$/, 'Z');
 const outputValidator = new Ajv({ allErrors: true, strict: false }).compile(CHUNK_RESULTS_SCHEMA);
+const sentenceValidator = new Ajv({ allErrors: true, strict: false }).compile<ChunkModelSentence>(
+  CHUNK_RESULTS_SCHEMA.properties.results.items,
+);
 
 /** 다시 요청해도 달라지지 않는 실패. 여기서 멈춘다. */
 const STOP_KINDS: readonly LlmJobFailureKind[] = [
@@ -185,6 +212,7 @@ export async function runChunk(
   const chunkPath = store.generationPath(pdfSha256, generationId, `chunks/${chunk.id}.json`);
 
   // 완료 청크는 다시 요청하지 않는다(PLAN 8.3). 입력이 달라졌으면 저장된 결과는 지금 입력의 결과가 아니다.
+  let unfinished: ChunkDocument | null = null;
   if (await store.exists(chunkPath)) {
     const manifest = await store.readManifest(pdfSha256);
     const recorded = manifest.files.find(
@@ -203,8 +231,11 @@ export async function runChunk(
           attempts: [],
           usage: null,
           state: manifest.state,
+          recovered: 0,
         };
       }
+      // 해시가 manifest와 맞는 미완료 청크만 쓴다. 기록이 없는 파일은 믿지 않는다.
+      if (recorded && saved.inputHash === inputHash) unfinished = saved;
     } catch (err) {
       log(`chunk ${chunk.id} 저장된 파일을 쓸 수 없어 다시 실행: ${String(err)}`);
     }
@@ -218,7 +249,9 @@ export async function runChunk(
   const accepted = new Map<string, SentenceResult>();
   const warnings: ChunkIssue[] = [];
   let usage: Usage = { logicalJobs: 0, turnCount: 0, elapsedMs: 0 };
-  let lastJobId: string | null = null;
+  let lastJobId: string | null = unfinished?.jobId ?? null;
+  const inflight = new InflightStore(store, pdfSha256, generationId, { now, log });
+  const conceptIds = new Set(context.concepts.map((c) => c.id));
 
   const need = (id: string): Sentence => {
     const sentence = sentences.get(id);
@@ -226,12 +259,62 @@ export async function runChunk(
     return sentence;
   };
 
+  // 앞선 실행에서 남은 것을 건진다.
+  const targetSet = new Set(chunk.targetSentenceIds);
+  for (const r of unfinished?.results ?? []) {
+    if (targetSet.has(r.id)) accepted.set(r.id, r);
+  }
+  const fromDocument = accepted.size;
+  let previousOutput: string | null = null;
+  let attemptBase = Math.max(options.previousAttempts ?? 0, unfinished?.attempts ?? 0);
+  const stale: string[] = [];
+  for (const entry of await inflight.list('translate', chunk.id)) {
+    if (entry.meta.inputHash !== inputHash) {
+      stale.push(entry.meta.jobId);
+      continue;
+    }
+    attemptBase = Math.max(attemptBase, entry.meta.attempt);
+    if (entry.text.trim() === '') continue;
+    previousOutput = entry.text;
+    const written = salvageArrayItems(entry.text, 'results').filter((item) =>
+      sentenceValidator(item),
+    );
+    const open = new Set(
+      entry.meta.targetIds.filter((id) => targetSet.has(id) && !accepted.has(id)),
+    );
+    const candidates = written.filter((item) => {
+      const id = aliases.sentenceId(item.id);
+      return id !== undefined && open.has(id);
+    });
+    if (candidates.length === 0) continue;
+    const present = new Set(candidates.map((item) => aliases.sentenceId(item.id)));
+    const checked = validateChunkOutput(
+      { kind: 'results', results: candidates },
+      {
+        targets: chunk.targetSentenceIds.filter((id) => present.has(id)).map(need),
+        neighbors: entry.meta.neighborIds.filter((id) => sentences.has(id)).map(need),
+        toId: (alias) => aliases.sentenceId(alias),
+        conceptIds,
+      },
+    );
+    const broken = new Set(
+      checked.issues.filter((i) => i.severity === 'fatal').map((i) => i.sentenceId),
+    );
+    const good = checked.results.filter((r) => !broken.has(r.id));
+    for (const r of good) accepted.set(r.id, r);
+    log(
+      `chunk ${chunk.id} 남은 출력 ${entry.meta.jobId}에서 문장 ${good.length}개를 건짐 (끝까지 쓰인 문장 ${written.length}개, 검증에 걸린 문장 ${candidates.length - good.length}개)`,
+    );
+  }
+  if (stale.length > 0) await inflight.remove(stale);
+  const recovered = accepted.size;
+
   const request = async (
     kind: ChunkAttemptKind,
     targetIds: string[],
     repair?: { issues: ChunkIssue[]; previous: string | null },
   ): Promise<RequestOutcome> => {
-    const number = (options.previousAttempts ?? 0) + attempts.length + 1;
+    const number = attemptBase + attempts.length + 1;
     const jobId = `tr_${generationId}_${chunk.id}_${number}`;
     lastJobId = jobId;
     const neighborIds =
@@ -242,23 +325,42 @@ export async function runChunk(
       neighborSentenceIds: neighborIds,
     };
     const inputs = buildChunkInputs(document, context, piece, aliases);
-    const rendered = repair
-      ? renderPrompt(TRANSLATE_REPAIR_TEMPLATE, {
-          inputs: {
-            ...inputs,
-            PROBLEMS: repair.issues
-              .filter((i) => i.severity === 'fatal')
-              .map((i) => ({
-                id: i.sentenceId === null ? null : (aliases.sentenceAlias(i.sentenceId) ?? null),
-                code: i.code,
-                detail: i.detail,
-              })),
-            PREVIOUS_OUTPUT:
-              repair.previous === null ? null : repair.previous.slice(0, PREVIOUS_OUTPUT_LIMIT),
-          },
-        })
-      : renderPrompt(TRANSLATE_CHUNK_TEMPLATE, { inputs: { ...inputs } });
+    const rendered =
+      kind === 'resume'
+        ? renderPrompt(TRANSLATE_RESUME_TEMPLATE, {
+            inputs: {
+              ...inputs,
+              PREVIOUS_OUTPUT:
+                previousOutput === null ? null : previousOutput.slice(-PREVIOUS_OUTPUT_LIMIT),
+            },
+          })
+        : repair
+          ? renderPrompt(TRANSLATE_REPAIR_TEMPLATE, {
+              inputs: {
+                ...inputs,
+                PROBLEMS: repair.issues
+                  .filter((i) => i.severity === 'fatal')
+                  .map((i) => ({
+                    id:
+                      i.sentenceId === null ? null : (aliases.sentenceAlias(i.sentenceId) ?? null),
+                    code: i.code,
+                    detail: i.detail,
+                  })),
+                PREVIOUS_OUTPUT:
+                  repair.previous === null ? null : repair.previous.slice(0, PREVIOUS_OUTPUT_LIMIT),
+              },
+            })
+          : renderPrompt(TRANSLATE_CHUNK_TEMPLATE, { inputs: { ...inputs } });
     log(`chunk ${chunk.id} 요청 ${number} kind=${kind} targets=${targetIds.length}`);
+    const recorder = await inflight.begin({
+      jobId,
+      stage: 'translate',
+      unitId: chunk.id,
+      attempt: number,
+      inputHash,
+      targetIds,
+      neighborIds,
+    });
     const result = await runner.run(
       {
         jobId,
@@ -268,8 +370,12 @@ export async function runChunk(
         research: { kind: 'none' },
         timeoutMs: options.timeoutMs ?? CHUNK_TIMEOUT_MS,
       },
-      options.onEvent,
+      (event) => {
+        recorder?.onEvent(event);
+        options.onEvent?.(event);
+      },
     );
+    await recorder?.finish(result);
     usage = addUsage(usage, result.usage);
 
     const finish = async (
@@ -338,7 +444,7 @@ export async function runChunk(
       targets: targetIds.map(need),
       neighbors: neighborIds.map(need),
       toId: (alias) => aliases.sentenceId(alias),
-      conceptIds: new Set(context.concepts.map((c) => c.id)),
+      conceptIds,
     });
     const broken = new Set(
       checked.issues.filter((i) => i.severity === 'fatal').map((i) => i.sentenceId),
@@ -365,56 +471,77 @@ export async function runChunk(
   };
   const remaining = (): string[] => chunk.targetSentenceIds.filter((id) => !accepted.has(id));
 
-  let last = await request('initial', chunk.targetSentenceIds);
-  take(last);
-  for (let n = 0; n < maxRepairs && last.next === 'repair' && remaining().length > 0; n += 1) {
-    last = await request('repair', remaining(), {
-      issues: last.attempt.issues,
-      previous: last.rawText,
-    });
-    take(last);
+  const documentOf = (status: ChunkDocument['status'], at: Date | null): ChunkDocument => {
+    const results = chunk.targetSentenceIds
+      .map((id) => accepted.get(id))
+      .filter((r): r is SentenceResult => r !== undefined);
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      id: chunk.id,
+      sectionId: chunk.sectionId,
+      sectionIds: chunk.sectionIds,
+      targetSentenceIds: chunk.targetSentenceIds,
+      neighborSentenceIds: chunk.neighborSentenceIds,
+      inputHash,
+      contextVersion: context.version,
+      status,
+      attempts: attemptBase + attempts.length,
+      results,
+      resultHash: status === 'complete' ? sha256Hex(stableStringify(results)) : null,
+      startedAt: startedAt.toISOString(),
+      completedAt: status === 'complete' && at ? at.toISOString() : null,
+      nextRetryAt: null,
+      jobId: lastJobId,
+      threadId: null,
+      turnId: null,
+      lastError: null,
+    };
+  };
+
+  // inflight에서 건진 문장은 요청을 보내기 전에 저장한다. 이어 하던 요청이 또 끊겨도 남는다.
+  if (recovered > fromDocument && remaining().length > 0) {
+    const sha = await store.writeJson('chunkDocument', chunkPath, documentOf('pending', null));
+    await store.updateManifest(
+      pdfSha256,
+      (m) => store.recordFile(m, pdfSha256, chunkPath, sha),
+      now(),
+    );
   }
-  if (last.next !== 'stop' && remaining().length > 0 && allowSplit) {
-    const rest = remaining();
-    const half = Math.ceil(rest.length / 2);
-    const pieces = rest.length >= 2 ? [rest.slice(0, half), rest.slice(half)] : [rest];
-    for (const piece of pieces) {
-      last = await request('split', piece);
+
+  let last: RequestOutcome | null = null;
+  if (remaining().length > 0) {
+    last =
+      recovered > 0 || previousOutput !== null
+        ? await request('resume', remaining())
+        : await request('initial', chunk.targetSentenceIds);
+    take(last);
+    for (let n = 0; n < maxRepairs && last.next === 'repair' && remaining().length > 0; n += 1) {
+      last = await request('repair', remaining(), {
+        issues: last.attempt.issues,
+        previous: last.rawText,
+      });
       take(last);
-      if (last.next === 'stop') break;
+    }
+    if (last.next !== 'stop' && remaining().length > 0 && allowSplit) {
+      const rest = remaining();
+      const half = Math.ceil(rest.length / 2);
+      const pieces = rest.length >= 2 ? [rest.slice(0, half), rest.slice(half)] : [rest];
+      for (const piece of pieces) {
+        last = await request('split', piece);
+        take(last);
+        if (last.next === 'stop') break;
+      }
     }
   }
 
   const left = remaining();
-  const results = chunk.targetSentenceIds
-    .map((id) => accepted.get(id))
-    .filter((r): r is SentenceResult => r !== undefined);
   const finishedAt = now();
-  const base: ChunkDocument = {
-    schemaVersion: SCHEMA_VERSION,
-    id: chunk.id,
-    sectionId: chunk.sectionId,
-    sectionIds: chunk.sectionIds,
-    targetSentenceIds: chunk.targetSentenceIds,
-    neighborSentenceIds: chunk.neighborSentenceIds,
-    inputHash,
-    contextVersion: context.version,
-    status: 'pending',
-    attempts: (options.previousAttempts ?? 0) + attempts.length,
-    results,
-    resultHash: null,
-    startedAt: startedAt.toISOString(),
-    completedAt: null,
-    nextRetryAt: null,
-    jobId: lastJobId,
-    threadId: null,
-    turnId: null,
-    lastError: null,
-  };
+  const base = documentOf('pending', null);
+  const results = base.results;
 
   const save = async (doc: ChunkDocument, failure: Failure | null): Promise<PaperState> => {
     const sha = await store.writeJson('chunkDocument', chunkPath, doc);
-    const llmKind = failure ? last.attempt.llmKind : null;
+    const llmKind = failure ? (last?.attempt.llmKind ?? null) : null;
     const updated = await store.updateManifest(
       pdfSha256,
       (m) => {
@@ -428,16 +555,13 @@ export async function runChunk(
     return updated.state;
   };
 
-  if (left.length === 0) {
-    const doc: ChunkDocument = {
-      ...base,
-      status: 'complete',
-      resultHash: sha256Hex(stableStringify(results)),
-      completedAt: finishedAt.toISOString(),
-    };
+  if (left.length === 0 || last === null) {
+    const doc = documentOf('complete', finishedAt);
     const state = await save(doc, null);
+    const kept = (await inflight.list('translate', chunk.id)).map((e) => e.meta.jobId);
+    await inflight.remove(kept);
     log(
-      `chunk ${chunk.id} 완료 results=${results.length} requests=${attempts.map((a) => a.kind).join('+')} warnings=${warnings.length} explained=${results.filter((r) => hasExplanation(r)).length} in=${String(usage.inputTokens)} out=${String(usage.outputTokens)} elapsed=${usage.elapsedMs}ms`,
+      `chunk ${chunk.id} 완료 results=${results.length} recovered=${recovered} requests=${attempts.map((a) => a.kind).join('+')} warnings=${warnings.length} explained=${results.filter((r) => hasExplanation(r)).length} in=${String(usage.inputTokens)} out=${String(usage.outputTokens)} elapsed=${usage.elapsedMs}ms`,
     );
     return {
       ok: true,
@@ -446,8 +570,9 @@ export async function runChunk(
       chunk: doc,
       issues: warnings,
       attempts,
-      usage,
+      usage: attempts.length === 0 ? null : usage,
       state,
+      recovered,
     };
   }
 
@@ -474,7 +599,7 @@ export async function runChunk(
   const doc: ChunkDocument = { ...base, status: 'failed', lastError: failure };
   const state = await save(doc, failure);
   log(
-    `chunk ${chunk.id} 실패 code=${failureCode} requests=${attempts.map((a) => a.kind).join('+')} left=${left.length} state=${state}`,
+    `chunk ${chunk.id} 실패 code=${failureCode} recovered=${recovered} requests=${attempts.map((a) => a.kind).join('+')} left=${left.length} state=${state}`,
   );
   return {
     ok: false,
@@ -488,5 +613,6 @@ export async function runChunk(
     attempts,
     usage,
     state,
+    recovered,
   };
 }

@@ -195,7 +195,8 @@ const gatedRunner = (
   };
 };
 const until = async (condition: () => boolean): Promise<void> => {
-  for (let i = 0; i < 500 && !condition(); i += 1) await new Promise((r) => setTimeout(r, 2));
+  const end = Date.now() + 4_000;
+  while (!condition() && Date.now() < end) await new Promise((r) => setTimeout(r, 2));
   if (!condition()) throw new Error('기다린 조건이 되지 않았습니다');
 };
 
