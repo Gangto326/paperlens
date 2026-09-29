@@ -16,6 +16,7 @@ import { addUsage } from '../llm/usage';
 import { renderPrompt } from '../prompt/template';
 import { CONCEPT_RESEARCH_TEMPLATE } from '../prompt/templates';
 import { isRetryableLlmFailure, stateAfterLlmFailure } from '../state/paper-state';
+import { isSelfSource, paperIdentityOf, type PaperIdentity } from './self-source';
 import { SourceRegistry, type ClaimedSource, type RejectedSource } from './source-check';
 
 /**
@@ -25,6 +26,7 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
  *   실패한 묶음의 카드는 1차 패스가 쓴 일반 설명으로 남는다.
  * - 로그인 필요, 한도 초과, 런타임 없음은 패스를 멈춘다. 아무것도 저장하지 않는다. 다음 실행에서 처음부터 다시 한다.
  * - 출처는 그 작업의 검색 기록과 대조해 통과한 것만 저장한다(source-check.ts).
+ * - 번역 중인 논문 자체는 출처로 저장하지 않는다(self-source.ts). 논문 정보를 읽지 못하면 거르지 않는다.
  * - 읽은 자료가 하나라도 붙은 카드는 researchStatus가 researched가 된다.
  * - 끝나면 research.json과 고친 context.json을 저장한다. research.json이 manifest에 있으면 끝난 패스다.
  * - context.json이 바뀌면 그 세대의 청크 입력 해시가 달라진다. 그래서 청크가 이미 있는 세대에서는 돌지 않는다.
@@ -224,6 +226,10 @@ export async function runConceptResearch(
     now(),
   );
 
+  const identity = await readPaperIdentity(store, pdfSha256, manifest.currentExtractionRevision);
+  const isSelf = identity
+    ? (source: { url: string; title: string }): boolean => isSelfSource(identity, source)
+    : undefined;
   const registry = new SourceRegistry([], now);
   const updated = new Map<string, Concept>();
   const reports: ResearchBatchReport[] = [];
@@ -237,7 +243,11 @@ export async function runConceptResearch(
     const jobId = `rs_${generationId}_${stamp}_${index + 1}`;
     const rendered = renderPrompt(CONCEPT_RESEARCH_TEMPLATE, {
       inputs: {
-        PAPER_CONTEXT: { summary: context.summary, researchQuestion: context.researchQuestion },
+        PAPER_CONTEXT: {
+          title: identity?.title ?? null,
+          summary: context.summary,
+          researchQuestion: context.researchQuestion,
+        },
         CONCEPTS: batch.map((c) => ({
           id: c.id,
           name: c.name,
@@ -321,7 +331,10 @@ export async function runConceptResearch(
       const original = byId.get(card.id.trim());
       // 묶음에 없는 id와 두 번 돌려준 id는 버린다.
       if (!original || updated.has(original.id)) continue;
-      const checked = registry.check(card.sources, trace, { jobId });
+      const checked = registry.check(card.sources, trace, {
+        jobId,
+        ...(isSelf ? { isSelf } : {}),
+      });
       report.accepted += checked.refs.length + checked.furtherRefs.length;
       report.rejected.push(...checked.rejected);
       const pick = (next: string, previous: string): string =>
@@ -387,6 +400,24 @@ export async function runConceptResearch(
     usage,
     state: after.state,
   };
+}
+
+async function readPaperIdentity(
+  store: PaperCacheStore,
+  pdfSha256: string,
+  revision: string | null | undefined,
+): Promise<PaperIdentity | null> {
+  if (!revision) return null;
+  try {
+    const document = await store.readJson(
+      'extractionDocument',
+      store.extractionPath(pdfSha256, revision, 'document.json'),
+    );
+    return paperIdentityOf(document.paper);
+  } catch (err) {
+    if (!(err instanceof CacheReadError)) throw err;
+    return null;
+  }
 }
 
 async function recordFailure(

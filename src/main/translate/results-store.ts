@@ -3,6 +3,7 @@ import type { ConceptCard, ConceptSourceLink, TranslationSnapshot } from '@share
 import type { ExtractionDocument, Reference, Source } from '@shared/schema';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { planChunks, type ChunkerOptions } from '../chunk/chunker';
+import { isSelfSource, paperIdentityOf } from '../research/self-source';
 
 /**
  * 화면 표시용 번역 결과 읽기(COMMIT_PLAN C2.9). 캐시 파일만 읽는다. LLM을 부르지 않는다.
@@ -11,6 +12,7 @@ import { planChunks, type ChunkerOptions } from '../chunk/chunker';
  * - 청크 계획은 document.json에서 다시 계산한다. 아직 파일이 없는 청크는 pending이다.
  * - 개념 카드는 같은 세대의 context.json에서 읽는다. 읽지 못하면 카드 없이 번역만 돌려준다.
  * - 카드의 자료 링크는 같은 세대의 research.json에서 찾는다. 거기 없는 출처와 http(s)가 아닌 주소는 보이지 않는다.
+ * - 번역 중인 논문 자체를 가리키는 출처는 보이지 않는다. 거르기 전에 만든 세대에도 들어 있다(Q7).
  */
 const linksOf = (
   refs: readonly Reference[] | undefined,
@@ -65,12 +67,16 @@ export async function readTranslations(
   const concepts: Record<string, ConceptCard> = {};
   if (generationId !== null) {
     const sources = new Map<string, Source>();
+    const identity = paperIdentityOf(document.paper);
     const researchPath = store.generationPath(pdfSha256, generationId, 'research.json');
     const researchSha = hashOf(researchPath);
     if (researchSha !== undefined) {
       try {
         const research = await store.readJson('researchDocument', researchPath, researchSha);
-        for (const source of research.sources) sources.set(source.id, source);
+        for (const source of research.sources) {
+          if (isSelfSource(identity, { url: source.finalUrl, title: source.title })) continue;
+          sources.set(source.id, source);
+        }
       } catch (err) {
         if (!(err instanceof CacheReadError)) throw err;
       }

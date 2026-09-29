@@ -244,6 +244,63 @@ describe('readTranslations', () => {
     });
   });
 
+  it('번역 중인 논문 자체를 가리키는 출처는 보여주지 않는다', async () => {
+    const documentPath = store.extractionPath(SHA, REV, 'document.json');
+    const document = makeDocument();
+    document.paper.title = 'A Long Enough Paper Title For Tests';
+    document.paper.fileName = '2005.11401.pdf';
+    const documentSha = await store.writeJson('extractionDocument', documentPath, document);
+    const source = (id: string, url: string, title: string) => ({
+      id,
+      discoveredUrl: url,
+      finalUrl: url,
+      title,
+      publisher: null,
+      sourceType: 'paper',
+      discoveredBy: 'search' as const,
+      discoveredAt: '2026-09-28T00:00:00.000Z',
+      fetchStatus: 'read' as const,
+      evidenceIds: [],
+    });
+    const researchPath = store.generationPath(SHA, GEN, 'research.json');
+    const researchSha = await store.writeJson('researchDocument', researchPath, {
+      schemaVersion: 1,
+      sources: [
+        source('src_1', 'https://arxiv.org/pdf/2005.11401', '다른 제목'),
+        source('src_2', 'https://mirror.example/p.pdf', 'A Long Enough Paper Title for Tests'),
+      ],
+      evidence: [],
+    });
+    const ref = (sourceId: string) => ({ sourceId, evidenceIds: [], supports: '뜻' });
+    const contextPath = store.generationPath(SHA, GEN, 'context.json');
+    const contextSha = await store.writeJson('contextDocument', contextPath, {
+      ...sampleContext,
+      concepts: [
+        {
+          id: 'c_1',
+          name: 'BM25',
+          nameKo: null,
+          definitionKo: '뜻',
+          whyItMatters: '',
+          exampleKo: null,
+          prerequisiteConceptIds: [],
+          refs: [ref('src_1'), ref('src_2')],
+          researchStatus: 'researched',
+          contextVersion: 1,
+        },
+      ],
+    });
+    await store.updateManifest(SHA, (m) => {
+      store.recordFile(m, SHA, documentPath, documentSha);
+      store.recordFile(m, SHA, researchPath, researchSha);
+      store.recordFile(m, SHA, contextPath, contextSha);
+      m.currentGenerationId = GEN;
+    });
+    const snapshot = await readTranslations(store, SHA, CHUNKER);
+    // 논문 말고 읽은 자료가 없으면 출처 미확인으로 보인다.
+    expect(snapshot.concepts?.['c_1']).toMatchObject({ sourced: false, sources: [], further: [] });
+  });
+
   it('manifest에 없는 파일, 해시가 다른 파일, 대상이 다른 청크는 쓰지 않는다', async () => {
     await saveChunk(0, 'complete', {}, false);
     const tampered = await saveChunk(1, 'complete');

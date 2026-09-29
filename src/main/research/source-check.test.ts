@@ -72,6 +72,32 @@ describe('SourceRegistry.check', () => {
     ]);
   });
 
+  it('번역 중인 논문 자체는 검색 기록에 있어도 저장하지 않는다', () => {
+    const registry = new SourceRegistry([], () => NOW);
+    const trace: ResearchTrace = {
+      ...TRACE,
+      results: [
+        ...TRACE.results,
+        {
+          url: 'https://arxiv.org/abs/2005.11401',
+          title: '논문 제목',
+          domain: 'arxiv.org',
+          viewed: true,
+        },
+      ],
+    };
+    const checked = registry.check(
+      [claim('https://arxiv.org/abs/2005.11401'), claim('https://example.org/bm25')],
+      trace,
+      { jobId: 'j', isSelf: (source) => source.title === '논문 제목' },
+    );
+    expect(checked.refs.map((r) => r.sourceId)).toEqual(['src_1']);
+    expect(checked.rejected).toEqual([
+      { url: 'https://arxiv.org/abs/2005.11401', reason: 'self_paper' },
+    ]);
+    expect(registry.sources().map((s) => s.finalUrl)).toEqual(['https://example.org/bm25']);
+  });
+
   it('검색 기록이 비어 있으면 모든 출처를 거절한다', () => {
     const registry = new SourceRegistry([], () => NOW);
     const empty: ResearchTrace = {

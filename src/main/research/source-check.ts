@@ -6,6 +6,7 @@ import { normalizeUrl, standingOf, type ResearchTrace } from '../llm/research-tr
  * - 열람 기록이 있는 주소는 "읽은 자료"(fetchStatus read)다.
  * - 검색 결과에만 나온 주소는 "더 볼 자료"(fetchStatus not_read)다. 앱은 내용을 확인하지 못했다.
  * - 기록에 없는 주소는 저장하지 않고 거절 목록에 남긴다. 모델이 기억으로 쓴 주소일 수 있다.
+ * - 번역 중인 논문 자체는 저장하지 않는다(self-source.ts). 거절 목록에 self_paper로 남긴다.
  * 제목은 기록의 것을 쓴다. 기록에 제목이 없을 때만 모델이 적은 제목을 쓴다.
  */
 export interface ClaimedSource {
@@ -18,7 +19,7 @@ export interface ClaimedSource {
 
 export interface RejectedSource {
   url: string;
-  reason: 'not_in_trace' | 'invalid_url';
+  reason: 'not_in_trace' | 'invalid_url' | 'self_paper';
 }
 
 export interface CheckedSources {
@@ -50,7 +51,7 @@ export class SourceRegistry {
   check(
     claimed: readonly ClaimedSource[],
     trace: ResearchTrace,
-    origin: { jobId: string },
+    origin: { jobId: string; isSelf?: (source: { url: string; title: string }) => boolean },
   ): CheckedSources {
     const out: CheckedSources = { refs: [], furtherRefs: [], rejected: [] };
     const seen = new Set<string>();
@@ -68,6 +69,14 @@ export class SourceRegistry {
         continue;
       }
       const entry = trace.results.find((r) => normalizeUrl(r.url) === key);
+      const isSelf = origin.isSelf;
+      if (
+        isSelf &&
+        [claim.title, entry?.title ?? ''].some((title) => isSelf({ url: claim.url, title }))
+      ) {
+        out.rejected.push({ url: claim.url, reason: 'self_paper' });
+        continue;
+      }
       let source = this.byKey.get(key);
       if (!source) {
         source = {

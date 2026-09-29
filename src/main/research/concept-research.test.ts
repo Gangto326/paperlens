@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Concept, Usage } from '@shared/schema';
-import { sampleChunk, sampleContext } from '@shared/schema/fixtures';
+import { sampleChunk, sampleContext, sampleExtraction } from '@shared/schema/fixtures';
 import { PaperCacheStore } from '../cache/paper-cache-store';
 import type { LlmJobFailureKind, LlmJobRequest, LlmJobResult, LlmJobRunner } from '../llm/job';
 import type { ResearchTrace } from '../llm/research-trace';
@@ -238,6 +238,49 @@ describe('runConceptResearch', () => {
       ['concept_research', 'batch_timeout'],
       ['concept_research', 'batch_output_shape'],
     ]);
+  });
+
+  it('번역 중인 논문 자체는 출처로 저장하지 않고, 논문 제목을 조사 입력에 넣는다', async () => {
+    const revision = 'rev_1';
+    const self = 'https://arxiv.org/abs/2005.11401';
+    const documentPath = store.extractionPath(SHA, revision, 'document.json');
+    const documentSha = await store.writeJson('extractionDocument', documentPath, {
+      ...sampleExtraction,
+      paper: { ...sampleExtraction.paper, title: '논문 제목', fileName: '2005.11401.pdf' },
+    });
+    await store.updateManifest(SHA, (m) => {
+      store.recordFile(m, SHA, documentPath, documentSha);
+      m.currentExtractionRevision = revision;
+    });
+    const base = runnerOf((request) => ({
+      concepts: answer(idsOf(request)).concepts.map((c) => ({
+        ...c,
+        sources: [source(self, 'paper'), source(`https://read.example/${c.id}`)],
+      })),
+    }));
+    const runner: LlmJobRunner = {
+      ...base,
+      run: async (request, onEvent) => {
+        const result = await base.run(request, onEvent);
+        if (!result.ok || !result.research) return result;
+        const entry = { url: self, title: '다른 제목', domain: 'arxiv.org', viewed: true };
+        return {
+          ...result,
+          research: { ...result.research, results: [...result.research.results, entry] },
+        };
+      },
+    };
+    const result = await run(runner, 5);
+    if (result.status !== 'done') throw new Error(result.status);
+    expect(result).toMatchObject({ researched: 5, sources: 5 });
+    expect(result.batches[0]?.rejected).toEqual(
+      [1, 2, 3, 4, 5].map(() => ({ url: self, reason: 'self_paper' })),
+    );
+    expect(result.context.concepts.map((c) => c.refs.length)).toEqual([1, 1, 1, 1, 1]);
+    const input = JSON.parse((base.requests[0]?.prompt ?? '').slice(INPUT_PREAMBLE.length + 1)) as {
+      PAPER_CONTEXT: { title: string | null };
+    };
+    expect(input.PAPER_CONTEXT.title).toBe('논문 제목');
   });
 
   it('검색 기록이 없는 결과의 출처는 모두 버리고 카드는 출처 미확인으로 남는다', async () => {
