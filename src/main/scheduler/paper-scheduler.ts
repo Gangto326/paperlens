@@ -8,7 +8,7 @@ import type {
 } from '@shared/schema';
 import { stableStringify } from '../cache/hash';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
-import { planChunks, type ChunkerOptions, type PlannedChunk } from '../chunk/chunker';
+import { planChunks, type ChunkerOptions } from '../chunk/chunker';
 import { runContextPass } from '../context/context-pass';
 import { runConceptResearch, type ResearchBatchReport } from '../research/concept-research';
 import type { LlmJobRunner } from '../llm/job';
@@ -17,12 +17,15 @@ import { CONTEXT_NO_TOOLS_TEMPLATE } from '../prompt/templates';
 import { runChunk } from '../translate/chunk-run';
 
 /**
- * 논문 단위 작업 스케줄러(COMMIT_PLAN C2.8, PLAN 9절). 앱 전체에서 한 번에 논문 하나, 요청 하나만 돈다.
- * 순서: 컨텍스트(없으면 1차 패스) → `translating` → 청크를 앞에서부터 하나씩 → `complete` 또는 `complete_with_gaps`.
+ * 논문 단위 작업 스케줄러(COMMIT_PLAN C2.8, PLAN 9절). 앱 전체에서 한 번에 논문 하나만 돈다.
+ * 순서: 컨텍스트(없으면 1차 패스) → `translating` → 청크를 앞에서부터 → `complete` 또는 `complete_with_gaps`.
+ * - 청크는 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 청크는 서로의 결과를 입력으로 받지 않는다.
+ *   앞의 청크부터 꺼내지만 끝나는 순서는 정해져 있지 않다. `metrics`는 청크 순서로 돌려준다.
  * - 쓸 수 있는 컨텍스트가 있으면 다시 만들지 않는다. 완료 청크는 다시 요청하지 않는다(runChunk가 inputHash로 판단).
- * - 로그인·한도 문제가 나면 멈춘다. 상태는 `needs_login`·`waiting_quota`로 남고 다시 시작하면 이어서 한다.
- * - 멈춤 요청은 돌고 있는 요청을 취소하지 않는다. 그 청크가 끝난 뒤 멈추고 상태는 `paused`가 된다.
+ * - 로그인·한도 문제가 나면 새 청크를 꺼내지 않는다. 상태는 `needs_login`·`waiting_quota`로 남고 다시 시작하면 이어서 한다.
+ * - 멈춤 요청은 돌고 있는 요청을 취소하지 않는다. 돌던 청크들이 끝난 뒤 멈추고 상태는 `paused`가 된다.
  * - 실패한 청크가 `maxFailedChunks`개가 되면 남은 청크를 보내지 않고 `failed`로 멈춘다.
+ *   멈춘 이유가 여럿이면 로그인·한도가 앞선다. 다시 시작할 수 있는 상태로 남기기 위해서다.
  * - 청크의 순서는 바꾸지 않는다. 고른 문장의 청크를 먼저 돌리는 기능(C2.10)은 뺐다(2026-09-29 사용자 결정).
  * 청크별 입력·출력 토큰과 시간은 로그와 diagnostics/run-<시각>.json에 남긴다(PLAN 11.2).
  */
@@ -38,6 +41,8 @@ export const START_STATES: readonly PaperState[] = [
 ];
 
 export const DEFAULT_MAX_FAILED_CHUNKS = 3;
+/** 동시에 도는 청크 수. 실험에서 3개가 속도 제한 없이 통했다(docs/quality-backlog.md Q10). 4개 이상은 재지 않았다. */
+export const DEFAULT_CONCURRENCY = 3;
 
 export interface ChunkMetric {
   chunkId: string;
@@ -128,6 +133,8 @@ export interface PaperSchedulerDeps {
    */
   research?: 'none' | 'builtin_web';
   maxFailedChunks?: number;
+  /** 동시에 도는 청크 수. 기본 `DEFAULT_CONCURRENCY`. 1이면 하나씩 돈다. */
+  concurrency?: number;
   now?: () => Date;
   log?: (line: string) => void;
 }
@@ -159,7 +166,7 @@ export class PaperScheduler {
     return () => this.listeners.delete(listener);
   }
 
-  /** 돌고 있는 청크가 끝나면 멈춘다. 돌고 있는 것이 없으면 false. */
+  /** 새 청크를 꺼내지 않고, 돌고 있는 청크들이 끝나면 멈춘다. 돌고 있는 것이 없으면 false. */
   requestStop(): boolean {
     if (this.running === null) return false;
     this.stopRequested = true;
@@ -428,98 +435,115 @@ export class PaperScheduler {
 
     const metrics: ChunkMetric[] = [];
     const maxFailed = this.deps.maxFailedChunks ?? DEFAULT_MAX_FAILED_CHUNKS;
+    const concurrency = Math.max(1, Math.floor(this.deps.concurrency ?? DEFAULT_CONCURRENCY));
     let completed = 0;
     let failed = 0;
     let firstTranslationMs: number | null = null;
-    let stop: { reason: RunStopReason; message: string | null } | null = null;
+    const halt: { stop: { reason: RunStopReason; message: string | null } | null } = { stop: null };
+    const stopFor = (reason: RunStopReason, message: string | null): void => {
+      const account = reason === 'needs_login' || reason === 'waiting_quota';
+      const held = halt.stop?.reason;
+      if (held === undefined || (account && held !== 'needs_login' && held !== 'waiting_quota')) {
+        halt.stop = { reason, message };
+      }
+    };
 
     const pending = [...plan.chunks];
-    const takeNext = (): PlannedChunk | undefined => pending.shift();
-
-    for (let chunk = takeNext(); chunk !== undefined; chunk = takeNext()) {
-      if (this.stopRequested) {
-        stop = { reason: 'paused', message: '요청에 따라 멈췄습니다' };
-        break;
-      }
-      this.emit({
-        type: 'chunk_started',
-        pdfSha256,
-        chunkId: chunk.id,
-        index: chunk.order,
-        total: plan.chunks.length,
-      });
-      const path = store.generationPath(pdfSha256, generationId, `chunks/${chunk.id}.json`);
-      let previousAttempts = 0;
-      if (await store.exists(path)) {
-        try {
-          previousAttempts = (await store.readJson('chunkDocument', path)).attempts;
-        } catch {
-          previousAttempts = 0;
+    const worker = async (): Promise<void> => {
+      for (;;) {
+        if (pending.length === 0 || halt.stop !== null) return;
+        if (this.stopRequested) {
+          stopFor('paused', '요청에 따라 멈췄습니다');
+          return;
         }
-      }
-      const started = Date.now();
-      const run = await runChunk(
-        { store, runner, now: this.now, log: this.log },
-        {
+        const chunk = pending.shift();
+        if (chunk === undefined) return;
+        this.emit({
+          type: 'chunk_started',
           pdfSha256,
-          generationId,
-          document,
-          context,
-          contextSha256: ready.sha256,
-          chunk,
-          previousAttempts,
-        },
-      );
-      const metric: ChunkMetric = {
-        chunkId: chunk.id,
-        order: chunk.order,
-        sentences: chunk.targetSentenceIds.length,
-        estimatedTokens: chunk.estimatedTokens,
-        outcome: run.ok ? (run.reused ? 'reused' : 'complete') : 'failed',
-        requests: run.attempts.length,
-        inputTokens: run.usage?.inputTokens ?? null,
-        outputTokens: run.usage?.outputTokens ?? null,
-        reasoningTokens: run.usage?.reasoningTokens ?? null,
-        elapsedMs: Date.now() - started,
-        failureCode: run.ok ? null : (run.chunk.lastError?.code ?? run.code),
-      };
-      metrics.push(metric);
-      this.log(
-        `scheduler chunk ${chunk.id} ${metric.outcome} sentences=${metric.sentences} requests=${metric.requests} in=${String(metric.inputTokens)} out=${String(metric.outputTokens)} elapsed=${metric.elapsedMs}ms`,
-      );
-      if (run.ok) {
-        completed += 1;
-        if (!run.reused && firstTranslationMs === null && metrics.length === 1) {
-          firstTranslationMs = Date.now() - t0;
+          chunkId: chunk.id,
+          index: chunk.order,
+          total: plan.chunks.length,
+        });
+        const path = store.generationPath(pdfSha256, generationId, `chunks/${chunk.id}.json`);
+        let previousAttempts = 0;
+        if (await store.exists(path)) {
+          try {
+            previousAttempts = (await store.readJson('chunkDocument', path)).attempts;
+          } catch {
+            previousAttempts = 0;
+          }
         }
-      } else {
-        failed += 1;
-      }
-      this.emit({
-        type: 'chunk_finished',
-        pdfSha256,
-        chunkId: chunk.id,
-        ok: run.ok,
-        completed,
-        failed,
-        total: plan.chunks.length,
-        sentenceIds: run.chunk.results.map((r) => r.id),
-      });
-      if (!run.ok && (run.llmKind === 'needs_login' || run.llmKind === 'quota')) {
-        stop = {
-          reason: run.llmKind === 'quota' ? 'waiting_quota' : 'needs_login',
-          message: run.message,
+        const started = Date.now();
+        const run = await runChunk(
+          { store, runner, now: this.now, log: this.log },
+          {
+            pdfSha256,
+            generationId,
+            document,
+            context,
+            contextSha256: ready.sha256,
+            chunk,
+            previousAttempts,
+          },
+        );
+        const metric: ChunkMetric = {
+          chunkId: chunk.id,
+          order: chunk.order,
+          sentences: chunk.targetSentenceIds.length,
+          estimatedTokens: chunk.estimatedTokens,
+          outcome: run.ok ? (run.reused ? 'reused' : 'complete') : 'failed',
+          requests: run.attempts.length,
+          inputTokens: run.usage?.inputTokens ?? null,
+          outputTokens: run.usage?.outputTokens ?? null,
+          reasoningTokens: run.usage?.reasoningTokens ?? null,
+          elapsedMs: Date.now() - started,
+          failureCode: run.ok ? null : (run.chunk.lastError?.code ?? run.code),
         };
-        break;
+        metrics.push(metric);
+        this.log(
+          `scheduler chunk ${chunk.id} ${metric.outcome} sentences=${metric.sentences} requests=${metric.requests} in=${String(metric.inputTokens)} out=${String(metric.outputTokens)} elapsed=${metric.elapsedMs}ms`,
+        );
+        if (run.ok) {
+          completed += 1;
+          if (!run.reused && firstTranslationMs === null && metrics.length === 1) {
+            firstTranslationMs = Date.now() - t0;
+          }
+        } else {
+          failed += 1;
+        }
+        this.emit({
+          type: 'chunk_finished',
+          pdfSha256,
+          chunkId: chunk.id,
+          ok: run.ok,
+          completed,
+          failed,
+          total: plan.chunks.length,
+          sentenceIds: run.chunk.results.map((r) => r.id),
+        });
+        if (!run.ok && (run.llmKind === 'needs_login' || run.llmKind === 'quota')) {
+          stopFor(run.llmKind === 'quota' ? 'waiting_quota' : 'needs_login', run.message);
+        } else if (failed >= maxFailed) {
+          stopFor('too_many_failures', `실패한 청크가 ${failed}개라 남은 청크를 보내지 않습니다`);
+        }
       }
-      if (failed >= maxFailed) {
-        stop = {
-          reason: 'too_many_failures',
-          message: `실패한 청크가 ${failed}개라 남은 청크를 보내지 않습니다`,
-        };
-        break;
-      }
-    }
+    };
+    // 한 청크에서 예외가 나도 돌던 청크들이 결과를 저장할 때까지 기다린 뒤에 던진다.
+    const settled = await Promise.allSettled(
+      Array.from({ length: Math.min(concurrency, plan.chunks.length) }, async () => {
+        try {
+          await worker();
+        } catch (err) {
+          pending.length = 0;
+          throw err;
+        }
+      }),
+    );
+    const thrown = settled.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+    if (thrown) throw thrown.reason;
+    metrics.sort((a, b) => a.order - b.order);
+    const stop = halt.stop;
 
     const reason: RunStopReason = stop?.reason ?? (failed > 0 ? 'complete_with_gaps' : 'complete');
     // needs_login·waiting_quota는 runChunk가 이미 상태를 바꿨다.

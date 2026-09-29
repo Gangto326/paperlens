@@ -174,9 +174,14 @@ const runnerOf = (
 
 // 청크 하나에 문장 2개(한 섹션)가 들어가도록 나눈다.
 const CHUNKER = { minTokens: 150, maxTokens: 250, neighborSentences: 1 };
+// 순서를 보는 테스트가 많아 기본은 하나씩 돌린다. 동시 실행은 따로 묶은 테스트에서 본다.
 const scheduler = (
   runner: LlmJobRunner,
-  over: { maxFailedChunks?: number; research?: 'none' | 'builtin_web' } = {},
+  over: {
+    maxFailedChunks?: number;
+    research?: 'none' | 'builtin_web';
+    concurrency?: number;
+  } = {},
 ): PaperScheduler =>
   new PaperScheduler({
     store,
@@ -184,9 +189,48 @@ const scheduler = (
     provider: 'codex',
     runtimeVersion: () => '0.157.1',
     chunker: CHUNKER,
+    concurrency: 1,
     now: () => NOW,
     ...over,
   });
+
+/** 청크 요청을 붙잡아 두는 실행기. `release`를 부를 때까지 그 청크의 요청은 끝나지 않는다. */
+const gatedRunner = (
+  rule: Rule = () => null,
+): LlmJobRunner & {
+  requests: LlmJobRequest[];
+  waiting: () => string[];
+  release: (chunkId: string) => void;
+  peak: () => number;
+} => {
+  const base = runnerOf(rule);
+  const gates = new Map<string, () => void>();
+  let open = 0;
+  let peak = 0;
+  return {
+    ...base,
+    run: async (request, onEvent) => {
+      if (isContext(request)) return base.run(request, onEvent);
+      const chunkId = /chunk_\d+/.exec(request.jobId)?.[0] ?? request.jobId;
+      open += 1;
+      peak = Math.max(peak, open);
+      await new Promise<void>((resolve) => gates.set(chunkId, resolve));
+      open -= 1;
+      return base.run(request, onEvent);
+    },
+    waiting: () => [...gates.keys()],
+    release: (chunkId) => {
+      const gate = gates.get(chunkId);
+      gates.delete(chunkId);
+      gate?.();
+    },
+    peak: () => peak,
+  };
+};
+const until = async (condition: () => boolean): Promise<void> => {
+  for (let i = 0; i < 500 && !condition(); i += 1) await new Promise((r) => setTimeout(r, 2));
+  if (!condition()) throw new Error('기다린 조건이 되지 않았습니다');
+};
 const shape = (events: SchedulerEvent[]): string[] =>
   events.map((e) => {
     switch (e.type) {
@@ -387,6 +431,116 @@ describe('PaperScheduler', () => {
     });
     expect(await scheduler(runner).run(SHA)).toMatchObject({ reason: 'no_document' });
     expect(runner.requests).toEqual([]);
+  });
+
+  describe('동시 실행', () => {
+    it('청크를 동시에 돌리고, 끝나는 순서와 무관하게 모든 기록이 남는다', async () => {
+      const runner = gatedRunner();
+      const s = scheduler(runner, { concurrency: 3 });
+      const events: SchedulerEvent[] = [];
+      s.onEvent((e) => events.push(e));
+      const running = s.run(SHA);
+      await until(() => runner.waiting().length === 3);
+      expect(shape(events).slice(-3)).toEqual([
+        'start:chunk_0001',
+        'start:chunk_0002',
+        'start:chunk_0003',
+      ]);
+      // 뒤의 청크부터 끝낸다.
+      for (const id of ['chunk_0003', 'chunk_0001', 'chunk_0002']) {
+        const before = events.length;
+        runner.release(id);
+        await until(() => events.length > before);
+      }
+      const outcome = await running;
+
+      expect(outcome).toMatchObject({ reason: 'complete', completedChunks: 3, failedChunks: 0 });
+      expect(runner.peak()).toBe(3);
+      expect(shape(events).filter((e) => e.startsWith('finish:'))).toEqual([
+        'finish:chunk_0003:ok:1/3',
+        'finish:chunk_0001:ok:2/3',
+        'finish:chunk_0002:ok:3/3',
+      ]);
+      expect(outcome.metrics.map((m) => m.chunkId)).toEqual([
+        'chunk_0001',
+        'chunk_0002',
+        'chunk_0003',
+      ]);
+      const manifest = await store.readManifest(SHA);
+      expect(manifest.state).toBe('complete');
+      expect(manifest.usage).toMatchObject({ logicalJobs: 4, inputTokens: 400, outputTokens: 40 });
+      expect(manifest.files.map((f) => f.path).filter((p) => p.includes('chunks/'))).toHaveLength(
+        3,
+      );
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+    });
+
+    it('동시 수를 넘겨 보내지 않는다', async () => {
+      const runner = gatedRunner();
+      const running = scheduler(runner, { concurrency: 2 }).run(SHA);
+      await until(() => runner.waiting().length === 2);
+      expect(runner.waiting()).toEqual(['chunk_0001', 'chunk_0002']);
+      runner.release('chunk_0001');
+      await until(() => runner.waiting().includes('chunk_0003'));
+      runner.release('chunk_0002');
+      runner.release('chunk_0003');
+      expect(await running).toMatchObject({ reason: 'complete', completedChunks: 3 });
+      expect(runner.peak()).toBe(2);
+    });
+
+    it('한 청크가 한도에 걸리면 새 청크를 보내지 않고, 돌던 청크의 결과는 남긴다', async () => {
+      const runner = gatedRunner((request) =>
+        request.jobId.includes('chunk_0001') ? 'quota' : null,
+      );
+      const s = scheduler(runner, { concurrency: 2 });
+      const events: SchedulerEvent[] = [];
+      s.onEvent((e) => events.push(e));
+      const running = s.run(SHA);
+      await until(() => runner.waiting().length === 2);
+      runner.release('chunk_0001');
+      // 한도에 걸린 청크가 정리된 뒤에 돌던 청크가 끝난다.
+      await until(() => shape(events).includes('finish:chunk_0001:fail:0/3'));
+      runner.release('chunk_0002');
+      const outcome = await running;
+
+      expect(outcome).toMatchObject({
+        reason: 'waiting_quota',
+        completedChunks: 1,
+        failedChunks: 1,
+        totalChunks: 3,
+      });
+      expect(runner.requests.some((r) => r.jobId.includes('chunk_0003'))).toBe(false);
+      expect((await store.readManifest(SHA)).state).toBe('waiting_quota');
+
+      const resumed = runnerOf();
+      const again = await scheduler(resumed, { concurrency: 2 }).run(SHA);
+      expect(again).toMatchObject({ reason: 'complete', completedChunks: 3, failedChunks: 0 });
+      expect(resumed.requests.map((r) => /chunk_\d+_\d+$/.exec(r.jobId)?.[0]).sort()).toEqual([
+        'chunk_0001_2',
+        'chunk_0003_1',
+      ]);
+    });
+
+    it('돌던 청크가 모두 한도에 걸려도 한도 대기로 멈춘다', async () => {
+      const runner = runnerOf((request) => (isContext(request) ? null : 'quota'));
+      const outcome = await scheduler(runner, { concurrency: 3, maxFailedChunks: 2 }).run(SHA);
+      expect(outcome).toMatchObject({ reason: 'waiting_quota', failedChunks: 3 });
+      expect((await store.readManifest(SHA)).state).toBe('waiting_quota');
+    });
+
+    it('멈춤 요청은 새 청크를 꺼내지 않고 돌던 청크들을 끝낸 뒤에 적용된다', async () => {
+      const runner = gatedRunner();
+      const s = scheduler(runner, { concurrency: 2 });
+      const running = s.run(SHA);
+      await until(() => runner.waiting().length === 2);
+      expect(s.requestStop()).toBe(true);
+      runner.release('chunk_0002');
+      runner.release('chunk_0001');
+      const outcome = await running;
+      expect(outcome).toMatchObject({ reason: 'paused', completedChunks: 2, totalChunks: 3 });
+      expect(runner.requests.some((r) => r.jobId.includes('chunk_0003'))).toBe(false);
+      expect((await store.readManifest(SHA)).state).toBe('paused');
+    });
   });
 
   it('조사를 켜면 컨텍스트 뒤, 번역 앞에 개념 조사가 돌고 고친 컨텍스트로 번역한다', async () => {
