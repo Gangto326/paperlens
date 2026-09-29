@@ -265,13 +265,20 @@ describe('runStructuredTurn (가짜 App Server)', () => {
 
   it('조사 턴이 도중에 실패해도 그때까지의 검색 기록을 돌려준다', async () => {
     const { c, threadId } = await setup();
-    const result = await runStructuredTurn(c, {
-      threadId,
-      prompt: 'FAKE:searchcut {"answer":"a"',
-      outputSchema: SCHEMA,
-      timeoutMs: 3_000,
-      research: true,
-    });
+    const seen: number[] = [];
+    const result = await runStructuredTurn(
+      c,
+      {
+        threadId,
+        prompt: 'FAKE:searchcut {"answer":"a"',
+        outputSchema: SCHEMA,
+        timeoutMs: 3_000,
+        research: true,
+      },
+      { onProgress: (e) => (e.type === 'research' ? seen.push(e.trace.searchItems) : undefined) },
+    );
+    // 검색 항목이 끝날 때마다 그때까지의 검색 기록을 알린다.
+    expect(seen).toEqual([1, 2]);
     expect(result).toMatchObject({
       ok: false,
       kind: 'quota',

@@ -194,6 +194,13 @@ const gatedRunner = (
     peak: () => peak,
   };
 };
+const inflightFiles = async (): Promise<string[]> => {
+  try {
+    return (await fs.readdir(store.inflightDir(SHA, GEN))).sort();
+  } catch {
+    return [];
+  }
+};
 const until = async (condition: () => boolean): Promise<void> => {
   const end = Date.now() + 4_000;
   while (!condition() && Date.now() < end) await new Promise((r) => setTimeout(r, 2));
@@ -344,7 +351,7 @@ describe('runConceptResearch', () => {
     });
   });
 
-  it('로그인 필요·한도 초과·런타임 없음은 멈추고 아무것도 저장하지 않는다', async () => {
+  it('로그인 필요·한도 초과·런타임 없음은 멈추고 결과 파일을 쓰지 않는다', async () => {
     const cases: [LlmJobFailureKind, string, string][] = [
       ['quota', 'quota', 'waiting_quota'],
       ['needs_login', 'needs_login', 'needs_login'],
@@ -358,10 +365,185 @@ describe('runConceptResearch', () => {
       const manifest = await store.readManifest(SHA);
       expect(manifest.files.map((f) => f.path)).toEqual([join('generations', GEN, 'context.json')]);
       expect(await store.verifyFiles(SHA)).toEqual([]);
+      // 끝난 묶음의 출력은 inflight에 남는다. 다음 경우가 그것을 쓰지 않게 지운다.
+      expect(await inflightFiles()).toContain(`rs_${GEN}_20260928T000000Z_1.txt`);
+      await fs.rm(store.inflightDir(SHA, GEN), { recursive: true, force: true });
       await store.updateManifest(SHA, (m) => {
         m.state = 'context_pending';
       });
     }
+  });
+
+  describe('돌던 작업의 보존', () => {
+    /** 묶음의 첫 카드 id로 응답을 고른다. 없으면 정상 응답이다. */
+    const cutRunner = (
+      cuts: Record<
+        string,
+        { kind: LlmJobFailureKind; partial?: string; trace?: ResearchTrace; live?: ResearchTrace }
+      >,
+    ): LlmJobRunner & { requests: LlmJobRequest[] } => {
+      const base = runnerOf((request) => answer(idsOf(request)));
+      return {
+        ...base,
+        run: async (request, onEvent) => {
+          const cut = cuts[idsOf(request)[0] ?? ''];
+          if (!cut) return base.run(request, onEvent);
+          base.requests.push(request);
+          if (cut.live) onEvent?.({ type: 'research', jobId: request.jobId, trace: cut.live });
+          if (cut.partial !== undefined) {
+            onEvent?.({
+              type: 'output',
+              jobId: request.jobId,
+              chars: cut.partial.length,
+              item: 1,
+              delta: cut.partial,
+            });
+          }
+          return {
+            ok: false,
+            jobId: request.jobId,
+            kind: cut.kind,
+            message: `실패 ${cut.kind}`,
+            errors: [],
+            rawText: null,
+            partialText: cut.partial ?? null,
+            model: null,
+            usage: USAGE,
+            ...(cut.trace ? { research: cut.trace } : {}),
+          };
+        },
+      };
+    };
+    const cutOutput = (ids: string[], tail = '{"id":"c_9","definitionKo":"쓰다가'): string =>
+      `{"concepts":[${answer(ids)
+        .concepts.map((c) => JSON.stringify(c))
+        .join(',')},${tail}`;
+
+    it('한도로 멈춘 뒤 다시 실행하면 끝난 묶음은 다시 조사하지 않는다', async () => {
+      const limited = cutRunner({ c_3: { kind: 'quota' } });
+      const stopped = await run(limited);
+      expect(stopped).toMatchObject({ status: 'stopped', reason: 'quota', recovered: 0 });
+      expect(limited.requests.map(idsOf)).toEqual([
+        ['c_1', 'c_2'],
+        ['c_3', 'c_4'],
+      ]);
+
+      const runner = runnerOf((request) => answer(idsOf(request)));
+      const result = await run(runner);
+      if (result.status !== 'done') throw new Error(result.status);
+      expect(runner.requests.map(idsOf)).toEqual([['c_3', 'c_4'], ['c_5']]);
+      expect(result).toMatchObject({ recovered: 2, researched: 5, sources: 10 });
+      // 출처 번호는 카드 순서다. 건진 카드와 새로 조사한 카드가 섞여도 같다.
+      expect(result.context.concepts.map((c) => [c.id, c.refs[0]?.sourceId])).toEqual([
+        ['c_1', 'src_1'],
+        ['c_2', 'src_3'],
+        ['c_3', 'src_5'],
+        ['c_4', 'src_7'],
+        ['c_5', 'src_9'],
+      ]);
+      expect(result.context.concepts[0]).toMatchObject({ definitionKo: '확인한 뜻 c_1' });
+      const research = await store.readJson(
+        'researchDocument',
+        store.generationPath(SHA, GEN, 'research.json'),
+      );
+      // 건진 카드의 출처에는 그 출처를 찾은 작업의 이름이 남는다.
+      expect(research.sources[0]).toMatchObject({
+        id: 'src_1',
+        finalUrl: 'https://read.example/c_1',
+        jobId: `rs_${GEN}_20260928T000000Z_1`,
+      });
+      // 같은 때에 다시 시작해도 남은 기록과 작업 이름이 겹치지 않는다.
+      expect(runner.requests.map((r) => r.jobId)).toEqual([
+        `rs_${GEN}_20260928T000000Z_1_r2`,
+        `rs_${GEN}_20260928T000000Z_2_r2`,
+      ]);
+      expect(await inflightFiles()).toEqual([]);
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+    });
+
+    it('끊긴 작업에서는 끝까지 쓰인 카드 가운데 열람한 자료가 있는 것만 건진다', async () => {
+      const limited = cutRunner({
+        c_1: { kind: 'timeout', partial: cutOutput(['c_1']), trace: traceFor(['c_1']) },
+        // c_3의 출처는 검색 기록에 없다. c_4는 쓰다가 끊겼다.
+        c_3: {
+          kind: 'quota',
+          partial: cutOutput(['c_3'], '{"id":"c_4","definitionKo":"쓰다가'),
+          trace: traceFor(['c_2']),
+        },
+      });
+      expect(await run(limited)).toMatchObject({ status: 'stopped', reason: 'quota' });
+
+      const runner = runnerOf((request) => answer(idsOf(request)));
+      const result = await run(runner);
+      if (result.status !== 'done') throw new Error(result.status);
+      expect(result).toMatchObject({ recovered: 1, researched: 5 });
+      expect(runner.requests.map(idsOf)).toEqual([
+        ['c_2', 'c_3'],
+        ['c_4', 'c_5'],
+      ]);
+      expect(result.context.concepts[0]).toMatchObject({
+        definitionKo: '확인한 뜻 c_1',
+        researchStatus: 'researched',
+        refs: [{ sourceId: 'src_1' }],
+      });
+      expect(JSON.stringify(result.context)).not.toContain('invented.example');
+    });
+
+    it('강제 종료된 작업도 도는 동안 저장한 검색 기록으로 출처를 대조한다', async () => {
+      const killed = cutRunner({
+        c_1: { kind: 'quota', partial: cutOutput(['c_1', 'c_2']), live: traceFor(['c_1']) },
+      });
+      await run(killed);
+      // 작업이 결과를 돌려주지 못한 것처럼 끝난 기록을 지운다. 도는 동안 쓴 파일만 남는다.
+      const dir = store.inflightDir(SHA, GEN);
+      const jobId = `rs_${GEN}_20260928T000000Z_1`;
+      const meta = JSON.parse(await fs.readFile(join(dir, `${jobId}.meta.json`), 'utf8')) as object;
+      await fs.writeFile(
+        join(dir, `${jobId}.meta.json`),
+        JSON.stringify({ ...meta, endedAt: null, outcome: null }),
+      );
+      await store.updateManifest(SHA, (m) => {
+        m.state = 'context_pending';
+      });
+
+      const runner = runnerOf((request) => answer(idsOf(request)));
+      const result = await run(runner);
+      if (result.status !== 'done') throw new Error(result.status);
+      // c_1은 검색 기록에 열람한 자료가 있다. c_2는 없어서 다시 조사한다.
+      expect(result.recovered).toBe(1);
+      expect(runner.requests.map(idsOf)).toEqual([
+        ['c_2', 'c_3'],
+        ['c_4', 'c_5'],
+      ]);
+    });
+
+    it('허용하지 않은 도구를 쓴 작업의 출력과 입력이 달라진 기록은 쓰지 않는다', async () => {
+      const first = cutRunner({
+        c_1: { kind: 'forbidden_tool', partial: cutOutput(['c_1']), trace: traceFor(['c_1']) },
+        c_3: { kind: 'quota' },
+      });
+      expect(await run(first)).toMatchObject({ status: 'stopped' });
+      const runner = runnerOf((request) => answer(idsOf(request)));
+      const second = cutRunner({ c_3: { kind: 'quota' } });
+      expect(await run(second)).toMatchObject({ status: 'stopped', recovered: 0 });
+      expect(second.requests.map(idsOf)[0]).toEqual(['c_1', 'c_2']);
+
+      // context.json이 바뀌면 남은 기록은 지금 입력의 결과가 아니다.
+      const path = store.generationPath(SHA, GEN, 'context.json');
+      const sha = await store.writeJson('contextDocument', path, {
+        ...sampleContext,
+        summary: '바뀐 요약',
+        concepts: [1, 2, 3, 4, 5].map(card),
+      });
+      await store.updateManifest(SHA, (m) => {
+        store.recordFile(m, SHA, path, sha);
+        m.state = 'context_pending';
+      });
+      const result = await run(runner);
+      expect(result).toMatchObject({ status: 'done', recovered: 0 });
+      expect(runner.requests.map(idsOf)).toEqual([['c_1', 'c_2'], ['c_3', 'c_4'], ['c_5']]);
+      expect(await inflightFiles()).toEqual([]);
+    });
   });
 
   it('묶음을 동시에 돌려도 출처 번호와 결과는 하나씩 돌린 것과 같다', async () => {

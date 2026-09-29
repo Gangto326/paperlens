@@ -9,12 +9,15 @@ import {
   type Usage,
 } from '@shared/schema';
 import Ajv from 'ajv';
+import { sha256Hex, stableStringify } from '../cache/hash';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import type { LlmJobEvent, LlmJobFailureKind, LlmJobResult, LlmJobRunner } from '../llm/job';
-import { EMPTY_RESEARCH_TRACE } from '../llm/research-trace';
+import { EMPTY_RESEARCH_TRACE, standingOf, type ResearchTrace } from '../llm/research-trace';
 import { addUsage } from '../llm/usage';
-import { renderPrompt } from '../prompt/template';
+import { promptVersionOf, renderPrompt } from '../prompt/template';
 import { CONCEPT_RESEARCH_TEMPLATE } from '../prompt/templates';
+import { InflightStore } from '../resume/inflight-store';
+import { salvageArrayItems } from '../resume/salvage';
 import { isRetryableLlmFailure, stateAfterLlmFailure } from '../state/paper-state';
 import { isSelfSource, paperIdentityOf, type PaperIdentity } from './self-source';
 import { SourceRegistry, type ClaimedSource, type RejectedSource } from './source-check';
@@ -27,7 +30,14 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
  * - 묶음은 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 묶음은 서로의 결과를 입력으로 받지 않는다.
  *   결과는 모두 끝난 뒤에 묶음 순서대로 장부에 넣는다. 그래서 출처 번호(src_N)는 끝나는 순서와 무관하다.
  * - 로그인 필요, 한도 초과, 런타임 없음은 패스를 멈춘다. 새 묶음을 보내지 않고 돌던 묶음이 끝나기를 기다린다.
- *   아무것도 저장하지 않는다. 다음 실행에서 처음부터 다시 한다.
+ *   research.json과 context.json은 쓰지 않는다. 패스가 끝나야 쓴다.
+ * - 돌던 작업의 보존(COMMIT_PLAN M3 P2): 묶음마다 받은 출력과 검색 기록을 generations/<gid>/inflight/에 둔다.
+ *   다시 실행하면 거기서 끝까지 쓰인 카드를 건지고 남은 카드만 묶어 보낸다.
+ *   - 입력 해시(조사 지침의 버전과 조사 전 context.json의 해시)가 같은 기록만 쓴다.
+ *   - 끝난 작업의 카드는 그대로 받는다. 끊긴 작업의 카드는 그 작업의 검색 기록에 열람한 자료가 있을 때만 받는다.
+ *     출처는 같은 작업의 검색 기록과 대조한다. 다른 작업의 검색 기록으로 출처를 살리지 않는다.
+ *   - 허용하지 않은 도구를 쓴 작업의 출력은 건지지 않는다.
+ *   - 패스가 끝나 결과를 저장하면 기록을 지운다.
  * - 출처는 그 작업의 검색 기록과 대조해 통과한 것만 저장한다(source-check.ts).
  * - 번역 중인 논문 자체는 출처로 저장하지 않는다(self-source.ts). 논문 정보를 읽지 못하면 거르지 않는다.
  * - 읽은 자료가 하나라도 붙은 카드는 researchStatus가 researched가 된다.
@@ -128,6 +138,8 @@ export type ConceptResearchResult =
       contextSha256: string;
       researched: number;
       sources: number;
+      /** 앞선 실행에서 남은 것으로 채워 다시 조사하지 않은 카드 수 */
+      recovered: number;
       batches: ResearchBatchReport[];
       usage: Usage;
       state: PaperState;
@@ -141,6 +153,8 @@ export type ConceptResearchResult =
       status: 'stopped';
       reason: 'needs_login' | 'quota' | 'unavailable' | 'no_context';
       message: string;
+      /** no_context로 멈춘 때는 0 */
+      recovered: number;
       batches: ResearchBatchReport[];
       usage: Usage;
       state: PaperState;
@@ -172,6 +186,10 @@ const compact = (d: Date): string =>
 
 const outputValidator = new Ajv({ allErrors: true, strict: false }).compile(
   CONCEPT_RESEARCH_OUTPUT_SCHEMA,
+);
+type ModelCard = ConceptResearchModelOutput['concepts'][number];
+const cardValidator = new Ajv({ allErrors: true, strict: false }).compile<ModelCard>(
+  CONCEPT_RESEARCH_OUTPUT_SCHEMA.properties.concepts.items,
 );
 
 export function batchesOf<T>(items: readonly T[], size: number): T[][] {
@@ -206,18 +224,16 @@ export async function runConceptResearch(
   }
 
   let context: ContextDocument;
+  const contextSha = manifest.files.find((f) => f.path === rel(contextPath))?.sha256;
   try {
-    context = await store.readJson(
-      'contextDocument',
-      contextPath,
-      manifest.files.find((f) => f.path === rel(contextPath))?.sha256,
-    );
+    context = await store.readJson('contextDocument', contextPath, contextSha);
   } catch (err) {
     if (!(err instanceof CacheReadError)) throw err;
     return {
       status: 'stopped',
       reason: 'no_context',
       message: `context.json을 읽을 수 없습니다: ${err.message}`,
+      recovered: 0,
       batches: [],
       usage: ZERO_USAGE,
       state: manifest.state,
@@ -237,9 +253,62 @@ export async function runConceptResearch(
   const isSelf = identity
     ? (source: { url: string; title: string }): boolean => isSelfSource(identity, source)
     : undefined;
+  // 앞선 실행에서 남은 것을 건진다.
+  const inflight = new InflightStore(store, pdfSha256, generationId, { now, log });
+  const inputHash = sha256Hex(
+    stableStringify({
+      promptVersion: promptVersionOf(CONCEPT_RESEARCH_TEMPLATE),
+      contextSha256: contextSha ?? null,
+    }),
+  );
+  const known = new Set(context.concepts.map((c) => c.id));
+  const cards = new Map<
+    string,
+    { card: ModelCard; trace: ResearchTrace; jobId: string; report: ResearchBatchReport | null }
+  >();
+  const usedJobIds = new Set<string>();
+  const stale: string[] = [];
+  for (const entry of await inflight.list('concept_research')) {
+    usedJobIds.add(entry.meta.jobId);
+    if (entry.meta.inputHash !== inputHash) {
+      stale.push(entry.meta.jobId);
+      continue;
+    }
+    if (entry.meta.outcome === 'forbidden_tool') continue;
+    const finished = entry.meta.outcome === 'ok';
+    const trace = entry.trace ?? EMPTY_RESEARCH_TRACE;
+    let taken = 0;
+    for (const item of salvageArrayItems(entry.text, 'concepts')) {
+      if (!cardValidator(item)) continue;
+      const id = item.id.trim();
+      if (!known.has(id) || !entry.meta.targetIds.includes(id) || cards.has(id)) continue;
+      // 끊긴 작업의 카드는 열람한 자료가 하나라도 있어야 받는다. 없으면 다시 조사한다.
+      const read = item.sources.some(
+        (source) => standingOf(trace, source.url) === 'viewed' && !(isSelf?.(source) ?? false),
+      );
+      if (!finished && !read) continue;
+      cards.set(id, { card: item, trace, jobId: entry.meta.jobId, report: null });
+      taken += 1;
+    }
+    if (taken > 0) log(`research 남은 출력 ${entry.meta.jobId}에서 카드 ${taken}개를 건짐`);
+  }
+  if (stale.length > 0) await inflight.remove(stale);
+  const recovered = cards.size;
+
   const stamp = compact(now());
-  const batches = batchesOf(context.concepts, options.batchSize ?? RESEARCH_BATCH_SIZE);
+  const batches = batchesOf(
+    context.concepts.filter((c) => !cards.has(c.id)),
+    options.batchSize ?? RESEARCH_BATCH_SIZE,
+  );
   const concurrency = Math.max(1, Math.floor(options.concurrency ?? RESEARCH_CONCURRENCY));
+  const jobIdOf = (index: number): string => {
+    const base = `rs_${generationId}_${stamp}_${index + 1}`;
+    let jobId = base;
+    // 남은 기록과 이름이 겹치면 그 기록을 덮어쓰게 된다. 겹치지 않는 이름을 쓴다.
+    for (let n = 2; usedJobIds.has(jobId); n += 1) jobId = `${base}_r${n}`;
+    usedJobIds.add(jobId);
+    return jobId;
+  };
 
   const results = new Map<number, { jobId: string; result: LlmJobResult }>();
   const queue = [...batches.entries()];
@@ -250,7 +319,7 @@ export async function runConceptResearch(
       const entry = queue.shift();
       if (entry === undefined) return;
       const [index, batch] = entry;
-      const jobId = `rs_${generationId}_${stamp}_${index + 1}`;
+      const jobId = jobIdOf(index);
       const rendered = renderPrompt(CONCEPT_RESEARCH_TEMPLATE, {
         inputs: {
           PAPER_CONTEXT: {
@@ -269,6 +338,15 @@ export async function runConceptResearch(
         },
       });
       log(`research ${jobId} 시작 concepts=${batch.map((c) => c.id).join(',')}`);
+      const recorder = await inflight.begin({
+        jobId,
+        stage: 'concept_research',
+        unitId: batch.map((c) => c.id).join('+'),
+        attempt: index + 1,
+        inputHash,
+        targetIds: batch.map((c) => c.id),
+        neighborIds: [],
+      });
       const result = await runner.run(
         {
           jobId,
@@ -278,16 +356,18 @@ export async function runConceptResearch(
           research: { kind: 'builtin_web' },
           timeoutMs: options.timeoutMs ?? RESEARCH_TIMEOUT_MS,
         },
-        options.onEvent,
+        (event) => {
+          recorder?.onEvent(event);
+          options.onEvent?.(event);
+        },
       );
+      await recorder?.finish(result);
       results.set(index, { jobId, result });
       if (!result.ok && STOPPING[result.kind]) halted = true;
     }
   };
   await Promise.all(Array.from({ length: Math.min(concurrency, batches.length) }, worker));
 
-  const registry = new SourceRegistry([], now);
-  const updated = new Map<string, Concept>();
   const reports: ResearchBatchReport[] = [];
   let usage = ZERO_USAGE;
   let stopped: { kind: LlmJobFailureKind; message: string } | null = null;
@@ -331,34 +411,13 @@ export async function runConceptResearch(
     report.queries = trace.queries.length;
     report.searchItems = trace.searchItems;
     report.failedViews = trace.failedViews;
-
-    const byId = new Map(batch.map((c) => [c.id, c]));
+    const inBatch = new Set(batch.map((c) => c.id));
     for (const card of output.concepts) {
-      const original = byId.get(card.id.trim());
+      const id = card.id.trim();
       // 묶음에 없는 id와 두 번 돌려준 id는 버린다.
-      if (!original || updated.has(original.id)) continue;
-      const checked = registry.check(card.sources, trace, {
-        jobId,
-        ...(isSelf ? { isSelf } : {}),
-      });
-      report.accepted += checked.refs.length + checked.furtherRefs.length;
-      report.rejected.push(...checked.rejected);
-      const pick = (next: string, previous: string): string =>
-        next.trim() === '' ? previous : next.trim();
-      const exampleKo = pick(card.exampleKo, original.exampleKo ?? '');
-      updated.set(original.id, {
-        ...original,
-        definitionKo: pick(card.definitionKo, original.definitionKo),
-        whyItMatters: pick(card.whyItMatters, original.whyItMatters),
-        exampleKo: exampleKo === '' ? null : exampleKo,
-        refs: checked.refs,
-        furtherRefs: checked.furtherRefs,
-        researchStatus: checked.refs.length > 0 ? 'researched' : 'unresolved',
-      });
+      if (!inBatch.has(id) || cards.has(id)) continue;
+      cards.set(id, { card, trace, jobId, report });
     }
-    log(
-      `research ${jobId} 완료 queries=${report.queries} searchItems=${report.searchItems} accepted=${report.accepted} rejected=${report.rejected.length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
-    );
   }
 
   if (stopped !== null) {
@@ -377,10 +436,46 @@ export async function runConceptResearch(
       status: 'stopped',
       reason: STOPPING[kind] ?? 'unavailable',
       message,
+      recovered,
       batches: reports,
       usage,
       state,
     };
+  }
+
+  // 출처 장부에는 카드 순서대로 넣는다. 출처 번호는 묶음이 끝난 순서나 건진 순서와 무관하다.
+  const registry = new SourceRegistry([], now);
+  const updated = new Map<string, Concept>();
+  for (const original of context.concepts) {
+    const found = cards.get(original.id);
+    if (!found) continue;
+    const { card, trace, jobId, report } = found;
+    const checked = registry.check(card.sources, trace, {
+      jobId,
+      ...(isSelf ? { isSelf } : {}),
+    });
+    if (report) {
+      report.accepted += checked.refs.length + checked.furtherRefs.length;
+      report.rejected.push(...checked.rejected);
+    }
+    const pick = (next: string, previous: string): string =>
+      next.trim() === '' ? previous : next.trim();
+    const exampleKo = pick(card.exampleKo, original.exampleKo ?? '');
+    updated.set(original.id, {
+      ...original,
+      definitionKo: pick(card.definitionKo, original.definitionKo),
+      whyItMatters: pick(card.whyItMatters, original.whyItMatters),
+      exampleKo: exampleKo === '' ? null : exampleKo,
+      refs: checked.refs,
+      furtherRefs: checked.furtherRefs,
+      researchStatus: checked.refs.length > 0 ? 'researched' : 'unresolved',
+    });
+  }
+  for (const report of reports) {
+    if (!report.ok) continue;
+    log(
+      `research ${report.jobId} 완료 queries=${report.queries} searchItems=${report.searchItems} accepted=${report.accepted} rejected=${report.rejected.length} in=${String(report.usage.inputTokens)} out=${String(report.usage.outputTokens)} elapsed=${report.usage.elapsedMs}ms`,
+    );
   }
 
   const next: ContextDocument = {
@@ -393,13 +488,13 @@ export async function runConceptResearch(
     evidence: [],
   };
   const researchSha = await store.writeJson('researchDocument', researchPath, research);
-  const contextSha = await store.writeJson('contextDocument', contextPath, next);
+  const nextSha = await store.writeJson('contextDocument', contextPath, next);
   const at = now();
   const after = await store.updateManifest(
     pdfSha256,
     (m) => {
       store.recordFile(m, pdfSha256, researchPath, researchSha);
-      store.recordFile(m, pdfSha256, contextPath, contextSha);
+      store.recordFile(m, pdfSha256, contextPath, nextSha);
       m.usage = addUsage(m.usage, usage);
       m.state = 'context_pending';
       for (const report of reports) {
@@ -418,10 +513,12 @@ export async function runConceptResearch(
     },
     at,
   );
+  await inflight.remove([...usedJobIds]);
   return {
     status: 'done',
     context: next,
-    contextSha256: contextSha,
+    contextSha256: nextSha,
+    recovered,
     researched: next.concepts.filter((c) => c.researchStatus === 'researched').length,
     sources: research.sources.length,
     batches: reports,

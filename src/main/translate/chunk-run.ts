@@ -52,6 +52,7 @@ import { summarizeIssues, validateChunkOutput, type ChunkIssue } from './chunk-v
  * - 다시 실행하면 먼저 남은 것을 건진다. 입력 해시가 같은 것만 쓴다.
  *   저장된 미완료 청크의 결과는 저장할 때 검증을 통과한 문장이고 manifest의 해시로 확인한다.
  *   inflight의 출력은 검증 전의 글이다. 끝까지 쓰인 문장만 골라 검증기에 넣고 통과한 문장만 받는다.
+ *   허용하지 않은 도구를 쓴 작업(forbidden_tool)의 출력은 건지지 않는다.
  * - 건진 문장은 다시 요청하지 않는다. 요청을 보내기 전에 청크 파일에 저장한다(상태는 pending).
  * - 남은 문장은 이어 하기 턴으로 요청한다. 끊기기 전 출력의 뒷부분을 함께 준다.
  *   모두 건졌으면 요청 없이 완료로 저장한다.
@@ -274,7 +275,8 @@ export async function runChunk(
       continue;
     }
     attemptBase = Math.max(attemptBase, entry.meta.attempt);
-    if (entry.text.trim() === '') continue;
+    // 허용하지 않은 도구를 쓴 작업의 출력은 건지지 않는다.
+    if (entry.text.trim() === '' || entry.meta.outcome === 'forbidden_tool') continue;
     previousOutput = entry.text;
     const written = salvageArrayItems(entry.text, 'results').filter((item) =>
       sentenceValidator(item),

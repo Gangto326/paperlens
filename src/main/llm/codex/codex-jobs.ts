@@ -241,6 +241,9 @@ export class CodexJobRunner implements LlmJobRunner {
         case 'usage':
           emit({ type: 'usage', jobId, usage: event.usage });
           break;
+        case 'research':
+          emit({ type: 'research', jobId, trace: event.trace });
+          break;
         case 'interrupt_requested':
           emit({ type: 'cancel_requested', jobId });
           break;

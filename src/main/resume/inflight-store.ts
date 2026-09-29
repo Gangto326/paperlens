@@ -1,5 +1,6 @@
+import { randomBytes } from 'node:crypto';
 import { promises as fs } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { stableStringify } from '../cache/hash';
 import type { PaperCacheStore } from '../cache/paper-cache-store';
 import type { LlmJobEvent, LlmJobResult } from '../llm/job';
@@ -12,11 +13,12 @@ import type { ResearchTrace } from '../llm/research-trace';
  * 작업 하나에 파일 셋:
  * - `<jobId>.meta.json`: 어느 작업의 출력인지(단계, 단위, 입력 해시, 대상 id). 요청을 보내기 전에 쓴다.
  * - `<jobId>.txt`: 받은 출력 글. 도는 동안에는 `flushMs`마다 덧붙인다. 작업이 끝나면 끝난 때의 글로 바꿔 쓴다.
- * - `<jobId>.trace.json`: 조사 작업의 검색 기록. 작업이 결과를 돌려준 때에만 쓴다.
+ * - `<jobId>.trace.json`: 조사 작업의 검색 기록. 검색이 하나 끝날 때마다 그때까지의 기록으로 바꿔 쓴다.
  *
  * 남는 경우: 한도 초과, 로그인 만료, 제한 시간처럼 작업이 실패로 끝난 때는 끝난 때의 글이 남는다.
- * 앱 종료와 강제 종료에서는 마지막으로 덧붙인 데까지 남는다. 덧붙인 글은 운영체제에 넘긴 것이고 fsync하지 않는다.
- * 그래서 전원이 끊기면 마지막 조각이 없을 수 있다. 강제 종료된 조사 작업의 검색 기록은 남지 않는다.
+ * 앱 종료와 강제 종료에서는 마지막으로 덧붙인 데까지 남는다. 이 폴더의 파일은 fsync하지 않는다.
+ * 요청마다 여러 번 쓰는 자리라 완료 결과처럼 디스크에 확정하면 느리다. 운영체제에 넘긴 글은 앱이 죽어도 남는다.
+ * 전원이 끊기면 마지막 조각이 없을 수 있다. 그때는 그 부분을 다시 요청할 뿐이고 완료 결과는 영향을 받지 않는다.
  *
  * 여기 있는 글은 검증 전의 글이다. 읽는 쪽이 검증기를 거친 뒤에만 결과로 쓴다.
  * 출력은 메시지 하나만 남긴다. 작업 도중 새 메시지가 시작되면 앞 메시지의 글은 지운다(마지막 메시지가 답이다).
@@ -51,6 +53,20 @@ export interface InflightEntry {
 
 export const INFLIGHT_FLUSH_MS = 1_000;
 
+/** 임시 파일에 쓰고 이름을 바꾼다. 읽는 쪽이 쓰다 만 파일을 보지 않는다. fsync는 하지 않는다. */
+async function replaceFile(path: string, content: string): Promise<void> {
+  const dir = dirname(path);
+  await fs.mkdir(dir, { recursive: true });
+  const tmp = join(dir, `.${basename(path)}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`);
+  try {
+    await fs.writeFile(tmp, content);
+    await fs.rename(tmp, path);
+  } catch (err) {
+    await fs.rm(tmp, { force: true }).catch(() => undefined);
+    throw err;
+  }
+}
+
 const JOB_ID = /^[A-Za-z0-9._-]+$/;
 const STAGES: readonly string[] = ['translate', 'concept_research', 'context'];
 
@@ -83,7 +99,6 @@ export class InflightRecorder {
   private closed = false;
 
   constructor(
-    private readonly store: PaperCacheStore,
     private readonly dir: string,
     private readonly meta: InflightMeta,
     private readonly now: () => Date,
@@ -98,9 +113,24 @@ export class InflightRecorder {
     return join(this.dir, `${this.meta.jobId}.txt`);
   }
 
-  /** 작업 이벤트를 받는다. 출력 조각만 모은다. 던지지 않는다. */
+  private get tracePath(): string {
+    return join(this.dir, `${this.meta.jobId}.trace.json`);
+  }
+
+  /** 작업 이벤트를 받는다. 출력 조각을 모으고 검색 기록을 쓴다. 던지지 않는다. */
   onEvent(event: LlmJobEvent): void {
-    if (this.closed || event.type !== 'output' || event.jobId !== this.meta.jobId) return;
+    if (this.closed || event.jobId !== this.meta.jobId) return;
+    if (event.type === 'research') {
+      const body = `${stableStringify(event.trace)}\n`;
+      this.chain = this.chain
+        .then(() => replaceFile(this.tracePath, body))
+        .then(() => undefined)
+        .catch((err: unknown) =>
+          this.log(`inflight ${this.meta.jobId} 검색 기록 쓰기 실패: ${String(err)}`),
+        );
+      return;
+    }
+    if (event.type !== 'output') return;
     if (event.item !== this.item) {
       this.item = event.item;
       this.pending = '';
@@ -139,19 +169,16 @@ export class InflightRecorder {
     await this.chain;
     const text = result.ok ? result.rawText : (result.partialText ?? result.rawText ?? '');
     try {
-      await this.store.writeText(this.textPath, text);
+      await replaceFile(this.textPath, text);
       if (result.research) {
-        await this.store.writeText(
-          join(this.dir, `${this.meta.jobId}.trace.json`),
-          `${stableStringify(result.research)}\n`,
-        );
+        await replaceFile(this.tracePath, `${stableStringify(result.research)}\n`);
       }
       const meta: InflightMeta = {
         ...this.meta,
         endedAt: this.now().toISOString(),
         outcome: result.ok ? 'ok' : result.kind,
       };
-      await this.store.writeText(
+      await replaceFile(
         join(this.dir, `${this.meta.jobId}.meta.json`),
         `${stableStringify(meta)}\n`,
       );
@@ -168,7 +195,7 @@ export class InflightStore {
   private readonly flushMs: number;
 
   constructor(
-    private readonly store: PaperCacheStore,
+    store: PaperCacheStore,
     pdfSha256: string,
     generationId: string,
     options: { now?: () => Date; log?: (line: string) => void; flushMs?: number } = {},
@@ -197,17 +224,14 @@ export class InflightStore {
       outcome: null,
     };
     try {
-      await this.store.writeText(
-        join(this.dir, `${meta.jobId}.meta.json`),
-        `${stableStringify(full)}\n`,
-      );
+      await replaceFile(join(this.dir, `${meta.jobId}.meta.json`), `${stableStringify(full)}\n`);
       await fs.rm(join(this.dir, `${meta.jobId}.trace.json`), { force: true });
       await fs.writeFile(join(this.dir, `${meta.jobId}.txt`), '');
     } catch (err) {
       this.log(`inflight ${meta.jobId} 시작 실패: ${String(err)}`);
       return null;
     }
-    return new InflightRecorder(this.store, this.dir, full, this.now, this.log, this.flushMs);
+    return new InflightRecorder(this.dir, full, this.now, this.log, this.flushMs);
   }
 
   /** 그 단계와 단위의 기록을 요청 순서로 돌려준다. 읽지 못하는 기록은 건너뛴다. */

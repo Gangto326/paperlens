@@ -53,6 +53,8 @@ export type LlmJobEvent =
    */
   | { type: 'output'; jobId: string; chars: number; item: number; delta: string }
   | { type: 'usage'; jobId: string; usage: Usage }
+  /** 조사 작업에서 검색이 하나 끝날 때마다 오는, 그때까지의 검색 기록. 끊겼을 때를 위해 저장한다. */
+  | { type: 'research'; jobId: string; trace: ResearchTrace }
   | { type: 'cancel_requested'; jobId: string }
   | { type: 'finished'; jobId: string; outcome: 'ok' | LlmJobFailureKind; elapsedMs: number };
 

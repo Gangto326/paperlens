@@ -35,6 +35,7 @@ import type { TurnStartResponse } from './protocol/v2/TurnStartResponse';
  * 받는 도중의 출력(COMMIT_PLAN M3 P2): `item/agentMessage/delta`의 글을 메시지별로 모은다. 진행 알림 `output`에
  * 조각(`delta`)과 메시지 번호(`item`)를 실어 호출자가 턴이 도는 동안 저장할 수 있게 한다. 턴이 실패로 끝나면
  * 끝나지 못한 메시지의 글을 `partialText`로, 조사 턴이면 그때까지의 검색 기록을 `research`로 돌려준다.
+ * 조사 턴은 검색 항목이 끝날 때마다 진행 알림 `research`로 그때까지의 검색 기록도 알린다.
  * 검증을 거치지 않은 글이다. 쓰는 쪽이 검증한다.
  * Codex 고유 타입은 이 파일 안에서만 쓴다.
  */
@@ -84,6 +85,8 @@ export type TurnProgress =
     }
   | { type: 'output'; chars: number; item: number; delta: string }
   | { type: 'usage'; usage: Usage }
+  /** 조사 턴에서 검색 항목이 하나 끝날 때마다. 그때까지의 검색 기록이다. */
+  | { type: 'research'; trace: ResearchTrace }
   | { type: 'interrupt_requested'; turnId: string };
 
 export interface StructuredTurnOptions {
@@ -318,6 +321,9 @@ export async function runStructuredTurn(
       const allowed = p.item.type === 'webSearch' ? params.research === true : true;
       if (!allowed || FORBIDDEN_ITEM_TYPES.has(p.item.type)) forbidden.push(p.item.type);
       emit({ type: 'item', state: 'completed', itemType: p.item.type, phase: phaseOf(p.item) });
+      if (params.research === true && p.item.type === 'webSearch') {
+        emit({ type: 'research', trace: researchTraceOf(completedItems) });
+      }
     }),
     transport.onNotification('thread/tokenUsage/updated', (raw) => {
       const p = raw as ThreadTokenUsageUpdatedNotification;
