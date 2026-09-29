@@ -11,7 +11,7 @@ import { parseRichText, type RichBlock } from './rich-text';
  * 우측 패널 뷰 모델(C1.16·C2.9). DOM을 모르는 순수 변환이라 node 환경에서 테스트한다.
  * 문장 원문(`en`)과 매핑 상태, 저장된 번역·해설을 보여준다. 결과가 없는 문장은 "처리 대기"(PLAN 9)다.
  * 번역은 메모리에 든 스냅샷에서만 찾는다. 선택할 때 LLM이나 네트워크를 부르지 않는다.
- * 해설은 칸으로 나눠 보인다. 칸 셋(해설, 예시, 주의할 점)은 바로 보인다(docs/quality-backlog.md Q9).
+ * 해설은 칸으로 나눠 보인다. 칸 셋 가운데 해설과 주의할 점은 바로 보이고 예시는 눌러 펼친다(docs/quality-backlog.md Q9).
  * 앞선 세대의 칸 넷은 쉬운 뜻과 역할이 바로 보이고 사례와 더 깊은 설명은 눌러 펼친다.
  * 해설과 카드의 글은 단락, 목록, 표로 나뉜 채로 넘긴다(rich-text.ts).
  * 개념 카드는 문장마다 이름만 보이고 눌러 펼친다. 같은 카드를 여러 문장이 함께 쓴다.
@@ -63,7 +63,7 @@ export type ExplanationKey = 'main' | 'caution' | 'plain' | 'role' | 'example' |
 /** 화면에 보이는 순서다. open이 true인 칸은 처음부터 펼쳐 보인다. */
 const EXPLANATION_SECTIONS: { key: ExplanationKey; label: string; open: boolean }[] = [
   { key: 'main', label: '해설', open: true },
-  { key: 'example', label: '예시', open: true },
+  { key: 'example', label: '예시', open: false },
   { key: 'caution', label: '주의할 점', open: true },
 ];
 

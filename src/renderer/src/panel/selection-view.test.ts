@@ -161,7 +161,7 @@ describe('번역 표시', () => {
     ]);
   });
 
-  it('칸 셋 세대는 해설, 예시, 주의할 점을 펼쳐 보이고, 글을 단락·목록으로 나눠 넘긴다', () => {
+  it('칸 셋 세대는 해설과 주의할 점을 펼쳐 보이고 예시는 접는다. 글을 단락·목록으로 나눠 넘긴다', () => {
     const v = translationView({
       ko: '번역',
       note: '',
@@ -179,7 +179,7 @@ describe('번역 표시', () => {
     if (v.state !== 'complete') throw new Error('state');
     expect(v.sections.map((s) => [s.key, s.label, s.open])).toEqual([
       ['main', '해설', true],
-      ['example', '예시', true],
+      ['example', '예시', false],
       ['caution', '주의할 점', true],
     ]);
     expect(v.sections[0]?.blocks).toEqual([
