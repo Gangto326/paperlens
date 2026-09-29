@@ -179,6 +179,47 @@ body,
 .explain > p {
   margin: 4px 0 0;
 }
+/* 해설과 카드의 글: 단락, 목록, 표 (Q9) */
+.explain-caution {
+  border-left-color: rgb(230 160 40 / 0.7);
+  background: rgb(230 160 40 / 0.1);
+}
+.rich > :first-child {
+  margin-top: 4px;
+}
+.rich p {
+  margin: 8px 0 0;
+}
+.rich ul,
+.rich ol {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+.rich li {
+  margin: 3px 0 0;
+}
+.rich strong {
+  font-weight: 700;
+}
+.rich-table {
+  margin: 8px 0 0;
+  overflow-x: auto;
+}
+.rich table {
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.rich th,
+.rich td {
+  padding: 3px 8px;
+  border: 1px solid rgb(128 128 128 / 0.4);
+  text-align: left;
+  vertical-align: top;
+}
+.rich th {
+  font-weight: 600;
+  background: rgb(128 128 128 / 0.12);
+}
 .concept-list {
   display: flex;
   flex-direction: column;

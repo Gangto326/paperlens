@@ -1,4 +1,5 @@
 import type { SelectionResult } from '@shared/mapping/selection';
+import type { InlinePart, RichBlock } from './rich-text';
 import {
   FURTHER_SOURCES_TITLE,
   NO_TRANSLATIONS,
@@ -133,11 +134,71 @@ function renderSection(section: ExplanationSectionView): HTMLElement {
   details.open = section.open;
   const summary = document.createElement('summary');
   summary.textContent = section.label;
-  const body = document.createElement('p');
-  body.lang = 'ko';
-  body.textContent = section.text;
-  details.append(summary, body);
+  details.append(summary, renderRich(section.blocks));
   return details;
+}
+
+function appendInline(parent: HTMLElement, parts: readonly InlinePart[]): void {
+  for (const part of parts) {
+    if (part.bold) {
+      const strong = document.createElement('strong');
+      strong.textContent = part.text;
+      parent.append(strong);
+    } else {
+      parent.append(document.createTextNode(part.text));
+    }
+  }
+}
+
+/** 단락, 목록, 표로 나뉜 글. 글자는 textContent로만 넣는다. */
+function renderRich(blocks: readonly RichBlock[]): HTMLElement {
+  const root = document.createElement('div');
+  root.className = 'rich';
+  root.lang = 'ko';
+  for (const block of blocks) {
+    if (block.kind === 'paragraph') {
+      const p = document.createElement('p');
+      block.lines.forEach((line, i) => {
+        if (i > 0) p.append(document.createElement('br'));
+        appendInline(p, line);
+      });
+      root.append(p);
+    } else if (block.kind === 'list') {
+      const list = document.createElement(block.ordered ? 'ol' : 'ul');
+      for (const item of block.items) {
+        const li = document.createElement('li');
+        appendInline(li, item);
+        list.append(li);
+      }
+      root.append(list);
+    } else {
+      const wrap = document.createElement('div');
+      wrap.className = 'rich-table';
+      const table = document.createElement('table');
+      const head = document.createElement('tr');
+      for (const cell of block.header) {
+        const th = document.createElement('th');
+        appendInline(th, cell);
+        head.append(th);
+      }
+      const thead = document.createElement('thead');
+      thead.append(head);
+      const tbody = document.createElement('tbody');
+      for (const row of block.rows) {
+        const tr = document.createElement('tr');
+        for (const cell of row) {
+          const td = document.createElement('td');
+          appendInline(td, cell);
+          tr.append(td);
+        }
+        tbody.append(tr);
+      }
+      table.append(thead, tbody);
+      wrap.append(table);
+      root.append(wrap);
+    }
+  }
+  return root;
 }
 
 /** 개념 카드. 이름만 보이고 누르면 펼쳐진다. */
@@ -159,8 +220,7 @@ function renderConcept(concept: ConceptView): HTMLElement {
     const label = document.createElement('dt');
     label.textContent = row.label;
     const text = document.createElement('dd');
-    text.lang = 'ko';
-    text.textContent = row.text;
+    text.append(renderRich(row.blocks));
     rows.append(label, text);
   }
   details.append(rows);

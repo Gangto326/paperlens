@@ -406,19 +406,35 @@ export interface Failure {
   nextRetryAt?: string | null;
 }
 
-/** 문장 해설의 칸. 쓸 말이 없는 칸은 빈 문자열이다. */
+/**
+ * 문장 해설의 칸. 쓸 말이 없는 칸은 빈 문자열이다.
+ * 칸 셋(main, example, caution)이 지금의 구성이다(docs/quality-backlog.md Q9). 글에 단락, 목록, 표가 들어 있다.
+ * 칸 넷(plain, role, example, deeper)은 앞선 세대의 구성이다. 지금 세대에서 plain, role, deeper는 빈 문자열이다.
+ * main에 글이 있으면 지금 구성의 세대다.
+ */
 export interface SentenceExplanation {
+  /** 해설. 문장이 말하는 바와 용어 풀이 */
+  main?: string;
+  /** 주의할 점. 흔한 오해와 숨은 전제. 있을 때만 */
+  caution?: string;
   /** 쉬운 뜻 */
   plain: string;
   /** 이 문장이 논문 흐름에서 하는 역할 */
   role: string;
-  /** 구체적 사례 */
+  /** 예시. 앞선 세대에서는 짧은 사례, 지금 세대에서는 끝까지 계산한 예시 */
   example: string;
   /** 더 깊은 설명 */
   deeper: string;
 }
 
-export const EXPLANATION_FIELDS = ['plain', 'role', 'example', 'deeper'] as const;
+export const EXPLANATION_FIELDS = [
+  'main',
+  'caution',
+  'plain',
+  'role',
+  'example',
+  'deeper',
+] as const;
 
 /** 해설에 보여 줄 글이 하나라도 있는지. 칸으로 나누기 전 세대의 note도 본다. */
 export function hasExplanation(result: {
@@ -427,7 +443,7 @@ export function hasExplanation(result: {
 }): boolean {
   if (result.note.trim() !== '') return true;
   const e = result.explanation;
-  return !!e && EXPLANATION_FIELDS.some((k) => e[k].trim() !== '');
+  return !!e && EXPLANATION_FIELDS.some((k) => (e[k] ?? '').trim() !== '');
 }
 
 /** 모델이 반환하고 앱이 검증한 문장 결과. */

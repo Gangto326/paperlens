@@ -161,6 +161,46 @@ describe('번역 표시', () => {
     ]);
   });
 
+  it('칸 셋 세대는 해설, 예시, 주의할 점을 펼쳐 보이고, 글을 단락·목록으로 나눠 넘긴다', () => {
+    const v = translationView({
+      ko: '번역',
+      note: '',
+      explanation: {
+        main: '문서를 **토큰마다** 섞는다.\n\n- 잠재 문서\n- 주변화',
+        caution: '검색은 한 번이다.',
+        plain: '',
+        role: '',
+        example: '0.6×0.9 = 0.54',
+        deeper: '',
+      },
+      warnings: [],
+      chunkId: 'chunk_0001',
+    });
+    if (v.state !== 'complete') throw new Error('state');
+    expect(v.sections.map((s) => [s.key, s.label, s.open])).toEqual([
+      ['main', '해설', true],
+      ['example', '예시', true],
+      ['caution', '주의할 점', true],
+    ]);
+    expect(v.sections[0]?.blocks).toEqual([
+      {
+        kind: 'paragraph',
+        lines: [
+          [
+            { text: '문서를 ', bold: false },
+            { text: '토큰마다', bold: true },
+            { text: ' 섞는다.', bold: false },
+          ],
+        ],
+      },
+      {
+        kind: 'list',
+        ordered: false,
+        items: [[{ text: '잠재 문서', bold: false }], [{ text: '주변화', bold: false }]],
+      },
+    ]);
+  });
+
   it('개념 카드는 통용 표기와 원어를 함께 보이고, 출처 없는 설명을 표시한다', () => {
     const card = {
       id: 'c_1',
@@ -220,7 +260,7 @@ describe('번역 표시', () => {
         rows: [
           { label: '뜻', text: '학습된 모델을 더 학습시키는 것.' },
           { label: '먼저 알 것', text: 'pre-training' },
-        ],
+        ].map((row) => expect.objectContaining(row) as unknown),
         sources: [],
         further: [
           {
@@ -235,7 +275,12 @@ describe('번역 표시', () => {
         id: 'c_2',
         title: 'pre-training',
         badge: null,
-        rows: [{ label: '뜻', text: '학습된 모델을 더 학습시키는 것.' }],
+        rows: [
+          expect.objectContaining({
+            label: '뜻',
+            text: '학습된 모델을 더 학습시키는 것.',
+          }) as unknown,
+        ],
         sources: [
           {
             url: 'https://read.example/a',

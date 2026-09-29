@@ -126,10 +126,12 @@ export function validateChunkOutput(
     accepted.set(id, {
       ko: r.ko.trim(),
       explanation: {
-        plain: r.plain.trim(),
-        role: r.role.trim(),
+        main: r.explain.trim(),
+        caution: r.caution.trim(),
+        plain: '',
+        role: '',
         example: r.example.trim(),
-        deeper: r.deeper.trim(),
+        deeper: '',
       },
       conceptIds: [...new Set(r.conceptIds.map((c) => c.trim()).filter((c) => c !== ''))],
       warnings: r.warnings.map((w) => w.trim()).filter((w) => w !== ''),
@@ -172,7 +174,7 @@ export function validateChunkOutput(
 
     const sourceUrls = new Set(urlsIn(sentence.en));
     for (const url of urlsIn(
-      [got.ko, ...EXPLANATION_FIELDS.map((k) => got.explanation[k])].join('\n'),
+      [got.ko, ...EXPLANATION_FIELDS.map((k) => got.explanation[k] ?? '')].join('\n'),
     )) {
       if (!sourceUrls.has(url)) {
         fatal('invented_url', sentence.id, `원문에 없는 URL: ${url}`);

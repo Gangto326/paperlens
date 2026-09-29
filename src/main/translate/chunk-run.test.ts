@@ -130,10 +130,9 @@ const translate = (inputs: ChunkPromptInputs): unknown => ({
   results: inputs.TARGET_SENTENCES.map((s) => ({
     id: s.id,
     ko: `  번역: ${s.en}  `,
-    plain: ' 쉬운 뜻 ',
-    role: '',
+    explain: ' 해설 글 ',
     example: '',
-    deeper: '',
+    caution: '',
     conceptIds: [],
     warnings: [' '],
   })),
@@ -192,7 +191,7 @@ describe('runChunk', () => {
     expect(first?.ko.startsWith('번역: ')).toBe(true);
     expect(first).toMatchObject({
       note: '',
-      explanation: { plain: '쉬운 뜻', role: '', example: '', deeper: '' },
+      explanation: { main: '해설 글', caution: '', plain: '', role: '', example: '', deeper: '' },
       refs: [],
       conceptIds: [],
       warnings: [],

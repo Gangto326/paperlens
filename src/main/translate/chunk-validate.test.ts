@@ -45,13 +45,12 @@ const input = {
   toId: (alias: string): string | undefined => ALIAS[alias.trim()],
 };
 
-const row = (id: string, ko: string, deeper = ''): ChunkModelSentence => ({
+const row = (id: string, ko: string, caution = ''): ChunkModelSentence => ({
   id,
   ko,
-  plain: '',
-  role: '',
+  explain: '',
   example: '',
-  deeper,
+  caution,
   conceptIds: [],
   warnings: [],
 });
@@ -64,8 +63,8 @@ const check = (results: ChunkModelSentence[]): ReturnType<typeof validateChunkOu
   validateChunkOutput({ kind: 'results', results } satisfies ChunkModelOutput, input);
 const codes = (results: ChunkModelSentence[]): [string, string | null][] =>
   check(results).issues.map((i) => [i.code, i.sentenceId]);
-const replaced = (index: number, ko: string, deeper = ''): ChunkModelSentence[] =>
-  GOOD.map((r, i) => (i === index ? row(r.id, ko, deeper) : r));
+const replaced = (index: number, ko: string, caution = ''): ChunkModelSentence[] =>
+  GOOD.map((r, i) => (i === index ? row(r.id, ko, caution) : r));
 
 describe('validateChunkOutput', () => {
   it('정상 결과는 문제가 없고 대상 문장 순서의 원래 ID로 나온다', () => {
@@ -168,8 +167,9 @@ describe('validateChunkOutput', () => {
         results: [
           {
             ...first,
-            plain: ' 쉬운 뜻 ',
-            example: '사례',
+            explain: ' 해설 글 ',
+            example: '',
+            caution: ' ',
             conceptIds: ['c_2', ' c_1 ', 'c_404', 'c_2'],
           },
           ...GOOD.slice(1),
@@ -183,7 +183,7 @@ describe('validateChunkOutput', () => {
     ]);
     expect(v.results[0]).toMatchObject({
       note: '',
-      explanation: { plain: '쉬운 뜻', role: '', example: '사례', deeper: '' },
+      explanation: { main: '해설 글', caution: '', plain: '', role: '', example: '', deeper: '' },
       conceptIds: ['c_2', 'c_1'],
       warnings: [],
     });

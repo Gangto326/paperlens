@@ -168,9 +168,11 @@ const linkLine = (link: ConceptSourceLink, label: string): string => {
 };
 
 const EXPLANATION_FIELDS: readonly (readonly [keyof SentenceExplanation, string])[] = [
+  ['main', '해설'],
   ['plain', '쉬운 뜻'],
   ['role', '이 문장의 역할'],
-  ['example', '사례'],
+  ['example', '예시'],
+  ['caution', '주의할 점'],
   ['deeper', '더 깊이'],
 ];
 
@@ -214,7 +216,7 @@ export function formatReviewSheet(sample: ReviewSample): string {
     );
     if (item.explanation) {
       for (const [key, label] of EXPLANATION_FIELDS) {
-        const text = item.explanation[key].trim();
+        const text = (item.explanation[key] ?? '').trim();
         if (text === '') continue;
         lines.push(`**${label}**`, '', quote(text), '');
       }

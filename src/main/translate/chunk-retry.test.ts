@@ -129,10 +129,9 @@ const scripted = (
         results: reply.make(inputsOf(request)).map((r) => ({
           id: r.id,
           ko: r.ko,
-          plain: '',
-          role: '',
+          explain: '',
           example: '',
-          deeper: '',
+          caution: '',
           conceptIds: [],
           warnings: [],
         })),

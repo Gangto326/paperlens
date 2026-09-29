@@ -419,7 +419,10 @@ const failure = obj(
   ['nextRetryAt'],
 );
 
-const sentenceExplanation = obj({ plain: str, role: str, example: str, deeper: str });
+const sentenceExplanation = obj(
+  { main: str, caution: str, plain: str, role: str, example: str, deeper: str },
+  ['main', 'caution'],
+);
 
 export const sentenceResultSchema = obj(
   {
