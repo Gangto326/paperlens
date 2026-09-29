@@ -26,6 +26,9 @@ export class CacheReadError extends Error {
  * manifest.files에 파일별 해시를 기록해 재시작 시 검증할 수 있게 한다.
  */
 export class PaperCacheStore {
+  /** 논문별로 마지막에 줄 선 manifest 갱신 */
+  private readonly manifestQueue = new Map<string, Promise<unknown>>();
+
   constructor(private readonly root: string) {}
 
   paperDir(pdfSha256: string): string {
@@ -136,17 +139,31 @@ export class PaperCacheStore {
   /**
    * manifest를 갱신한다. 파일 해시 등록은 manifest보다 먼저 결과 파일을 확정한 뒤 호출한다
    * (PLAN 8.3: 결과 파일과 해시 확정 → manifest에서 완료 표시).
+   * 읽고 고쳐 쓰는 방식이라 같은 논문의 갱신은 부른 순서대로 하나씩 처리한다(COMMIT_PLAN M3 P1).
+   * 동시에 도는 청크가 함께 불러도 한쪽의 기록이 사라지지 않는다. 앞선 갱신이 실패해도 뒤의 갱신은 돈다.
+   * 순서는 이 인스턴스 안에서만 지킨다. 앱은 저장소를 하나만 만든다.
    */
-  async updateManifest(
+  updateManifest(
     pdfSha256: string,
     mutate: (m: Manifest) => void,
     now = new Date(),
   ): Promise<Manifest> {
-    const manifest = await this.readManifest(pdfSha256);
-    mutate(manifest);
-    manifest.updatedAt = now.toISOString();
-    await this.writeJson('manifest', this.manifestPath(pdfSha256), manifest);
-    return manifest;
+    const previous = this.manifestQueue.get(pdfSha256) ?? Promise.resolve();
+    const run = previous
+      .catch(() => undefined)
+      .then(async () => {
+        const manifest = await this.readManifest(pdfSha256);
+        mutate(manifest);
+        manifest.updatedAt = now.toISOString();
+        await this.writeJson('manifest', this.manifestPath(pdfSha256), manifest);
+        return manifest;
+      });
+    this.manifestQueue.set(pdfSha256, run);
+    const release = (): void => {
+      if (this.manifestQueue.get(pdfSha256) === run) this.manifestQueue.delete(pdfSha256);
+    };
+    run.then(release, release);
+    return run;
   }
 
   /** manifest.files에 (상대경로, 해시)를 기록하거나 갱신한다. */

@@ -102,4 +102,31 @@ describe('PaperCacheStore', () => {
     expect(removed).toEqual(['generations/g/.context.json.123.abcd.tmp']);
     expect(await fs.readdir(dir)).toEqual(['keep.json']);
   });
+
+  it('updateManifest를 동시에 불러도 모든 기록이 남고 부른 순서대로 처리한다', async () => {
+    await store.initPaper(SAMPLE_SHA);
+    const names = Array.from({ length: 20 }, (_, i) => `generations/gen_1/chunks/c${i}.json`);
+    await Promise.all(
+      names.map((path) =>
+        store.updateManifest(SAMPLE_SHA, (m) => {
+          m.files.push({ path, sha256: 'a'.repeat(64) });
+          m.usage.logicalJobs += 1;
+        }),
+      ),
+    );
+    const manifest = await store.readManifest(SAMPLE_SHA);
+    expect(manifest.files.map((f) => f.path)).toEqual(names);
+    expect(manifest.usage.logicalJobs).toBe(20);
+  });
+
+  it('앞선 updateManifest가 실패해도 뒤의 갱신은 처리한다', async () => {
+    await store.initPaper(SAMPLE_SHA);
+    const failing = store.updateManifest(SAMPLE_SHA, () => {
+      throw new Error('mutate 실패');
+    });
+    const following = store.updateManifest(SAMPLE_SHA, (m) => (m.state = 'extracting'));
+    await expect(failing).rejects.toThrow('mutate 실패');
+    await expect(following).resolves.toMatchObject({ state: 'extracting' });
+    expect((await store.readManifest(SAMPLE_SHA)).state).toBe('extracting');
+  });
 });
