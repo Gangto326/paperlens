@@ -12,6 +12,8 @@ import { planChunks, type ChunkerOptions } from '../chunk/chunker';
 import { buildContextInput } from '../context/context-input';
 import { contextPromptVersionOf, runContextPass } from '../context/context-pass';
 import { runConceptResearch, type ResearchBatchReport } from '../research/concept-research';
+import { acquireJobLock } from '../resume/job-lock';
+import { recoverPaper } from '../resume/recover';
 import type { LlmJobRunner } from '../llm/job';
 import { runChunk } from '../translate/chunk-run';
 
@@ -25,6 +27,8 @@ import { runChunk } from '../translate/chunk-run';
  * - 멈춤 요청은 돌고 있는 요청을 취소하지 않는다. 돌던 청크들이 끝난 뒤 멈추고 상태는 `paused`가 된다.
  * - 실패한 청크가 `maxFailedChunks`개가 되면 남은 청크를 보내지 않고 `failed`로 멈춘다.
  *   멈춘 이유가 여럿이면 로그인·한도가 앞선다. 다시 시작할 수 있는 상태로 남기기 위해서다.
+ * - 시작할 때 논문의 작업 락을 잡고 캐시를 점검한다(COMMIT_PLAN C3.3, resume/job-lock.ts, resume/recover.ts).
+ *   다른 프로세스가 같은 논문을 처리 중이면 `busy`로 돌아온다. 앱이 죽으면서 남긴 락은 치우고 잡는다.
  * - 청크의 순서는 바꾸지 않는다. 고른 문장의 청크를 먼저 돌리는 기능(C2.10)은 뺐다(2026-09-29 사용자 결정).
  * 청크별 입력·출력 토큰과 시간은 로그와 diagnostics/run-<시각>.json에 남긴다(PLAN 11.2).
  */
@@ -253,10 +257,24 @@ export class PaperScheduler {
     }
     this.running = pdfSha256;
     this.stopRequested = false;
-    this.emit({ type: 'started', pdfSha256 });
     let result: RunOutcome;
     try {
-      result = await this.execute(pdfSha256, t0, outcome);
+      const lock = await acquireJobLock(this.deps.store, pdfSha256, { now: this.now });
+      if (!lock.ok) {
+        return outcome('busy', `다른 프로세스(pid ${lock.holder.pid})가 이 논문을 처리 중입니다`);
+      }
+      if (lock.tookOver) {
+        this.log(
+          `scheduler ${pdfSha256.slice(0, 8)} 남은 락을 치움 pid=${lock.tookOver.pid} startedAt=${lock.tookOver.startedAt}`,
+        );
+      }
+      this.emit({ type: 'started', pdfSha256 });
+      try {
+        await recoverPaper(this.deps.store, pdfSha256, { now: this.now, log: this.log });
+        result = await this.execute(pdfSha256, t0, outcome);
+      } finally {
+        await lock.release();
+      }
     } finally {
       this.running = null;
       this.stopRequested = false;
