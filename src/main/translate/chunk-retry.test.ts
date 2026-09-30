@@ -208,6 +208,41 @@ describe('runChunk 재시도', () => {
     expect((await store.readManifest(SHA)).errors).toEqual([]);
   });
 
+  it('출력이 잘려 JSON이 깨졌으면 끝까지 쓰인 문장은 건지고 남은 문장만 수정 턴에 보낸다', async () => {
+    const item = (id: string, ko: string): string =>
+      JSON.stringify({
+        id,
+        ko,
+        explain: '',
+        example: '',
+        caution: '',
+        conceptIds: [],
+        warnings: [],
+      });
+    const cut = `{"kind":"results","results":[${item('s2', '잘린 출력의 번역 [EQ_1]')},${item('s3', '둘째')},{"id":"s4","ko":"쓰다`;
+    const runner = scripted([{ fail: 'invalid_json', rawText: cut }, { make: good }]);
+    const result = await run(runner);
+    expect(result).toMatchObject({ ok: true });
+    expect(kinds(result)).toEqual(['initial:llm_failed:4:2', 'repair:ok:2:2']);
+    expect(targetsOf(runner.inputs()[1] as Inputs)).toEqual(['s4', 's5']);
+    expect(result.chunk.results.map((r) => r.ko)).toEqual([
+      '잘린 출력의 번역 [EQ_1]',
+      '둘째',
+      'ko:s4',
+      'ko:s5',
+    ]);
+    // 건진 문장도 검증을 거친다. 자리표시자가 빠진 문장은 받지 않는다.
+    const bad = `{"kind":"results","results":[${item('s2', '자리표시자 없음')},${item('s3', '둘째')}`;
+    const second = scripted([{ fail: 'invalid_json', rawText: bad }, { make: good }]);
+    await store.updateManifest(SHA, (m) => {
+      m.files = [];
+    });
+    await fs.rm(join(store.paperDir(SHA), 'generations'), { recursive: true, force: true });
+    const again = await run(second);
+    expect(kinds(again)).toEqual(['initial:llm_failed:4:1', 'repair:ok:3:3']);
+    expect(targetsOf(second.inputs()[1] as Inputs)).toEqual(['s2', 's4', 's5']);
+  });
+
   it('검증에 걸린 문장만 다시 보내고 통과한 문장의 결과는 그대로 둔다', async () => {
     const runner = scripted([
       // s2(id_1)의 자리표시자를 지우고 s4(id_3)를 빠뜨린다.

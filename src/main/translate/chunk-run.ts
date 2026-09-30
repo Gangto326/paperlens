@@ -311,6 +311,37 @@ export async function runChunk(
   if (stale.length > 0) await inflight.remove(stale);
   const recovered = accepted.size;
 
+  /** 끊긴 출력에서 끝까지 쓰인 문장을 골라 검증한다. 모양이 다르거나 대상이 아닌 항목은 버린다. */
+  const salvage = (
+    text: string | null,
+    targetIds: readonly string[],
+    neighborIds: readonly string[],
+  ): { accepted: SentenceResult[]; issues: ChunkIssue[] } | null => {
+    if (text === null) return null;
+    const open = new Set(targetIds);
+    const written = salvageArrayItems(text, 'results')
+      .filter((item) => sentenceValidator(item))
+      .filter((item) => {
+        const id = aliases.sentenceId(item.id);
+        return id !== undefined && open.has(id);
+      });
+    if (written.length === 0) return null;
+    const present = new Set(written.map((item) => aliases.sentenceId(item.id)));
+    const checked = validateChunkOutput(
+      { kind: 'results', results: written },
+      {
+        targets: targetIds.filter((id) => present.has(id)).map(need),
+        neighbors: neighborIds.map(need),
+        toId: (alias) => aliases.sentenceId(alias),
+        conceptIds,
+      },
+    );
+    const broken = new Set(
+      checked.issues.filter((i) => i.severity === 'fatal').map((i) => i.sentenceId),
+    );
+    return { accepted: checked.results.filter((r) => !broken.has(r.id)), issues: checked.issues };
+  };
+
   const request = async (
     kind: ChunkAttemptKind,
     targetIds: string[],
@@ -431,6 +462,18 @@ export async function runChunk(
         : REPAIR_KINDS.includes(result.kind)
           ? 'repair'
           : 'split';
+      // 출력이 잘려 JSON이 깨졌어도 끝까지 쓰인 문장은 건진다(COMMIT_PLAN C3.8, M3 P2). 남은 문장만 수정 턴에 보낸다.
+      const salvaged =
+        next === 'stop'
+          ? null
+          : salvage(result.rawText ?? result.partialText ?? null, targetIds, neighborIds);
+      if (salvaged && salvaged.accepted.length > 0) {
+        return finish('llm_failed', next, result.message, {
+          llmKind: result.kind,
+          issues: salvaged.issues,
+          accepted: salvaged.accepted,
+        });
+      }
       return finish('llm_failed', next, result.message, { llmKind: result.kind });
     }
     if (!outputValidator(result.value)) {
