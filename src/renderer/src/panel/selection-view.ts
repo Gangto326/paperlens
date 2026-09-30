@@ -107,7 +107,11 @@ export type TranslationView =
       sections: ExplanationSectionView[];
       concepts: ConceptView[];
       warnings: string[];
+      /** 앞선 세대의 번역을 대신 보여 주는 것이면 그 안내 문구. 아니면 null */
+      previous: string | null;
     };
+
+export const PREVIOUS_TRANSLATION = '앞선 버전의 번역입니다. 새 번역이 끝나면 바뀝니다.';
 
 /** 문장 ID로 저장된 번역을 찾는다. */
 export type TranslationLookup = (sentenceId: string) => TranslationView;
@@ -187,6 +191,7 @@ export function translationView(
       .filter((c) => c !== undefined)
       .map((c) => conceptView(c, concepts)),
     warnings: found.warnings.map(warningText),
+    previous: found.previousGenerationId ? PREVIOUS_TRANSLATION : null,
   };
 }
 

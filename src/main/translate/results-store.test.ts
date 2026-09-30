@@ -314,6 +314,77 @@ describe('readTranslations', () => {
     expect(snapshot.results).toEqual({});
   });
 
+  it('지금 세대에 완료가 없는 청크는 앞선 세대의 완료 결과를 대신 보여 준다', async () => {
+    // 앞선 세대 gen_1에 청크 셋이 모두 완료돼 있다.
+    for (const i of [0, 1, 2]) await saveChunk(i, 'complete');
+    // 새 세대 gen_2는 같은 추출본이고 첫 청크만 완료했다. 둘째는 실패했다.
+    const newer = 'gen_2';
+    const newPath = store.generationPath(SHA, newer, 'chunks/chunk_0001.json');
+    const newSha = await store.writeJson('chunkDocument', newPath, {
+      ...sampleChunk,
+      id: 'chunk_0001',
+      sectionId: 'sec_0',
+      targetSentenceIds: ['id_0_0', 'id_0_1'],
+      status: 'complete',
+      results: ['id_0_0', 'id_0_1'].map((s) => ({
+        id: s,
+        ko: `새 번역 ${s}`,
+        note: '',
+        refs: [],
+        conceptIds: [],
+        warnings: [],
+      })),
+    });
+    const failedPath = store.generationPath(SHA, newer, 'chunks/chunk_0002.json');
+    const failedSha = await store.writeJson('chunkDocument', failedPath, {
+      ...sampleChunk,
+      id: 'chunk_0002',
+      sectionId: 'sec_1',
+      targetSentenceIds: ['id_1_0', 'id_1_1'],
+      status: 'failed',
+      results: [],
+    });
+    await store.updateManifest(SHA, (m) => {
+      store.recordFile(m, SHA, newPath, newSha);
+      store.recordFile(m, SHA, failedPath, failedSha);
+      for (const [n, id] of [GEN, newer].entries()) {
+        m.generations.push({
+          generationId: id,
+          extractionRevision: REV,
+          promptVersion: `p${n}`,
+          contextVersion: 1,
+          provider: 'codex',
+          runtimeVersion: '0',
+          modelId: null,
+          createdAt: `2026-09-3${n}T00:00:00.000Z`,
+        });
+      }
+      m.currentGenerationId = newer;
+    });
+    const snapshot = await readTranslations(store, SHA, CHUNKER);
+    expect(snapshot.chunks).toEqual([
+      { id: 'chunk_0001', status: 'complete', sentenceIds: ['id_0_0', 'id_0_1'] },
+      { id: 'chunk_0002', status: 'failed', sentenceIds: ['id_1_0', 'id_1_1'], previous: true },
+      { id: 'chunk_0003', status: 'pending', sentenceIds: ['id_2_0', 'id_2_1'], previous: true },
+    ]);
+    expect(snapshot.results['id_0_0']).toMatchObject({ ko: '새 번역 id_0_0' });
+    expect(snapshot.results['id_0_0']?.previousGenerationId).toBeUndefined();
+    expect(snapshot.results['id_1_0']).toMatchObject({
+      ko: '번역 id_1_0',
+      previousGenerationId: GEN,
+    });
+    expect(snapshot.results['id_2_1']).toMatchObject({ previousGenerationId: GEN });
+
+    // 다른 추출본의 세대는 쓰지 않는다.
+    await store.updateManifest(SHA, (m) => {
+      const old = m.generations.find((g) => g.generationId === GEN);
+      if (old) old.extractionRevision = 'rother';
+    });
+    const other = await readTranslations(store, SHA, CHUNKER);
+    expect(other.chunks.map((c) => c.previous ?? false)).toEqual([false, false, false]);
+    expect(other.results['id_1_0']).toBeUndefined();
+  });
+
   it('document.json이 없으면 빈 결과다', async () => {
     await store.updateManifest(SHA, (m) => {
       m.currentExtractionRevision = 'rmissing';

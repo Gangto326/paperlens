@@ -257,6 +257,8 @@ export interface SentenceTranslation {
   conceptIds?: string[];
   warnings: string[];
   chunkId: string;
+  /** 앞선 세대의 결과를 대신 보여 주는 것이면 그 세대의 id */
+  previousGenerationId?: string;
 }
 
 /** 개념 카드에 붙는 자료 링크. 주소는 조사 턴의 검색 기록과 대조해 통과한 것이다. */
@@ -295,9 +297,18 @@ export interface TranslationSnapshot {
   pdfSha256: string;
   state: PaperState;
   generationId: string | null;
-  /** 읽기 순서의 청크. pending은 아직 결과 파일이 없는 청크다. */
-  chunks: { id: string; status: 'pending' | 'complete' | 'failed'; sentenceIds: string[] }[];
-  /** 문장 ID → 번역. 완료된 문장만 들어 있다. */
+  /**
+   * 읽기 순서의 청크. pending은 아직 결과 파일이 없는 청크다.
+   * `previous`는 지금 세대에는 아직 없고 앞선 세대의 완료 결과를 대신 보여 주는 청크다(COMMIT_PLAN C3.2).
+   * 진행률에는 지금 세대의 완료만 센다.
+   */
+  chunks: {
+    id: string;
+    status: 'pending' | 'complete' | 'failed';
+    sentenceIds: string[];
+    previous?: boolean;
+  }[];
+  /** 문장 ID → 번역. 완료된 문장만 들어 있다. 앞선 세대의 것은 `previousGenerationId`가 있다. */
   results: Record<string, SentenceTranslation>;
   /** 개념 카드 id → 카드. 컨텍스트를 읽지 못했거나 카드가 없는 세대는 비어 있다. */
   concepts?: Record<string, ConceptCard>;

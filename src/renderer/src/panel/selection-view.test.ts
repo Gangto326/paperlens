@@ -12,6 +12,7 @@ import {
   splitEquations,
   translationView,
   UNSOURCED_BADGE,
+  PREVIOUS_TRANSLATION,
 } from './selection-view';
 
 const entry = (
@@ -134,6 +135,7 @@ describe('번역 표시', () => {
       sections: [],
       concepts: [],
       warnings: [],
+      previous: null,
     });
     expect(v.sentences[1]?.translation).toEqual({
       state: 'complete',
@@ -142,6 +144,23 @@ describe('번역 표시', () => {
       sections: [],
       concepts: [],
       warnings: ['원문의 수치 44.5가 번역에 그대로 보이지 않습니다', '원문이 잘려 있다'],
+      previous: null,
+    });
+    // 앞선 세대의 번역은 안내 문구가 붙는다.
+    const older = translationView(
+      {
+        ko: '옛 번역',
+        note: '',
+        warnings: [],
+        chunkId: 'chunk_0001',
+        previousGenerationId: 'gen_0',
+      },
+      {},
+    );
+    expect(older).toMatchObject({
+      state: 'complete',
+      ko: '옛 번역',
+      previous: PREVIOUS_TRANSLATION,
     });
   });
 

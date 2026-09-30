@@ -104,6 +104,13 @@ function renderSentence(s: SentenceView): HTMLElement {
   ko.lang = 'ko';
   ko.textContent = t.ko;
   article.append(ko);
+  if (t.previous !== null) {
+    const previous = document.createElement('p');
+    previous.className = 'sentence-previous muted';
+    previous.lang = 'ko';
+    previous.textContent = t.previous;
+    article.append(previous);
+  }
   if (t.note !== null) {
     const note = document.createElement('p');
     note.className = 'sentence-note';

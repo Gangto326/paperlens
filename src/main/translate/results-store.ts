@@ -1,6 +1,6 @@
 import { relative } from 'node:path';
 import type { ConceptCard, ConceptSourceLink, TranslationSnapshot } from '@shared/ipc';
-import type { ExtractionDocument, Reference, Source } from '@shared/schema';
+import type { ChunkDocument, ExtractionDocument, Reference, Source } from '@shared/schema';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { planChunks, type ChunkerOptions } from '../chunk/chunker';
 import { isSelfSource, paperIdentityOf } from '../research/self-source';
@@ -8,6 +8,9 @@ import { isSelfSource, paperIdentityOf } from '../research/self-source';
 /**
  * 화면 표시용 번역 결과 읽기(COMMIT_PLAN C2.9). 캐시 파일만 읽는다. LLM을 부르지 않는다.
  * - 완료(complete) 청크의 결과만 돌려준다. 실패한 청크에 남은 부분 결과는 보여주지 않는다.
+ * - 지금 세대에 완료가 없는 청크는 같은 추출본의 앞선 세대에서 같은 문장들의 완료 결과를 찾아 대신 보여 준다
+ *   (COMMIT_PLAN C3.2). 컨텍스트나 지침이 바뀌어 새 세대를 만드는 동안 앞선 번역이 사라지지 않게 하려는 것이다.
+ *   그 청크는 `previous`로 표시하고 진행률에는 세지 않는다. 새 세대의 완료가 생기면 그것으로 바뀐다.
  * - 파일 해시가 manifest와 다르거나 스키마가 맞지 않는 청크는 없는 것으로 본다.
  * - 청크 계획은 document.json에서 다시 계산한다. 아직 파일이 없는 청크는 pending이다.
  * - 개념 카드는 같은 세대의 context.json에서 읽는다. 읽지 못하면 카드 없이 번역만 돌려준다.
@@ -108,38 +111,70 @@ export async function readTranslations(
     }
   }
   snapshot.concepts = concepts;
+  // 앞선 세대는 새것부터 본다. 다른 추출본의 세대는 문장 id가 달라 쓰지 않는다.
+  const earlier = manifest.generations
+    .filter((g) => g.generationId !== generationId && g.extractionRevision === rev)
+    .map((g) => g.generationId)
+    .reverse();
+  const readChunk = async (
+    gen: string,
+    chunk: (typeof plan.chunks)[number],
+  ): Promise<ChunkDocument | null> => {
+    const path = store.generationPath(pdfSha256, gen, `chunks/${chunk.id}.json`);
+    const sha = hashOf(path);
+    if (sha === undefined) return null;
+    try {
+      const saved = await store.readJson('chunkDocument', path, sha);
+      const same =
+        saved.targetSentenceIds.length === chunk.targetSentenceIds.length &&
+        saved.targetSentenceIds.every((id, i) => id === chunk.targetSentenceIds[i]);
+      return same ? saved : null;
+    } catch (err) {
+      if (!(err instanceof CacheReadError)) throw err;
+      return null;
+    }
+  };
+  const take = (chunkId: string, saved: ChunkDocument, previousGenerationId?: string): void => {
+    for (const r of saved.results) {
+      snapshot.results[r.id] = {
+        ko: r.ko,
+        note: r.note,
+        explanation: r.explanation ?? null,
+        // 앞선 세대의 개념 카드 id는 지금 세대의 카드가 아니다. 잇지 않는다.
+        conceptIds: previousGenerationId
+          ? []
+          : r.conceptIds.filter((id) => concepts[id] !== undefined),
+        warnings: r.warnings,
+        chunkId,
+        ...(previousGenerationId ? { previousGenerationId } : {}),
+      };
+    }
+  };
   for (const chunk of plan.chunks) {
     let status: TranslationSnapshot['chunks'][number]['status'] = 'pending';
-    if (generationId !== null) {
-      const path = store.generationPath(pdfSha256, generationId, `chunks/${chunk.id}.json`);
-      const sha = hashOf(path);
-      if (sha !== undefined) {
-        try {
-          const saved = await store.readJson('chunkDocument', path, sha);
-          const same =
-            saved.targetSentenceIds.length === chunk.targetSentenceIds.length &&
-            saved.targetSentenceIds.every((id, i) => id === chunk.targetSentenceIds[i]);
-          if (same && saved.status === 'complete') {
-            status = 'complete';
-            for (const r of saved.results) {
-              snapshot.results[r.id] = {
-                ko: r.ko,
-                note: r.note,
-                explanation: r.explanation ?? null,
-                conceptIds: r.conceptIds.filter((id) => concepts[id] !== undefined),
-                warnings: r.warnings,
-                chunkId: chunk.id,
-              };
-            }
-          } else if (same && saved.status === 'failed') {
-            status = 'failed';
-          }
-        } catch (err) {
-          if (!(err instanceof CacheReadError)) throw err;
-        }
+    const saved = generationId === null ? null : await readChunk(generationId, chunk);
+    if (saved?.status === 'complete') {
+      status = 'complete';
+      take(chunk.id, saved);
+    } else if (saved?.status === 'failed') {
+      status = 'failed';
+    }
+    let previous = false;
+    if (status !== 'complete') {
+      for (const gen of earlier) {
+        const old = await readChunk(gen, chunk);
+        if (old?.status !== 'complete') continue;
+        take(chunk.id, old, gen);
+        previous = true;
+        break;
       }
     }
-    snapshot.chunks.push({ id: chunk.id, status, sentenceIds: chunk.targetSentenceIds });
+    snapshot.chunks.push({
+      id: chunk.id,
+      status,
+      sentenceIds: chunk.targetSentenceIds,
+      ...(previous ? { previous: true } : {}),
+    });
   }
   return snapshot;
 }
