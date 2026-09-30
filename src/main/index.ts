@@ -31,6 +31,7 @@ import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
 import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex/codex-account';
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 import { CodexJobRunner } from './llm/codex/codex-jobs';
+import { AutoResume } from './scheduler/auto-resume';
 import { PaperScheduler, type SchedulerEvent } from './scheduler/paper-scheduler';
 import { readTranslations } from './translate/results-store';
 
@@ -70,6 +71,7 @@ const jobs = new CodexJobRunner({
   log: (line) => console.log(`[llm] ${line}`),
 });
 let scheduler: PaperScheduler | null = null;
+let autoResume: AutoResume | null = null;
 
 /** 스케줄러 이벤트 → renderer용 이벤트. 사용량·청크 계획 같은 내부 값은 보내지 않는다. */
 function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
@@ -142,6 +144,8 @@ function startProcessing(pdfSha256: string, trigger: string): ProcessStart {
     };
   }
   console.log(`[process] 시작 ${pdfSha256.slice(0, 8)} (${trigger})`);
+  // 사용자가 직접 시작했으면 자동 재개의 기다림은 끝난다.
+  autoResume?.cancel();
   void scheduler
     .run(pdfSha256)
     .catch((err: unknown) =>
@@ -381,13 +385,34 @@ function registerIpc(): void {
     research: researchEnabled ? 'builtin_web' : 'none',
     log: (line) => console.log(`[process] ${line}`),
   });
-  scheduler.onEvent((event) => {
-    const payload = toProcessEvent(event);
-    if (!payload) return;
+  const pushProcessEvent = (payload: ProcessEvent): void => {
     for (const win of BrowserWindow.getAllWindows()) {
       if (!win.isDestroyed()) win.webContents.send(IPC.processEvent, payload);
     }
+  };
+  scheduler.onEvent((event) => {
+    const payload = toProcessEvent(event);
+    if (payload) pushProcessEvent(payload);
+    // 한도·로그인으로 멈추면 앱이 실행 중인 동안 풀리기를 기다렸다가 다시 시작한다(C3.5).
+    if (event.type === 'finished' && autoResume) {
+      if (event.outcome.reason === 'waiting_quota') void autoResume.waitForQuota(event.pdfSha256);
+      else if (event.outcome.reason === 'needs_login') autoResume.waitForLogin(event.pdfSha256);
+    }
   });
+  autoResume = new AutoResume({
+    readRateLimits: () => account.readRateLimits(),
+    start: (pdfSha256, trigger) => startProcessing(pdfSha256, trigger),
+    onAccountEvent: (handler) => account.onEvent(handler),
+    log: (line) => console.log(`[process] ${line}`),
+  });
+  autoResume.onChange((status) =>
+    pushProcessEvent({
+      type: 'waiting',
+      pdfSha256: status.kind === 'none' ? null : status.pdfSha256,
+      kind: status.kind,
+      resumeAt: status.kind === 'quota' ? status.resumeAt : null,
+    }),
+  );
 
   // 계정·로그인·한도(C1.19). 실제 로그인은 기본 브라우저에서 사용자가 마치고, 완료는 llm:accountEvent로 푸시된다.
   ipcMain.handle(IPC.llmAccountRead, async (): Promise<LlmAccountStatus> => account.read());

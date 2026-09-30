@@ -244,6 +244,16 @@ export type ProcessEvent =
       completed: number;
       failed: number;
       total: number;
+    }
+  /**
+   * 자동 재개 대기(C3.5). quota는 한도가 풀리기를 기다린다. resumeAt은 다음에 한도를 확인할 시각(ISO 8601)이고
+   * 갱신 시각을 모르면 null이다. login은 로그인이 끝나기를 기다린다. none은 기다림이 끝난 것이다.
+   */
+  | {
+      type: 'waiting';
+      pdfSha256: string | null;
+      kind: 'none' | 'quota' | 'login';
+      resumeAt: string | null;
     };
 
 /** 문장 하나의 저장된 번역·해설(C2.9). 검증을 통과해 완료된 청크의 결과만 온다. */

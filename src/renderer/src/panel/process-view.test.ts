@@ -3,6 +3,7 @@ import type { ProcessEvent, TranslationSnapshot } from '@shared/ipc';
 import {
   INITIAL_PROCESS,
   applyProcessEvent,
+  clockText,
   processFromSnapshot,
   processView,
   type ProcessModel,
@@ -170,5 +171,48 @@ describe('processView', () => {
       },
     ]);
     expect(model).toMatchObject({ completed: 1, total: 2, message: '다른 논문을 처리 중입니다' });
+  });
+});
+
+describe('자동 재개 대기(C3.5)', () => {
+  it('한도 대기와 로그인 대기를 단계 글에 보여 주고, 처리가 다시 시작되면 지운다', () => {
+    let model = processFromSnapshot(snapshot('waiting_quota', ['complete', 'pending']));
+    model = applyProcessEvent(model, {
+      type: 'waiting',
+      pdfSha256: SHA,
+      kind: 'quota',
+      resumeAt: '2026-09-30T04:31:00.000Z',
+    });
+    expect(processView(model).stage).toContain(
+      `${clockText('2026-09-30T04:31:00.000Z')}에 한도를 다시 확인합니다`,
+    );
+    model = applyProcessEvent(model, {
+      type: 'waiting',
+      pdfSha256: SHA,
+      kind: 'quota',
+      resumeAt: null,
+    });
+    expect(processView(model).stage).toContain('한도를 주기적으로 확인합니다');
+    model = applyProcessEvent(model, {
+      type: 'waiting',
+      pdfSha256: SHA,
+      kind: 'login',
+      resumeAt: null,
+    });
+    expect(processView(model).stage).toContain('로그인하면 이어서 합니다');
+    model = applyProcessEvent(model, {
+      type: 'context',
+      pdfSha256: SHA,
+      status: 'running',
+      message: null,
+    });
+    expect(model.waiting).toBeNull();
+    model = applyProcessEvent(model, {
+      type: 'waiting',
+      pdfSha256: null,
+      kind: 'none',
+      resumeAt: null,
+    });
+    expect(model.waiting).toBeNull();
   });
 });

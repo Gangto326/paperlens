@@ -16,6 +16,8 @@ export interface ProcessModel {
   failed: number;
   total: number;
   message: string | null;
+  /** 자동 재개를 기다리는 중이면 그 종류와 다음 확인 시각(C3.5) */
+  waiting: { kind: 'quota' | 'login'; resumeAt: string | null } | null;
 }
 
 export const INITIAL_PROCESS: ProcessModel = {
@@ -28,6 +30,7 @@ export const INITIAL_PROCESS: ProcessModel = {
   failed: 0,
   total: 0,
   message: null,
+  waiting: null,
 };
 
 /** 열린 논문의 저장 상태로 처음 모델을 만든다. */
@@ -51,7 +54,7 @@ export function applyProcessEvent(model: ProcessModel, event: ProcessEvent): Pro
       return { ...model, state: event.state };
     case 'context':
       if (event.status === 'running') {
-        return { ...model, running: true, phase: 'context', message: null };
+        return { ...model, running: true, phase: 'context', message: null, waiting: null };
       }
       if (event.status === 'failed') return { ...model, message: event.message };
       return { ...model, running: true, phase: 'translating' };
@@ -61,6 +64,11 @@ export function applyProcessEvent(model: ProcessModel, event: ProcessEvent): Pro
       }
       if (event.status === 'stopped') return { ...model, message: event.message };
       return { ...model, running: true, phase: 'translating' };
+    case 'waiting':
+      return {
+        ...model,
+        waiting: event.kind === 'none' ? null : { kind: event.kind, resumeAt: event.resumeAt },
+      };
     case 'plan':
       return { ...model, running: true, phase: 'translating', total: event.total };
     case 'chunkStarted':
@@ -97,6 +105,14 @@ const STATE_TEXT: Partial<Record<PaperState, string>> = {
   failed: '실패',
 };
 
+/** "9월 30일 13:05"처럼 사용자 시간대의 시각. 읽지 못하는 값은 그대로 보여 준다. */
+export function clockText(iso: string): string {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return iso;
+  const two = (n: number): string => String(n).padStart(2, '0');
+  return `${at.getMonth() + 1}월 ${at.getDate()}일 ${two(at.getHours())}:${two(at.getMinutes())}`;
+}
+
 export interface ProcessView {
   stage: string;
   button: { label: string; action: 'start' | 'stop'; disabled: boolean } | null;
@@ -120,7 +136,15 @@ export function processView(model: ProcessModel): ProcessView {
   }
   const name = model.state ? STATE_TEXT[model.state] : undefined;
   const base = name ?? '번역 대기';
-  const stage = `${base}${model.total > 0 ? ` ·${progress} 청크${failed}` : ''}`;
+  const waiting =
+    model.waiting === null
+      ? ''
+      : model.waiting.kind === 'login'
+        ? ' · 로그인하면 이어서 합니다'
+        : model.waiting.resumeAt === null
+          ? ' · 한도를 주기적으로 확인합니다'
+          : ` · ${clockText(model.waiting.resumeAt)}에 한도를 다시 확인합니다`;
+  const stage = `${base}${model.total > 0 ? ` ·${progress} 청크${failed}` : ''}${waiting}`;
   if (model.state === 'complete') return { stage, button: null };
   const resumable = model.completed > 0 || model.failed > 0 || name !== undefined;
   return {
