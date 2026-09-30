@@ -10,18 +10,20 @@ import { runContextPass } from './context-pass';
 
 // 로그인된 실제 App Server로 샘플 1편의 컨텍스트를 만든다. 한도를 쓰므로 기본 검사에서는 돌지 않는다.
 // 앱 캐시의 document.json을 임시 캐시로 복사해 실행한다. 앱 캐시에는 쓰지 않는다.
+// PAPERLENS_LIVE_CACHE를 주면 document.json을 그 캐시 루트에서 읽는다(다른 사용자 데이터 폴더로 만든 추출본).
 // 실행:
 //   PAPERLENS_LLM_LIVE_USERDATA="$HOME/Library/Application Support/paperlens" \
 //   PAPERLENS_LIVE_PDF_SHA=<sha256> PAPERLENS_LIVE_OUT=<dir> \
 //   npx vitest run src/main/context/context-pass.live.test.ts --silent=false --disableConsoleIntercept
 const userData = process.env['PAPERLENS_LLM_LIVE_USERDATA'];
+const cacheRoot = process.env['PAPERLENS_LIVE_CACHE'] ?? join(userData ?? '', 'cache');
 const pdfSha = process.env['PAPERLENS_LIVE_PDF_SHA'];
 const outDir = process.env['PAPERLENS_LIVE_OUT'];
 
 describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그인 상태)', () => {
   it('샘플 1편에서 context.json이 생기고 용어집 항목이 있다', async () => {
     const sha = pdfSha ?? '';
-    const appStore = new PaperCacheStore(join(userData ?? '', 'cache'));
+    const appStore = new PaperCacheStore(cacheRoot);
     const appManifest = await appStore.readManifest(sha);
     const rev = appManifest.currentExtractionRevision ?? '';
     const document = await appStore.readJson(
@@ -54,6 +56,9 @@ describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그
         if (e.type === 'stage') stages.push(`${e.stage}:${e.state}`);
         if (e.type === 'output') chars = e.chars;
       };
+      const rateLimits = await rt.client?.request('account/rateLimits/read', {});
+      console.log(`[live] rateLimits(before)=${JSON.stringify(rateLimits)}`);
+      const t0 = Date.now();
       const result = await runContextPass(
         {
           store,
@@ -62,9 +67,17 @@ describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그
           runtimeVersion: info.binary.version,
           log: (line) => console.log(`[context] ${line}`),
         },
-        { pdfSha256: sha, onEvent },
+        {
+          pdfSha256: sha,
+          onEvent,
+          onProgress: (done, total) => console.log(`[live] parts ${done}/${total}`),
+        },
       );
-      console.log(`[live] stages=${stages.join(',')} outputChars=${chars}`);
+      console.log(
+        `[live] stages=${stages.join(',')} outputChars=${chars} elapsed=${Date.now() - t0}ms parts=${JSON.stringify(result.parts)}`,
+      );
+      const after = await rt.client?.request('account/rateLimits/read', {});
+      console.log(`[live] rateLimits(after)=${JSON.stringify(after)}`);
       if (!result.ok) {
         console.log(`[live] 실패 ${JSON.stringify({ ...result, rawText: undefined })}`);
         if (outDir && result.rawText !== null) {
@@ -75,7 +88,7 @@ describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그
       expect(result.ok).toBe(true);
       if (!result.ok) return;
       console.log(
-        `[live] generation=${result.generationId} model=${String(result.model)} glossary=${result.context.glossary.length} unresolved=${result.context.unresolved.length} coverage=${result.context.coverage.length} notes=${result.notes.length} usage=${JSON.stringify(result.usage)}`,
+        `[live] generation=${result.generationId} model=${String(result.model)} glossary=${result.context.glossary.length} concepts=${result.context.concepts.length} digests=${result.context.sectionDigests.length} unresolved=${result.context.unresolved.length} coverage=${result.context.coverage.length} notes=${result.notes.length} usage=${JSON.stringify(result.usage)}`,
       );
       if (outDir) {
         await fs.mkdir(outDir, { recursive: true });
