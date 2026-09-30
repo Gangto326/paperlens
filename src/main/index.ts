@@ -86,6 +86,7 @@ function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
         pdfSha256: event.pdfSha256,
         status: event.status,
         message: event.message,
+        ...(event.progress ? { progress: event.progress } : {}),
       };
     case 'research':
       return {
@@ -95,6 +96,7 @@ function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
         researched: event.researched,
         sources: event.sources,
         message: event.message,
+        ...(event.progress ? { progress: event.progress } : {}),
       };
     case 'plan':
       return { type: 'plan', pdfSha256: event.pdfSha256, total: event.chunkIds.length };

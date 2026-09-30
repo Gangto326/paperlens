@@ -105,7 +105,7 @@ describe('processView', () => {
       stopRequested: true,
     };
     expect(processView(model)).toEqual({
-      stage: '번역 중 1/2 청크 · 이 청크가 끝나면 멈춤',
+      stage: '번역 중 1/2 청크 · 돌던 청크가 끝나면 멈춤',
       button: { label: '멈춤', action: 'stop', disabled: true },
     });
   });
@@ -171,6 +171,47 @@ describe('processView', () => {
       },
     ]);
     expect(model).toMatchObject({ completed: 1, total: 2, message: '다른 논문을 처리 중입니다' });
+  });
+});
+
+describe('유동 단계의 진행(C3.6)', () => {
+  it('부분 작업과 조사 묶음은 끝난 개수를 보여 주고 백분율을 만들지 않는다', () => {
+    let model = processFromSnapshot(snapshot('mapping', []));
+    model = play(model, [
+      { type: 'context', pdfSha256: SHA, status: 'running', message: null },
+      {
+        type: 'context',
+        pdfSha256: SHA,
+        status: 'running',
+        message: null,
+        progress: { done: 2, total: 5 },
+      },
+    ]);
+    expect(processView(model).stage).toBe('논문 문맥 작성 중 · 부분 2/5');
+    model = play(model, [
+      { type: 'context', pdfSha256: SHA, status: 'done', message: null },
+      {
+        type: 'research',
+        pdfSha256: SHA,
+        status: 'running',
+        researched: 0,
+        sources: 0,
+        message: null,
+      },
+    ]);
+    expect(processView(model).stage).toBe('개념 자료 조사 중');
+    model = play(model, [
+      {
+        type: 'research',
+        pdfSha256: SHA,
+        status: 'running',
+        researched: 0,
+        sources: 0,
+        message: null,
+        progress: { done: 3, total: 8 },
+      },
+    ]);
+    expect(processView(model).stage).toBe('개념 자료 조사 중 · 묶음 3/8');
   });
 });
 

@@ -260,6 +260,8 @@ export interface DigestRunOptions {
   concurrency?: number;
   timeoutMs?: number;
   onEvent?: (event: LlmJobEvent) => void;
+  /** 부분 하나가 끝날 때마다. 끝난 부분 수(앞선 실행의 것 포함)와 전체 부분 수 */
+  onProgress?: (done: number, total: number) => void;
   log?: (line: string) => void;
 }
 
@@ -335,8 +337,14 @@ export async function runDigests(options: DigestRunOptions): Promise<DigestRunRe
     log(`context 부분 ${part.id}는 남은 출력 ${entry.meta.jobId}를 씀`);
   }
   if (stale.length > 0) await inflight.remove(stale);
+  if (done.size > 0) options.onProgress?.(done.size, parts.length);
 
   let usage = ZERO_USAGE;
+  let settled = done.size;
+  const progressed = (): void => {
+    settled += 1;
+    options.onProgress?.(settled, parts.length);
+  };
   let halted = false;
   const failures: { part: ContextPart; report: PartReport; message: string }[] = [];
   const queue = parts.filter((p) => !done.has(p.index));
@@ -396,12 +404,14 @@ export async function runDigests(options: DigestRunOptions): Promise<DigestRunRe
         });
         failures.push({ part, report: made, message: result.message });
         log(`context ${jobId} 실패 kind=${result.kind} ${result.message}`);
+        progressed();
         continue;
       }
       if (!outputValidator(result.value)) {
         const message = `부분 ${part.id}의 출력이 스키마와 맞지 않습니다: ${formatAjvErrors(outputValidator.errors).join('; ')}`;
         const made = report(part, { jobId, outcome: 'output_shape', usage: result.usage });
         failures.push({ part, report: made, message });
+        progressed();
         continue;
       }
       const checked = validatePartOutput(result.value, part, input);
@@ -418,10 +428,12 @@ export async function runDigests(options: DigestRunOptions): Promise<DigestRunRe
         });
         failures.push({ part, report: made, message });
         log(`context ${jobId} 검증 실패 ${checked.problems.map((p) => p.code).join(',')}`);
+        progressed();
         continue;
       }
       done.set(part.index, { jobId, checked });
       report(part, { jobId, outcome: 'ok', usage: result.usage });
+      progressed();
       log(
         `context ${jobId} 완료 digests=${checked.digests.length} notes=${checked.notes.length} in=${String(result.usage.inputTokens)} out=${String(result.usage.outputTokens)} elapsed=${result.usage.elapsedMs}ms`,
       );

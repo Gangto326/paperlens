@@ -634,6 +634,7 @@ describe('PaperScheduler', () => {
     expect(requests[1]?.research).toEqual({ kind: 'builtin_web' });
     expect(events.filter((e) => e.type === 'research')).toMatchObject([
       { status: 'running' },
+      { status: 'running', progress: { done: 1, total: 1 } },
       { status: 'done', researched: 1, sources: 1 },
     ]);
     // 번역 요청에는 조사로 고친 뜻이 들어간다.

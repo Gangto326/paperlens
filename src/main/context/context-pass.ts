@@ -95,6 +95,8 @@ export interface ContextPassOptions {
   /** 계층형에서 동시에 도는 부분 작업 수 */
   concurrency?: number;
   onEvent?: (event: LlmJobEvent) => void;
+  /** 계층형에서 부분 하나가 끝날 때마다(끝난 부분 수, 전체 부분 수) */
+  onProgress?: (done: number, total: number) => void;
 }
 
 export type ContextPassFailureCode =
@@ -273,6 +275,7 @@ export async function runContextPass(
       ...(options.concurrency !== undefined ? { concurrency: options.concurrency } : {}),
       ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
       ...(options.onEvent ? { onEvent: options.onEvent } : {}),
+      ...(options.onProgress ? { onProgress: options.onProgress } : {}),
     });
     spent = digests.usage;
     parts = digests.parts;

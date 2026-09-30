@@ -212,6 +212,8 @@ export type ProcessEvent =
       pdfSha256: string;
       status: 'running' | 'reused' | 'done' | 'failed';
       message: string | null;
+      /** 긴 논문의 부분 작업 진행. 끝난 부분 수와 전체 부분 수(C3.6). 한 번에 읽는 논문에는 없다 */
+      progress?: { done: number; total: number };
     }
   | {
       /** 개념 카드 조사 단계. researched는 읽은 자료가 붙은 카드 수, sources는 저장한 출처 수다. */
@@ -221,6 +223,8 @@ export type ProcessEvent =
       researched: number;
       sources: number;
       message: string | null;
+      /** 끝난 묶음 수와 전체 묶음 수(C3.6) */
+      progress?: { done: number; total: number };
     }
   | { type: 'plan'; pdfSha256: string; total: number }
   | { type: 'chunkStarted'; pdfSha256: string; chunkId: string; total: number }

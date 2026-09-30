@@ -116,6 +116,8 @@ export interface ConceptResearchOptions {
   concurrency?: number;
   timeoutMs?: number;
   onEvent?: (event: LlmJobEvent) => void;
+  /** 묶음 하나가 끝날 때마다. 끝난 묶음 수(건진 것 포함)와 전체 묶음 수 */
+  onProgress?: (done: number, total: number) => void;
 }
 
 export interface ResearchBatchReport {
@@ -364,6 +366,7 @@ export async function runConceptResearch(
       await recorder?.finish(result);
       results.set(index, { jobId, result });
       if (!result.ok && STOPPING[result.kind]) halted = true;
+      options.onProgress?.(results.size, batches.length);
     }
   };
   await Promise.all(Array.from({ length: Math.min(concurrency, batches.length) }, worker));

@@ -12,6 +12,8 @@ export interface ProcessModel {
   stopRequested: boolean;
   state: PaperState | null;
   phase: 'idle' | 'context' | 'research' | 'translating' | 'finished';
+  /** 끝을 아는 유동 단계(긴 논문의 부분 작업, 조사 묶음)의 진행. 개수만 보여 준다 */
+  stepProgress: { done: number; total: number } | null;
   completed: number;
   failed: number;
   total: number;
@@ -31,6 +33,7 @@ export const INITIAL_PROCESS: ProcessModel = {
   total: 0,
   message: null,
   waiting: null,
+  stepProgress: null,
 };
 
 /** 열린 논문의 저장 상태로 처음 모델을 만든다. */
@@ -54,16 +57,29 @@ export function applyProcessEvent(model: ProcessModel, event: ProcessEvent): Pro
       return { ...model, state: event.state };
     case 'context':
       if (event.status === 'running') {
-        return { ...model, running: true, phase: 'context', message: null, waiting: null };
+        return {
+          ...model,
+          running: true,
+          phase: 'context',
+          message: null,
+          waiting: null,
+          stepProgress: event.progress ?? (model.phase === 'context' ? model.stepProgress : null),
+        };
       }
       if (event.status === 'failed') return { ...model, message: event.message };
-      return { ...model, running: true, phase: 'translating' };
+      return { ...model, running: true, phase: 'translating', stepProgress: null };
     case 'research':
       if (event.status === 'running') {
-        return { ...model, running: true, phase: 'research', message: null };
+        return {
+          ...model,
+          running: true,
+          phase: 'research',
+          message: null,
+          stepProgress: event.progress ?? (model.phase === 'research' ? model.stepProgress : null),
+        };
       }
       if (event.status === 'stopped') return { ...model, message: event.message };
-      return { ...model, running: true, phase: 'translating' };
+      return { ...model, running: true, phase: 'translating', stepProgress: null };
     case 'waiting':
       return {
         ...model,
@@ -123,14 +139,15 @@ export function processView(model: ProcessModel): ProcessView {
   const progress = model.total > 0 ? ` ${model.completed}/${model.total}` : '';
   const failed = model.failed > 0 ? ` · 실패 ${model.failed}` : '';
   if (model.running) {
+    const step = model.stepProgress;
     const stage =
       model.phase === 'context'
-        ? '논문 문맥 작성 중'
+        ? `논문 문맥 작성 중${step ? ` · 부분 ${step.done}/${step.total}` : ''}`
         : model.phase === 'research'
-          ? '개념 자료 조사 중'
+          ? `개념 자료 조사 중${step ? ` · 묶음 ${step.done}/${step.total}` : ''}`
           : `번역 중${progress} 청크${failed}`;
     return {
-      stage: model.stopRequested ? `${stage} · 이 청크가 끝나면 멈춤` : stage,
+      stage: model.stopRequested ? `${stage} · 돌던 청크가 끝나면 멈춤` : stage,
       button: { label: '멈춤', action: 'stop', disabled: model.stopRequested },
     };
   }

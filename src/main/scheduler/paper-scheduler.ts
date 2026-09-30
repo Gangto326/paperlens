@@ -72,6 +72,8 @@ export type SchedulerEvent =
       status: 'running' | 'reused' | 'done' | 'failed';
       generationId: string | null;
       message: string | null;
+      /** 긴 논문의 부분 작업 진행(C3.6) */
+      progress?: { done: number; total: number };
     }
   | {
       /** 개념 카드 조사 단계(PLAN 3.3.1). skipped는 돌 필요가 없거나 조사 런타임이 없는 경우다. */
@@ -81,6 +83,8 @@ export type SchedulerEvent =
       researched: number;
       sources: number;
       message: string | null;
+      /** 끝난 묶음 수와 전체 묶음 수(C3.6) */
+      progress?: { done: number; total: number };
     }
   | { type: 'plan'; pdfSha256: string; generationId: string; chunkIds: string[] }
   | { type: 'chunk_started'; pdfSha256: string; chunkId: string; index: number; total: number }
@@ -349,6 +353,15 @@ export class PaperScheduler {
         {
           pdfSha256,
           ...(this.deps.concurrency !== undefined ? { concurrency: this.deps.concurrency } : {}),
+          onProgress: (done, total) =>
+            this.emit({
+              type: 'context',
+              pdfSha256,
+              status: 'running',
+              generationId: null,
+              message: null,
+              progress: { done, total },
+            }),
         },
       );
       if (!pass.ok) {
@@ -397,6 +410,16 @@ export class PaperScheduler {
           pdfSha256,
           generationId: ready.generationId,
           ...(this.deps.concurrency !== undefined ? { concurrency: this.deps.concurrency } : {}),
+          onProgress: (done, total) =>
+            this.emit({
+              type: 'research',
+              pdfSha256,
+              status: 'running',
+              researched: 0,
+              sources: 0,
+              message: null,
+              progress: { done, total },
+            }),
         },
       );
       if (research.status === 'done') {
