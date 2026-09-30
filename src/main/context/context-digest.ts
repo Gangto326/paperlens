@@ -23,9 +23,11 @@ import { validateCoverage, type ContextProblem } from './context-validate';
  *   부분 요약은 통째로 하나의 결과라 끊긴 출력에서 일부만 건지지 않는다.
  * - 로그인 필요, 한도 초과, 런타임 없음이 나오면 새 부분을 보내지 않는다. 돌던 부분은 끝나기를 기다린다.
  */
-export const DIGEST_PART_MAX_TOKENS = 12_000;
-export const DIGEST_TIMEOUT_MS = 10 * 60_000;
-export const DIGEST_CONCURRENCY = 3;
+/** 실측(2026-09-30): 6,000토큰 안팎의 부분 4개를 동시에 돌려 2분 40초~4분 14초. 12,000은 재지 않았다. */
+export const DIGEST_PART_MAX_TOKENS = 6_000;
+export const DIGEST_TIMEOUT_MS = 20 * 60_000;
+/** 부분 4개 동시가 통했다. 5개 이상은 재지 않았다. */
+export const DIGEST_CONCURRENCY = 5;
 
 export interface ContextPart {
   /** `part_001`부터 */

@@ -17,6 +17,15 @@ import { runContextPass } from './context-pass';
 //   npx vitest run src/main/context/context-pass.live.test.ts --silent=false --disableConsoleIntercept
 const userData = process.env['PAPERLENS_LLM_LIVE_USERDATA'];
 const cacheRoot = process.env['PAPERLENS_LIVE_CACHE'] ?? join(userData ?? '', 'cache');
+// 실험값. 없으면 코드의 기본값이다. 나눠 읽는 기준, 부분 상한, 동시 수, 요청 제한 시간.
+const num = (name: string): number | undefined => {
+  const raw = process.env[name];
+  return raw === undefined || raw === '' ? undefined : Number(raw);
+};
+const maxInputTokens = num('PAPERLENS_LIVE_MAX_INPUT_TOKENS');
+const partMaxTokens = num('PAPERLENS_LIVE_PART_TOKENS');
+const concurrency = num('PAPERLENS_LIVE_CONCURRENCY');
+const timeoutMs = num('PAPERLENS_LIVE_TIMEOUT_MS');
 const pdfSha = process.env['PAPERLENS_LIVE_PDF_SHA'];
 const outDir = process.env['PAPERLENS_LIVE_OUT'];
 
@@ -70,7 +79,12 @@ describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그
         {
           pdfSha256: sha,
           onEvent,
-          onProgress: (done, total) => console.log(`[live] parts ${done}/${total}`),
+          onProgress: (done, total) =>
+            console.log(`[live] parts ${done}/${total} at ${Date.now() - t0}ms`),
+          ...(maxInputTokens !== undefined ? { maxInputTokens } : {}),
+          ...(partMaxTokens !== undefined ? { partMaxTokens } : {}),
+          ...(concurrency !== undefined ? { concurrency } : {}),
+          ...(timeoutMs !== undefined ? { timeoutMs } : {}),
         },
       );
       console.log(
@@ -94,6 +108,7 @@ describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그
         await fs.mkdir(outDir, { recursive: true });
         await fs.copyFile(result.contextPath, join(outDir, 'context.json'));
         await fs.writeFile(join(outDir, 'notes.json'), JSON.stringify(result.notes, null, 1));
+        await fs.writeFile(join(outDir, 'parts.json'), JSON.stringify(result.parts, null, 1));
       }
       expect(result.context.glossary.length).toBeGreaterThan(0);
       expect(await store.verifyFiles(sha)).toEqual([]);
@@ -101,5 +116,5 @@ describe.skipIf(!userData || !pdfSha)('runContextPass (실제 app-server, 로그
       await rt.stop();
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 900_000);
+  }, 3_600_000);
 });

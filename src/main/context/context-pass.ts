@@ -57,7 +57,8 @@ import { validateContextOutput, type ContextProblem } from './context-validate';
  * 결과가 통째로 하나라 끊긴 출력에서 건질 것이 없다. 출력은 남기지만 다시 실행하면 처음부터 요청한다.
  */
 export const CONTEXT_MAX_INPUT_TOKENS = 25_000;
-export const CONTEXT_TIMEOUT_MS = 10 * 60_000;
+/** 실측(2026-09-30): 본문 20,326토큰을 한 번에 읽는 데 10분 22초. 10분에서는 실패했다. */
+export const CONTEXT_TIMEOUT_MS = 20 * 60_000;
 export const CONTEXT_STAGE = 'context';
 
 /** 컨텍스트를 만든 지침의 버전. 긴 논문은 통합 지침과 부분 지침의 버전을 함께 적는다. */
