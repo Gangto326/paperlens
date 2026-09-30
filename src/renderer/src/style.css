@@ -277,3 +277,35 @@ body,
 #btn-process {
   margin-left: 8px;
 }
+
+/* 개요·용어집·개념 카드 패널(C3.7) */
+#overview {
+  margin: 0 0 12px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgb(128 128 128 / 0.3);
+}
+.overview-block {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.overview-block > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.overview-items dt {
+  margin: 6px 0 2px;
+  font-weight: 600;
+}
+.overview-items dd {
+  margin: 0;
+}
+.glossary {
+  border-collapse: collapse;
+  width: 100%;
+}
+.glossary td {
+  padding: 3px 6px 3px 0;
+  vertical-align: top;
+  border-bottom: 1px solid rgb(128 128 128 / 0.2);
+}

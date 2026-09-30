@@ -1,5 +1,10 @@
 import { relative } from 'node:path';
-import type { ConceptCard, ConceptSourceLink, TranslationSnapshot } from '@shared/ipc';
+import type {
+  ConceptCard,
+  ConceptSourceLink,
+  PaperOverview,
+  TranslationSnapshot,
+} from '@shared/ipc';
 import type { ChunkDocument, ExtractionDocument, Reference, Source } from '@shared/schema';
 import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store';
 import { planChunks, type ChunkerOptions } from '../chunk/chunker';
@@ -68,6 +73,7 @@ export async function readTranslations(
   const generationId = manifest.currentGenerationId ?? null;
   const snapshot: TranslationSnapshot = { ...empty, chunks: [], results: {}, concepts: {} };
   const concepts: Record<string, ConceptCard> = {};
+  let overview: PaperOverview | null = null;
   if (generationId !== null) {
     const sources = new Map<string, Source>();
     const identity = paperIdentityOf(document.paper);
@@ -89,6 +95,22 @@ export async function readTranslations(
     if (sha !== undefined) {
       try {
         const context = await store.readJson('contextDocument', path, sha);
+        overview = {
+          summary: context.summary,
+          researchQuestion: context.researchQuestion,
+          contributions: context.contributions,
+          methodOverview: context.methodOverview,
+          mainResults: context.mainResults,
+          limitations: context.limitations,
+          unresolved: context.unresolved,
+          glossary: context.glossary.map((g) => ({
+            term: g.term,
+            aliases: g.aliases,
+            preferredKo: g.preferredKo,
+            acceptedKo: g.acceptedKo ?? [],
+            meaningInPaper: g.meaningInPaper,
+          })),
+        };
         for (const c of context.concepts) {
           const read = linksOf(c.refs, sources, (s) => s.fetchStatus === 'read');
           const further = linksOf(c.furtherRefs, sources, (s) => s.fetchStatus !== 'failed');
@@ -111,6 +133,7 @@ export async function readTranslations(
     }
   }
   snapshot.concepts = concepts;
+  snapshot.overview = overview;
   // 앞선 세대는 새것부터 본다. 다른 추출본의 세대는 문장 id가 달라 쓰지 않는다.
   const earlier = manifest.generations
     .filter((g) => g.generationId !== generationId && g.extractionRevision === rev)

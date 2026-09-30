@@ -289,6 +289,24 @@ export interface ConceptSourceLink {
   supports: string;
 }
 
+/** 논문 개요와 용어집(C3.7). 지금 세대의 context.json에서 읽는다. 1차 패스가 끝나는 즉시 보인다. */
+export interface PaperOverview {
+  summary: string;
+  researchQuestion: string;
+  contributions: string[];
+  methodOverview: string;
+  mainResults: string[];
+  limitations: string[];
+  unresolved: string[];
+  glossary: {
+    term: string;
+    aliases: string[];
+    preferredKo: string;
+    acceptedKo: string[];
+    meaningInPaper: string;
+  }[];
+}
+
 /** 화면에 보이는 개념 카드. */
 export interface ConceptCard {
   id: string;
@@ -326,4 +344,6 @@ export interface TranslationSnapshot {
   results: Record<string, SentenceTranslation>;
   /** 개념 카드 id → 카드. 컨텍스트를 읽지 못했거나 카드가 없는 세대는 비어 있다. */
   concepts?: Record<string, ConceptCard>;
+  /** 논문 개요와 용어집. 컨텍스트가 아직 없으면 null */
+  overview?: PaperOverview | null;
 }

@@ -9,6 +9,7 @@ import {
   processView,
   type ProcessModel,
 } from './panel/process-view';
+import { OverviewPanel } from './panel/overview-panel';
 import { lookupOf } from './panel/selection-view';
 import { SentencePanel } from './panel/sentence-panel';
 import { rangesFromSelection } from './viewer/dom-selection';
@@ -30,6 +31,7 @@ const viewerEl = $('viewer');
 const viewer = new PdfViewer({ container: viewerEl });
 const selection = new SelectionController(viewer, viewerEl);
 const panel = new SentencePanel($('selection'));
+const overviewPanel = new OverviewPanel($('overview'));
 const accountPanel = new AccountPanel($('account'), (err) => showError(err));
 const processButton = $<HTMLButtonElement>('btn-process');
 let screenshotMode = false;
@@ -66,6 +68,7 @@ async function loadTranslations(pdfSha256: string, fresh: boolean): Promise<void
   if (currentSha !== pdfSha256) return;
   translations = snapshot;
   panel.setTranslations(lookupOf(snapshot));
+  overviewPanel.set(snapshot);
   if (fresh) processModel = processFromSnapshot(snapshot);
   renderProcess();
   console.info(
@@ -77,7 +80,13 @@ function onProcessEvent(event: ProcessEvent): void {
   if (event.pdfSha256 !== currentSha) return;
   processModel = applyProcessEvent(processModel, event);
   renderProcess();
-  if (event.type === 'chunkFinished' || event.type === 'finished') {
+  // 1차 패스가 끝나면 개요·용어집을 바로 보여 준다(C3.7).
+  if (
+    event.type === 'chunkFinished' ||
+    event.type === 'finished' ||
+    (event.type === 'context' && (event.status === 'done' || event.status === 'reused')) ||
+    (event.type === 'research' && event.status === 'done')
+  ) {
     console.info(`[paperlens] process ${JSON.stringify({ ...event, sentenceIds: undefined })}`);
     void loadTranslations(event.pdfSha256, false).catch(showError);
   }
@@ -117,6 +126,7 @@ async function loadOpened(result: OpenedPdf): Promise<void> {
   translations = null;
   processModel = INITIAL_PROCESS;
   panel.setTranslations(lookupOf(null));
+  overviewPanel.set(null);
   processButton.hidden = true;
   const t0 = performance.now();
   const bytes = await window.paperlens.readPdfBytes(result.pdfSha256);

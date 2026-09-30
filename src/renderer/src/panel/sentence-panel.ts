@@ -135,7 +135,7 @@ function renderSentence(s: SentenceView): HTMLElement {
 }
 
 /** 해설 칸 하나. 접어 둔 칸은 제목만 보이고 누르면 펼쳐진다. */
-function renderSection(section: ExplanationSectionView): HTMLElement {
+export function renderSection(section: ExplanationSectionView): HTMLElement {
   const details = document.createElement('details');
   details.className = `explain explain-${section.key}`;
   details.open = section.open;
@@ -158,7 +158,7 @@ function appendInline(parent: HTMLElement, parts: readonly InlinePart[]): void {
 }
 
 /** 단락, 목록, 표로 나뉜 글. 글자는 textContent로만 넣는다. */
-function renderRich(blocks: readonly RichBlock[]): HTMLElement {
+export function renderRich(blocks: readonly RichBlock[]): HTMLElement {
   const root = document.createElement('div');
   root.className = 'rich';
   root.lang = 'ko';
@@ -209,7 +209,7 @@ function renderRich(blocks: readonly RichBlock[]): HTMLElement {
 }
 
 /** 개념 카드. 이름만 보이고 누르면 펼쳐진다. */
-function renderConcept(concept: ConceptView): HTMLElement {
+export function renderConcept(concept: ConceptView): HTMLElement {
   const details = document.createElement('details');
   details.className = 'concept';
   details.dataset['conceptId'] = concept.id;
