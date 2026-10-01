@@ -33,6 +33,7 @@ import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
 import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex/codex-account';
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 import { CodexJobRunner } from './llm/codex/codex-jobs';
+import { coalesce } from './deps/coalesce';
 import { checkDocker, startGrobidContainer } from './deps/docker';
 import { RetryingJobRunner } from './llm/retrying-runner';
 import { AutoResume } from './scheduler/auto-resume';
@@ -431,9 +432,14 @@ function registerIpc(): void {
   );
 
   // 의존 서비스 점검(C5.1). 설치는 하지 않는다. GROBID는 받아 둔 이미지가 있을 때만 띄운다.
+  // 바깥 프로그램을 띄우는 부분(docker 명령, GROBID 응답 확인)은 호출이 몰려도 실행이 늘지 않게 묶는다.
+  // 방금 결과를 다시 쓰는 2초는 사람이 "다시 확인"을 누르는 간격보다 짧고, GROBID 준비를 기다리는 5초 간격보다 짧다.
+  const probeServices = coalesce(() => Promise.all([checkDocker(), grobid.isAlive()]), {
+    reuseMs: 2_000,
+  });
   ipcMain.handle(IPC.depsCheck, async (): Promise<DependencyReport> => {
     // 계정은 다시 읽지 않는다. 읽으면 계정 이벤트가 나고, renderer가 그 이벤트로 점검을 다시 불러 순환한다.
-    const [docker, grobidHealth] = await Promise.all([checkDocker(), grobid.isAlive()]);
+    const [docker, grobidHealth] = await probeServices();
     const accountStatus = account.lastStatus;
     if (grobidHealth.ok) grobidVersion = grobidHealth.version;
     return {
