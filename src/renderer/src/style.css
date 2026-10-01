@@ -309,3 +309,49 @@ body,
   vertical-align: top;
   border-bottom: 1px solid rgb(128 128 128 / 0.2);
 }
+
+/* 의존 서비스 점검(C5.1) */
+#checks {
+  margin: 0 0 10px;
+}
+.checks {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.checks > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.checks-problem {
+  color: #b4231f;
+}
+.checks-list {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+.check {
+  padding: 4px 0 4px 10px;
+  border-left: 3px solid rgb(128 128 128 / 0.4);
+}
+.check-ok {
+  border-left-color: #2e8b57;
+}
+.check-fail {
+  border-left-color: #b4231f;
+}
+.check-warn {
+  border-left-color: #c58a00;
+}
+.check-label {
+  display: inline-block;
+  min-width: 96px;
+  font-weight: 600;
+}
+.check-guidance {
+  margin: 2px 0 4px;
+}
+.check button,
+.checks-note + button {
+  margin: 2px 0 4px;
+}

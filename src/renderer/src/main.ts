@@ -2,6 +2,7 @@ import 'pdfjs-dist/web/pdf_viewer.css';
 import type { OpenedPdf, ProcessEvent, SentenceIndex, TranslationSnapshot } from '@shared/ipc';
 import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
 import { AccountPanel } from './panel/account-panel';
+import { ChecksPanel } from './panel/checks-panel';
 import {
   INITIAL_PROCESS,
   applyProcessEvent,
@@ -33,6 +34,13 @@ const selection = new SelectionController(viewer, viewerEl);
 const panel = new SentencePanel($('selection'));
 const overviewPanel = new OverviewPanel($('overview'));
 const accountPanel = new AccountPanel($('account'), (err) => showError(err));
+const checksPanel = new ChecksPanel($('checks'), {
+  login: async () => {
+    const start = await window.paperlens.startLogin();
+    if (!start.started) throw new Error(`로그인을 시작하지 못했습니다: ${start.reason}`);
+  },
+  onError: (err) => showError(err),
+});
 const processButton = $<HTMLButtonElement>('btn-process');
 let screenshotMode = false;
 /** 열려 있는 논문. 다른 논문의 처리 이벤트는 화면에 반영하지 않는다. */
@@ -342,6 +350,12 @@ async function boot(): Promise<void> {
   });
   // 계정·한도 표시(C1.19). 런타임이 아직 뜨는 중이면 unavailable로 시작하고 main의 푸시로 갱신된다.
   await accountPanel.start();
+  // 의존 서비스 점검(C5.1). 런타임과 로그인은 뒤늦게 바뀌므로 계정 이벤트가 오면 다시 본다. 문제가 있을 때만 펼친다.
+  void checksPanel.refresh();
+  window.paperlens.onAccountEvent((event) => {
+    if (event.type === 'account' || event.type === 'loginCompleted')
+      void checksPanel.refresh(false);
+  });
   if (info.autoOpened) await loadOpened(info.autoOpened);
 }
 

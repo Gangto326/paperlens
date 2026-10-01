@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   IPC,
   type AppInfo,
+  type DependencyReport,
+  type StartGrobidResult,
   type LlmAccountEvent,
   type LlmAccountStatus,
   type LlmLoginCancel,
@@ -55,6 +57,9 @@ const api = {
   startProcessing: (pdfSha256: string): Promise<ProcessStart> =>
     ipcRenderer.invoke(IPC.processStart, pdfSha256),
   stopProcessing: (): Promise<ProcessStop> => ipcRenderer.invoke(IPC.processStop),
+  /** 의존 서비스 점검(C5.1). */
+  checkDependencies: (): Promise<DependencyReport> => ipcRenderer.invoke(IPC.depsCheck),
+  startGrobid: (): Promise<StartGrobidResult> => ipcRenderer.invoke(IPC.depsStartGrobid),
   onProcessEvent: (handler: (event: ProcessEvent) => void): (() => void) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: ProcessEvent): void =>
       handler(payload);

@@ -4,6 +4,8 @@ import { writeFile } from 'node:fs/promises';
 import {
   IPC,
   type AppInfo,
+  type DependencyReport,
+  type StartGrobidResult,
   type LlmAccountEvent,
   type LlmAccountStatus,
   type LlmLoginCancel,
@@ -31,6 +33,7 @@ import { CodexRuntime, formatToolInventory } from './llm/codex/codex-runtime';
 import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex/codex-account';
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 import { CodexJobRunner } from './llm/codex/codex-jobs';
+import { checkDocker, startGrobidContainer } from './deps/docker';
 import { AutoResume } from './scheduler/auto-resume';
 import { PaperScheduler, type SchedulerEvent } from './scheduler/paper-scheduler';
 import { readTranslations } from './translate/results-store';
@@ -415,6 +418,28 @@ function registerIpc(): void {
       resumeAt: status.kind === 'quota' ? status.resumeAt : null,
     }),
   );
+
+  // 의존 서비스 점검(C5.1). 설치는 하지 않는다. GROBID는 받아 둔 이미지가 있을 때만 띄운다.
+  ipcMain.handle(IPC.depsCheck, async (): Promise<DependencyReport> => {
+    // 계정은 다시 읽지 않는다. 읽으면 계정 이벤트가 나고, renderer가 그 이벤트로 점검을 다시 불러 순환한다.
+    const [docker, grobidHealth] = await Promise.all([checkDocker(), grobid.isAlive()]);
+    const accountStatus = account.lastStatus;
+    if (grobidHealth.ok) grobidVersion = grobidHealth.version;
+    return {
+      docker,
+      grobid: grobidHealth,
+      codex: {
+        runtime: process.env['PAPERLENS_NO_CODEX']
+          ? 'disabled'
+          : codex?.client?.state === 'running'
+            ? 'running'
+            : 'stopped',
+        account: accountStatus,
+      },
+      checkedAt: new Date().toISOString(),
+    };
+  });
+  ipcMain.handle(IPC.depsStartGrobid, (): Promise<StartGrobidResult> => startGrobidContainer());
 
   // 계정·로그인·한도(C1.19). 실제 로그인은 기본 브라우저에서 사용자가 마치고, 완료는 llm:accountEvent로 푸시된다.
   ipcMain.handle(IPC.llmAccountRead, async (): Promise<LlmAccountStatus> => account.read());

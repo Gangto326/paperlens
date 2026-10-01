@@ -35,7 +35,33 @@ export const IPC = {
   processStop: 'process:stop',
   /** main → renderer 푸시(처리 단계·진행). */
   processEvent: 'process:event',
+  /** 의존 서비스 점검(C5.1). */
+  depsCheck: 'deps:check',
+  depsStartGrobid: 'deps:startGrobid',
 } as const;
+
+/** 시작 시 의존 서비스 점검 결과(C5.1). 자동 설치는 없다. 각 항목의 조치는 renderer가 안내문으로 만든다. */
+export interface DependencyReport {
+  docker: {
+    ok: boolean;
+    reason: 'ok' | 'not_installed' | 'not_running' | 'error';
+    message: string;
+    imagePresent: boolean | null;
+    containerRunning: boolean | null;
+  };
+  grobid: ParserHealth;
+  codex: {
+    /** 앱이 띄운 Codex App Server가 돌고 있는지 */
+    runtime: 'running' | 'stopped' | 'disabled';
+    account: LlmAccountStatus;
+  };
+  checkedAt: string;
+}
+
+export interface StartGrobidResult {
+  started: boolean;
+  message: string;
+}
 
 export interface AppInfo {
   appVersion: string;
