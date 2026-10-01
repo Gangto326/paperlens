@@ -14,7 +14,10 @@ import { PaperScheduler } from './paper-scheduler';
 //   PAPERLENS_LLM_LIVE_USERDATA="$HOME/Library/Application Support/paperlens" \
 //   PAPERLENS_LIVE_PDF_SHA=<sha256> PAPERLENS_LIVE_RUN=1 PAPERLENS_LIVE_OUT=<dir> \
 //   npx vitest run src/main/scheduler/paper-scheduler.live.test.ts --silent=false --disableConsoleIntercept
+// PAPERLENS_LIVE_CACHE를 주면 document.json을 그 캐시 루트에서 읽는다(다른 사용자 데이터 폴더로 만든 추출본).
+// 실행 전후로 한도를 읽어 로그에 남긴다.
 const userData = process.env['PAPERLENS_LLM_LIVE_USERDATA'];
+const cacheRoot = process.env['PAPERLENS_LIVE_CACHE'] ?? join(userData ?? '', 'cache');
 const pdfSha = process.env['PAPERLENS_LIVE_PDF_SHA'];
 const outDir = process.env['PAPERLENS_LIVE_OUT'];
 // PAPERLENS_LIVE_RESEARCH=1이면 조사 전용 런타임을 함께 띄워 개념 카드 조사를 돌린다(PLAN 3.3.1).
@@ -27,7 +30,7 @@ const enabled = Boolean(userData && pdfSha && process.env['PAPERLENS_LIVE_RUN'])
 describe.skipIf(!enabled)('PaperScheduler (실제 app-server, 로그인 상태)', () => {
   it('샘플 1편을 완주한다', async () => {
     const sha = pdfSha ?? '';
-    const appStore = new PaperCacheStore(join(userData ?? '', 'cache'));
+    const appStore = new PaperCacheStore(cacheRoot);
     const rev = (await appStore.readManifest(sha)).currentExtractionRevision ?? '';
     const document = await appStore.readJson(
       'extractionDocument',
@@ -98,7 +101,11 @@ describe.skipIf(!enabled)('PaperScheduler (실제 app-server, 로그인 상태)'
         research: withResearch ? 'builtin_web' : 'none',
         log: (line) => console.log(`[process] ${line}`),
       });
+      const before = await rt.client?.request('account/rateLimits/read', {});
+      console.log(`[live] rateLimits(before)=${JSON.stringify(before)}`);
       const outcome = await scheduler.run(sha);
+      const after = await rt.client?.request('account/rateLimits/read', {});
+      console.log(`[live] rateLimits(after)=${JSON.stringify(after)}`);
       const manifest = await store.readManifest(sha);
       console.log(
         `[live] reason=${outcome.reason} state=${manifest.state} chunks=${outcome.completedChunks}/${outcome.totalChunks} failed=${outcome.failedChunks} firstTranslationMs=${String(outcome.firstTranslationMs)} elapsedMs=${outcome.elapsedMs}`,
@@ -106,6 +113,7 @@ describe.skipIf(!enabled)('PaperScheduler (실제 app-server, 로그인 상태)'
       console.log(`[live] context usage=${JSON.stringify(outcome.contextUsage)}`);
       console.log(`[live] research usage=${JSON.stringify(outcome.researchUsage)}`);
       for (const b of outcome.researchBatches) console.log(`[live] research ${JSON.stringify(b)}`);
+      console.log(`[live] cards usage=${JSON.stringify(outcome.cardsUsage)}`);
       for (const m of outcome.metrics) console.log(`[live] ${JSON.stringify(m)}`);
       console.log(`[live] total usage=${JSON.stringify(manifest.usage)}`);
       if (outDir && outcome.generationId) {
