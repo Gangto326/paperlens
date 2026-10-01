@@ -17,6 +17,8 @@ import { runConceptResearch } from './concept-research';
 //   PAPERLENS_LIVE_CONCEPTS=c_6,c_7 \
 //   npx vitest run src/main/research/concept-research.live.test.ts --silent=false --disableConsoleIntercept
 const userData = process.env['PAPERLENS_LLM_LIVE_USERDATA'];
+// PAPERLENS_LIVE_CACHE를 주면 document.json을 그 캐시 루트에서 읽는다.
+const cacheRoot = process.env['PAPERLENS_LIVE_CACHE'] ?? join(userData ?? '', 'cache');
 const pdfSha = process.env['PAPERLENS_LIVE_PDF_SHA'];
 const contextFile = process.env['PAPERLENS_LIVE_CONTEXT'];
 const outDir = process.env['PAPERLENS_LIVE_OUT'];
@@ -31,7 +33,7 @@ describe.skipIf(!userData || !pdfSha || !contextFile || conceptIds.length === 0)
   () => {
     it('고른 개념 카드의 조사가 끝난다', async () => {
       const sha = pdfSha ?? '';
-      const appStore = new PaperCacheStore(join(userData ?? '', 'cache'));
+      const appStore = new PaperCacheStore(cacheRoot);
       const rev = (await appStore.readManifest(sha)).currentExtractionRevision ?? '';
       const document = await appStore.readJson(
         'extractionDocument',
