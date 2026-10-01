@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
     "e2e": "playwright test",
+    "package": "electron-vite build && electron-builder --mac dir --x64",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -29,6 +30,7 @@
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.4",
     "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
@@ -45,5 +47,31 @@
     "ajv": "^8.20.0",
     "fast-xml-parser": "^5.11.1",
     "pdfjs-dist": "^6.3.289"
+  },
+  "build": {
+    "appId": "local.paperlens",
+    "productName": "PaperLens",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "package.json",
+      "!node_modules/pdfjs-dist/**"
+    ],
+    "asar": false,
+    "electronDist": "node_modules/electron/dist",
+    "npmRebuild": false,
+    "mac": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "identity": null
+    }
   }
 }
