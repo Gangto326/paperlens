@@ -100,5 +100,5 @@ npm run e2e        # 앱 화면 검사. GROBID가 떠 있어야 하고 먼저 np
 npm run package    # macOS 실행 패키지
 ```
 
-- 설계는 `PLAN.md`, 커밋 순서와 진행 기록은 `COMMIT_PLAN.md`, 환경과 검증 논문은 `docs/environment.md`, 품질 의견과 실측 기록은 `docs/quality-backlog.md`에 있다.
+- 설계는 `PLAN.md`, 커밋 순서와 진행 기록은 `COMMIT_PLAN.md`, 환경과 검증 논문은 `docs/environment.md`, 품질 의견과 실측 기록은 `docs/quality-backlog.md`, 평가 결과와 알려진 실패 조건은 `docs/evaluation.md`에 있다.
 - 무거운 것(GROBID, 앱 창, 전체 검사)은 겹쳐 띄우지 않는다.
