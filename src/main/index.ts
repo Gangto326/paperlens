@@ -34,6 +34,7 @@ import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 import { CodexJobRunner } from './llm/codex/codex-jobs';
 import { checkDocker, startGrobidContainer } from './deps/docker';
+import { RetryingJobRunner } from './llm/retrying-runner';
 import { AutoResume } from './scheduler/auto-resume';
 import { PaperScheduler, type SchedulerEvent } from './scheduler/paper-scheduler';
 import { readTranslations } from './translate/results-store';
@@ -75,6 +76,8 @@ const jobs = new CodexJobRunner({
 });
 let scheduler: PaperScheduler | null = null;
 let autoResume: AutoResume | null = null;
+/** 멈춤 요청이 왔는지. 재시도 어댑터가 기다리기 전에 본다. 처리를 시작할 때 되돌린다. */
+let stopRequested = false;
 
 /** 스케줄러 이벤트 → renderer용 이벤트. 사용량·청크 계획 같은 내부 값은 보내지 않는다. */
 function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
@@ -149,6 +152,7 @@ function startProcessing(pdfSha256: string, trigger: string): ProcessStart {
     };
   }
   console.log(`[process] 시작 ${pdfSha256.slice(0, 8)} (${trigger})`);
+  stopRequested = false;
   // 사용자가 직접 시작했으면 자동 재개의 기다림은 끝난다.
   autoResume?.cancel();
   void scheduler
@@ -379,12 +383,19 @@ function registerIpc(): void {
     }
     return startProcessing(pdfSha256, 'renderer');
   });
-  ipcMain.handle(IPC.processStop, (): ProcessStop => ({
-    accepted: scheduler?.requestStop() ?? false,
-  }));
+  ipcMain.handle(IPC.processStop, (): ProcessStop => {
+    const accepted = scheduler?.requestStop() ?? false;
+    if (accepted) stopRequested = true;
+    return { accepted };
+  });
   scheduler = new PaperScheduler({
     store,
-    runner: jobs,
+    // 네트워크·서버 오류는 5·15·45초 뒤 다시 보낸다(C5.3). 멈춤 요청이 오면 기다리지 않는다.
+    runner: new RetryingJobRunner({
+      inner: jobs,
+      shouldContinue: () => !stopRequested,
+      log: (line) => console.log(`[process] ${line}`),
+    }),
     provider: 'codex',
     runtimeVersion: () => codex?.startInfo?.binary.version ?? 'unknown',
     research: researchEnabled ? 'builtin_web' : 'none',

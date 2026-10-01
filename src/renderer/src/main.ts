@@ -14,6 +14,7 @@ import { OverviewPanel } from './panel/overview-panel';
 import { lookupOf } from './panel/selection-view';
 import { SentencePanel } from './panel/sentence-panel';
 import { rangesFromSelection } from './viewer/dom-selection';
+import { openErrorText } from './viewer/open-error';
 import { PdfViewer } from './viewer/pdf-viewer';
 import { SelectionController, type SelectionEvent } from './viewer/selection-controller';
 import { PDFJS_VERSION, type PDFDocumentProxy } from './viewer/pdfjs';
@@ -137,8 +138,19 @@ async function loadOpened(result: OpenedPdf): Promise<void> {
   overviewPanel.set(null);
   processButton.hidden = true;
   const t0 = performance.now();
-  const bytes = await window.paperlens.readPdfBytes(result.pdfSha256);
-  const doc = await viewer.load(bytes);
+  let doc: PDFDocumentProxy;
+  try {
+    const bytes = await window.paperlens.readPdfBytes(result.pdfSha256);
+    doc = await viewer.load(bytes);
+  } catch (err) {
+    // 손상·암호·없음(C5.3). 번역 시작 전에 멈춘다. 다른 문서의 저장 결과는 영향이 없다.
+    setStage('열기 실패');
+    setStatus(openErrorText(err));
+    console.error(err);
+    titleEl.textContent = `${result.fileName} · 열지 못함`;
+    currentSha = null;
+    return;
+  }
   titleEl.textContent = `${result.fileName} · ${doc.numPages}쪽 · ${result.pdfSha256.slice(0, 12)}…`;
   const ms = Math.round(performance.now() - t0);
   setStatus(`열림 (${ms}ms).`);
