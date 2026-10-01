@@ -552,9 +552,7 @@ describe('PaperScheduler', () => {
         {
           name: 'sentence',
           nameKo: '문장',
-          definitionKo: '일반 뜻',
           whyItMatters: '이유',
-          exampleKo: '',
           prerequisites: [],
           glossaryTerms: [],
         },
@@ -660,9 +658,7 @@ describe('PaperScheduler', () => {
               {
                 name: 'sentence',
                 nameKo: '',
-                definitionKo: '뜻',
                 whyItMatters: '',
-                exampleKo: '',
                 prerequisites: [],
                 glossaryTerms: [],
               },
@@ -695,5 +691,129 @@ describe('PaperScheduler', () => {
     const outcome = await scheduler(runner, { research: 'builtin_web' }).run(SHA);
     expect(outcome).toMatchObject({ reason: 'waiting_quota', completedChunks: 0 });
     expect((await store.readManifest(SHA)).state).toBe('waiting_quota');
+  });
+
+  describe('검색 없는 카드 쓰기', () => {
+    /** 1차 패스가 카드 하나를 올리고, `rs_`와 `cc_` 요청에는 `reply`가 답한다. */
+    const cardRunner = (
+      reply: (request: LlmJobRequest) => LlmJobResult | null,
+    ): LlmJobRunner & { requests: LlmJobRequest[] } => {
+      const requests: LlmJobRequest[] = [];
+      const base = runnerOf();
+      return {
+        ...base,
+        requests,
+        run: async (request, onEvent) => {
+          requests.push(request);
+          if (isContext(request)) {
+            const value = {
+              ...(contextValue(request) as object),
+              concepts: [
+                {
+                  name: 'sentence',
+                  nameKo: '문장',
+                  whyItMatters: '이유',
+                  prerequisites: [],
+                  glossaryTerms: [],
+                },
+              ],
+            };
+            return {
+              ok: true,
+              jobId: request.jobId,
+              value,
+              rawText: JSON.stringify(value),
+              model: 'fake-model',
+              usage: USAGE,
+            };
+          }
+          return reply(request) ?? base.run(request, onEvent);
+        },
+      };
+    };
+    const okOf = (request: LlmJobRequest, value: unknown): LlmJobResult => ({
+      ok: true,
+      jobId: request.jobId,
+      value,
+      rawText: JSON.stringify(value),
+      model: 'fake-model',
+      usage: USAGE,
+    });
+    const failOf = (request: LlmJobRequest, kind: 'timeout' | 'quota'): LlmJobResult => ({
+      ok: false,
+      jobId: request.jobId,
+      kind,
+      message: kind,
+      errors: [],
+      rawText: null,
+      model: null,
+      usage: USAGE,
+    });
+    const written = { concepts: [{ id: 'c_1', definitionKo: '검색 없이 쓴 뜻', exampleKo: '' }] };
+    const kindsOf = (requests: LlmJobRequest[]): string[] => [
+      ...new Set(requests.map((r) => r.jobId.slice(0, 3))),
+    ];
+
+    it('조사를 끄면 1차 패스 뒤에 카드의 뜻을 검색 없이 쓰고 그 뜻으로 번역한다', async () => {
+      const runner = cardRunner((request) =>
+        request.jobId.startsWith('cc_') ? okOf(request, written) : null,
+      );
+      const outcome = await scheduler(runner).run(SHA);
+      expect(outcome).toMatchObject({
+        reason: 'complete',
+        researchUsage: null,
+        cardsUsage: { logicalJobs: 1 },
+      });
+      expect(kindsOf(runner.requests)).toEqual(['ctx', 'cc_', 'tr_']);
+      const cards = runner.requests.find((r) => r.jobId.startsWith('cc_'));
+      expect(cards?.research).toEqual({ kind: 'none' });
+      const firstChunk = runner.requests.find((r) => r.jobId.startsWith('tr_'));
+      expect(JSON.stringify(dataOf(firstChunk as LlmJobRequest)['CONCEPTS'])).toContain(
+        '검색 없이 쓴 뜻',
+      );
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+
+      // 다시 시작해도 카드를 다시 쓰지 않는다.
+      const again = await scheduler(runner).run(SHA);
+      expect(again).toMatchObject({ reason: 'complete', cardsUsage: null });
+      expect(runner.requests.filter((r) => r.jobId.startsWith('cc_'))).toHaveLength(1);
+    });
+
+    it('조사 묶음이 실패해 뜻이 빈 카드는 검색 없이 채운다', async () => {
+      const runner = cardRunner((request) => {
+        if (request.jobId.startsWith('rs_')) return failOf(request, 'timeout');
+        if (request.jobId.startsWith('cc_')) return okOf(request, written);
+        return null;
+      });
+      const outcome = await scheduler(runner, { research: 'builtin_web' }).run(SHA);
+      expect(outcome).toMatchObject({ reason: 'complete', cardsUsage: { logicalJobs: 1 } });
+      expect(kindsOf(runner.requests)).toEqual(['ctx', 'rs_', 'cc_', 'tr_']);
+      const firstChunk = runner.requests.find((r) => r.jobId.startsWith('tr_'));
+      expect(JSON.stringify(dataOf(firstChunk as LlmJobRequest)['CONCEPTS'])).toContain(
+        '검색 없이 쓴 뜻',
+      );
+    });
+
+    it('카드 쓰기가 실패해도 번역은 계속한다. 카드는 뜻이 빈 채로 남는다', async () => {
+      const runner = cardRunner((request) =>
+        request.jobId.startsWith('cc_') ? failOf(request, 'timeout') : null,
+      );
+      const outcome = await scheduler(runner).run(SHA);
+      expect(outcome.reason).toBe('complete');
+      const firstChunk = runner.requests.find((r) => r.jobId.startsWith('tr_'));
+      expect(dataOf(firstChunk as LlmJobRequest)['CONCEPTS']).toMatchObject([
+        { id: 'c_1', definitionKo: '' },
+      ]);
+    });
+
+    it('카드 쓰기가 한도에 걸리면 번역을 시작하지 않고 멈춘다', async () => {
+      const runner = cardRunner((request) =>
+        request.jobId.startsWith('cc_') ? failOf(request, 'quota') : null,
+      );
+      const outcome = await scheduler(runner).run(SHA);
+      expect(outcome).toMatchObject({ reason: 'waiting_quota', completedChunks: 0 });
+      expect(runner.requests.some((r) => r.jobId.startsWith('tr_'))).toBe(false);
+      expect((await store.readManifest(SHA)).state).toBe('waiting_quota');
+    });
   });
 });

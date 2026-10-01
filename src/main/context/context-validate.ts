@@ -36,7 +36,7 @@ export interface ValidatedContext {
   coverage: Omit<Coverage, 'jobId'>[];
   /** 원래 ID로 되돌린 용어집. id는 `g_<n>`. */
   glossary: GlossaryEntry[];
-  /** 개념 카드. id는 `c_<n>`. 출처 없이 쓴 일반 설명이라 researchStatus는 unresolved다. */
+  /** 개념 카드. id는 `c_<n>`. 뜻과 사례는 비어 있고 researchStatus는 unresolved다. 뒤의 작업이 채운다. */
   concepts: Concept[];
 }
 
@@ -186,8 +186,8 @@ export function validateContextOutput(
   if (glossary.length === 0) add('empty_glossary', '용어집에 쓸 수 있는 항목이 없습니다');
 
   const kept = output.concepts.filter((c) => {
-    if (c.name.trim() !== '' && c.definitionKo.trim() !== '') return true;
-    notes.push(`이름 또는 뜻이 빈 개념 카드를 버렸습니다: "${c.name}"`);
+    if (c.name.trim() !== '') return true;
+    notes.push('이름이 빈 개념 카드를 버렸습니다');
     return false;
   });
   const conceptIdOf = new Map<string, string>();
@@ -203,14 +203,14 @@ export function validateContextOutput(
     const id = `c_${concepts.length + 1}`;
     conceptIdOf.set(key, id);
     const nameKo = c.nameKo.trim();
-    const exampleKo = c.exampleKo.trim();
     concepts.push({
       id,
       name,
       nameKo: nameKo === '' ? null : nameKo,
-      definitionKo: c.definitionKo.trim(),
+      // 뜻과 사례는 뒤의 조사 패스나 카드 쓰기 작업이 채운다.
+      definitionKo: '',
       whyItMatters: c.whyItMatters.trim(),
-      exampleKo: exampleKo === '' ? null : exampleKo,
+      exampleKo: null,
       prerequisiteConceptIds: [],
       refs: [],
       researchStatus: 'unresolved',
@@ -252,7 +252,7 @@ export function validateContextOutput(
     ...output.limitations,
     ...output.unresolved,
     ...output.glossary.flatMap((g) => [g.meaningInPaper, g.displayRule]),
-    ...output.concepts.flatMap((c) => [c.definitionKo, c.whyItMatters, c.exampleKo]),
+    ...output.concepts.map((c) => c.whyItMatters),
   ];
   const leaked = prose.reduce((n, text) => n + countAliases(text, input), 0);
   if (leaked > 0) notes.push(`서술 글에 프롬프트용 id가 ${leaked}개 남아 있습니다`);

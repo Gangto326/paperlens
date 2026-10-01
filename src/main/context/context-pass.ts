@@ -426,7 +426,7 @@ export async function runContextPass(
     mainResults: trimAll(output.mainResults),
     limitations: trimAll(output.limitations),
     glossary: checked.glossary,
-    // 조사 도구가 없는 단계다. 개념 카드는 출처 없는 일반 설명이다(researchStatus unresolved).
+    // 조사 도구가 없는 단계다. 개념 카드는 목록뿐이고 뜻과 사례는 뒤의 작업이 쓴다(researchStatus unresolved).
     concepts: checked.concepts,
     sectionDigests: digested ? digested.digests : [],
     coverage: digested ? digested.coverage : checked.coverage.map((c) => ({ ...c, jobId })),

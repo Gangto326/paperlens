@@ -529,7 +529,7 @@ async function bootCodex(): Promise<void> {
       `[codex-research] app-server ${info.binary.version} 시작 ${info.startupMs}ms ${formatToolInventory(await research.toolInventory(thread.threadId))}`,
     );
   } catch (err) {
-    // 조사 런타임이 없어도 번역은 된다. 개념 카드는 일반 설명으로 남는다.
+    // 조사 런타임이 없어도 번역은 된다. 개념 카드의 뜻은 검색 없이 쓴 일반 설명이 된다.
     console.error(
       `[codex-research] 시작 실패: ${err instanceof Error ? err.message : String(err)}`,
     );

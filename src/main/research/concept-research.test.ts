@@ -29,11 +29,12 @@ const USAGE: Usage = {
   elapsedMs: 10,
 };
 
+/** 1차 패스가 만든 카드. 뜻과 사례가 비어 있다(조사 패스가 처음 쓴다). */
 const card = (n: number): Concept => ({
   id: `c_${n}`,
   name: `concept ${n}`,
   nameKo: `개념 ${n}`,
-  definitionKo: `일반 뜻 ${n}`,
+  definitionKo: '',
   whyItMatters: `이유 ${n}`,
   exampleKo: null,
   prerequisiteConceptIds: [],
@@ -217,6 +218,16 @@ describe('runConceptResearch', () => {
       research: { kind: 'builtin_web' },
       outputSchema: CONCEPT_RESEARCH_OUTPUT_SCHEMA,
     });
+    // 입력에는 이름과 이 논문에서 중요한 이유만 준다. 뜻과 사례는 이 작업이 처음 쓴다.
+    const sent = JSON.parse(
+      (runner.requests[0] as LlmJobRequest).prompt.slice(INPUT_PREAMBLE.length + 1),
+    ) as { CONCEPTS: unknown[] };
+    expect(sent.CONCEPTS[0]).toEqual({
+      id: 'c_1',
+      name: 'concept 1',
+      nameKo: '개념 1',
+      whyItMatters: '이유 1',
+    });
     expect(result).toMatchObject({ researched: 5, sources: 10, state: 'context_pending' });
     expect(result.batches.map((b) => [b.ok, b.accepted, b.rejected.length])).toEqual([
       [true, 4, 2],
@@ -256,7 +267,7 @@ describe('runConceptResearch', () => {
     expect(await store.verifyFiles(SHA)).toEqual([]);
   });
 
-  it('묶음 하나가 실패해도 나머지는 계속하고, 실패한 카드는 일반 설명으로 남는다', async () => {
+  it('묶음 하나가 실패해도 나머지는 계속하고, 실패한 카드는 뜻이 빈 채로 남는다', async () => {
     const runner = runnerOf((request, i) => {
       if (i === 0) return 'timeout';
       if (i === 1) return { concepts: 'broken' };
@@ -276,10 +287,10 @@ describe('runConceptResearch', () => {
       [true, null],
     ]);
     expect(result.context.concepts.map((c) => [c.id, c.researchStatus, c.definitionKo])).toEqual([
-      ['c_1', 'unresolved', '일반 뜻 1'],
-      ['c_2', 'unresolved', '일반 뜻 2'],
-      ['c_3', 'unresolved', '일반 뜻 3'],
-      ['c_4', 'unresolved', '일반 뜻 4'],
+      ['c_1', 'unresolved', ''],
+      ['c_2', 'unresolved', ''],
+      ['c_3', 'unresolved', ''],
+      ['c_4', 'unresolved', ''],
       ['c_5', 'researched', '확인한 뜻 c_5'],
     ]);
     const manifest = await store.readManifest(SHA);

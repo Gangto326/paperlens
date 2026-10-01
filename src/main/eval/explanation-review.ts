@@ -235,7 +235,7 @@ export function formatReviewSheet(sample: ReviewSample): string {
       firstShown.set(card.id, item.no);
       lines.push(`**개념 카드: ${name}**${card.sourced ? '' : ' · 일반 설명, 출처 미확인'}`, '');
       const body = [
-        `뜻: ${card.definitionKo}`,
+        card.definitionKo.trim() === '' ? null : `뜻: ${card.definitionKo}`,
         card.whyItMatters.trim() === '' ? null : `이 논문에서 중요한 이유: ${card.whyItMatters}`,
         card.exampleKo ? `사례: ${card.exampleKo}` : null,
       ].filter((x): x is string => x !== null);

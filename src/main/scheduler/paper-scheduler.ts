@@ -11,6 +11,7 @@ import { CacheReadError, type PaperCacheStore } from '../cache/paper-cache-store
 import { planChunks, type ChunkerOptions } from '../chunk/chunker';
 import { buildContextInput } from '../context/context-input';
 import { contextPromptVersionOf, runContextPass } from '../context/context-pass';
+import { runConceptCards } from '../research/concept-cards';
 import { runConceptResearch, type ResearchBatchReport } from '../research/concept-research';
 import { acquireJobLock } from '../resume/job-lock';
 import { recoverPaper } from '../resume/recover';
@@ -19,7 +20,8 @@ import { runChunk } from '../translate/chunk-run';
 
 /**
  * 논문 단위 작업 스케줄러(COMMIT_PLAN C2.8, PLAN 9절). 앱 전체에서 한 번에 논문 하나만 돈다.
- * 순서: 컨텍스트(없으면 1차 패스) → `translating` → 청크를 앞에서부터 → `complete` 또는 `complete_with_gaps`.
+ * 순서: 컨텍스트(없으면 1차 패스) → 개념 카드 조사 → 뜻이 빈 카드를 검색 없이 쓰기 → `translating`
+ * → 청크를 앞에서부터 → `complete` 또는 `complete_with_gaps`.
  * - 청크는 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 청크는 서로의 결과를 입력으로 받지 않는다.
  *   앞의 청크부터 꺼내지만 끝나는 순서는 정해져 있지 않다. `metrics`는 청크 순서로 돌려준다.
  * - 쓸 수 있는 컨텍스트가 있으면 다시 만들지 않는다. 완료 청크는 다시 요청하지 않는다(runChunk가 inputHash로 판단).
@@ -125,6 +127,8 @@ export interface RunOutcome {
   /** 개념 카드 조사 단계의 사용량과 묶음별 기록. 돌지 않았으면 null */
   researchUsage: Usage | null;
   researchBatches: ResearchBatchReport[];
+  /** 검색 없는 카드 쓰기의 사용량. 쓸 카드가 없어 돌지 않았으면 null */
+  cardsUsage: Usage | null;
   /** 컨텍스트 시작부터 첫 청크 완료까지. 첫 청크가 이번에 새로 완료됐을 때만 값이 있다. */
   firstTranslationMs: number | null;
   elapsedMs: number;
@@ -252,6 +256,7 @@ export class PaperScheduler {
       contextUsage: null,
       researchUsage: null,
       researchBatches: [],
+      cardsUsage: null,
       firstTranslationMs: null,
       elapsedMs: Date.now() - t0,
       ...extra,
@@ -460,7 +465,7 @@ export class PaperScheduler {
             { contextUsage, researchUsage, researchBatches },
           );
         }
-        // 조사 런타임이 없으면 일반 설명 그대로 번역을 계속한다.
+        // 조사 런타임이 없으면 아래의 카드 쓰기가 검색 없이 뜻을 채운다.
         this.log(`scheduler 개념 조사를 건너뜀: ${research.reason} ${research.message}`);
       } else {
         this.emit({
@@ -471,6 +476,50 @@ export class PaperScheduler {
           sources: 0,
           message: research.reason,
         });
+      }
+    }
+
+    // 조사가 뜻을 채우지 못한 카드(조사를 끔, 조사 런타임 없음, 묶음 실패)는 검색 없이 쓴다(Q12).
+    let cardsUsage: Usage | null = null;
+    const cards = await runConceptCards(
+      { store, runner, now: this.now, log: this.log },
+      {
+        pdfSha256,
+        generationId: ready.generationId,
+        ...(this.deps.concurrency !== undefined ? { concurrency: this.deps.concurrency } : {}),
+      },
+    );
+    if (cards.status !== 'skipped') {
+      cardsUsage = cards.usage;
+      if (cards.status === 'stopped') {
+        if (cards.reason === 'needs_login' || cards.reason === 'quota') {
+          return outcome(
+            cards.reason === 'quota' ? 'waiting_quota' : 'needs_login',
+            cards.message,
+            {
+              contextUsage,
+              researchUsage,
+              researchBatches,
+              cardsUsage,
+            },
+          );
+        }
+        // 런타임이 없으면 카드의 뜻이 빈 채로 번역을 계속한다. 번역 요청이 같은 이유로 멈춘다.
+        this.log(`scheduler 카드 쓰기를 건너뜀: ${cards.reason} ${cards.message}`);
+      } else {
+        this.log(`scheduler 카드 쓰기 완료 written=${cards.written} empty=${cards.empty}`);
+      }
+      if (cards.written > 0) {
+        const after = await store.readManifest(pdfSha256);
+        ready = await this.usableContext(pdfSha256, after, promptVersion);
+        if (!ready) {
+          return outcome('context_failed', '카드 쓰기 뒤 저장한 컨텍스트를 다시 읽을 수 없습니다', {
+            contextUsage,
+            researchUsage,
+            researchBatches,
+            cardsUsage,
+          });
+        }
       }
     }
 
@@ -625,6 +674,7 @@ export class PaperScheduler {
       contextUsage,
       researchUsage,
       researchBatches,
+      cardsUsage,
       firstTranslationMs,
     });
     const at = this.now();

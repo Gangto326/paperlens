@@ -26,7 +26,7 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
  * 개념 카드 조사 패스(PLAN 3.3.1, COMMIT_PLAN R4.4). 도구 없는 1차 패스 뒤, 번역 앞에 돈다.
  *
  * - 개념 카드를 몇 개씩 묶어 조사 작업을 보낸다. 작업 하나가 실패해도 나머지는 계속한다.
- *   실패한 묶음의 카드는 1차 패스가 쓴 일반 설명으로 남는다.
+ *   실패한 묶음의 카드는 뜻이 빈 채로 남는다. 뒤의 카드 쓰기 작업(concept-cards.ts)이 검색 없이 채운다.
  * - 묶음은 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 묶음은 서로의 결과를 입력으로 받지 않는다.
  *   결과는 모두 끝난 뒤에 묶음 순서대로 장부에 넣는다. 그래서 출처 번호(src_N)는 끝나는 순서와 무관하다.
  * - 로그인 필요, 한도 초과, 런타임 없음은 패스를 멈춘다. 새 묶음을 보내지 않고 돌던 묶음이 끝나기를 기다린다.
@@ -333,9 +333,7 @@ export async function runConceptResearch(
             id: c.id,
             name: c.name,
             nameKo: c.nameKo ?? null,
-            definitionKo: c.definitionKo,
             whyItMatters: c.whyItMatters,
-            exampleKo: c.exampleKo ?? '',
           })),
         },
       });
@@ -506,7 +504,7 @@ export async function runConceptResearch(
           id: `err_${compact(at)}_${m.errors.length + 1}`,
           stage: CONCEPT_RESEARCH_STAGE,
           code: `batch_${String(report.failure)}`,
-          message: `개념 카드 ${report.conceptIds.join(', ')}의 조사가 실패해 일반 설명으로 남겼습니다`,
+          message: `개념 카드 ${report.conceptIds.join(', ')}의 조사가 실패했습니다. 검색 없이 쓴 일반 설명으로 채웁니다`,
           retryable: false,
           attempt: 1,
           occurredAt: at.toISOString(),
@@ -530,7 +528,7 @@ export async function runConceptResearch(
   };
 }
 
-async function readPaperIdentity(
+export async function readPaperIdentity(
   store: PaperCacheStore,
   pdfSha256: string,
   revision: string | null | undefined,

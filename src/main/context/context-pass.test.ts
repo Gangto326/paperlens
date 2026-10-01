@@ -94,18 +94,14 @@ const goodOutput = (body: ContextBodySection[]): ContextModelOutput => ({
     {
       name: 'Retrieval',
       nameKo: '검색',
-      definitionKo: '질문과 관련된 문서를 찾아오는 일.',
       whyItMatters: '이 논문의 첫 단계다.',
-      exampleKo: '질문 하나에 위키백과 문단 5개를 고른다.',
       prerequisites: ['embedding'],
       glossaryTerms: ['IR'],
     },
     {
       name: 'embedding',
       nameKo: '',
-      definitionKo: '글을 숫자 벡터로 바꾼 것.',
       whyItMatters: '검색이 벡터 거리로 이뤄진다.',
-      exampleKo: '',
       prerequisites: [],
       glossaryTerms: [],
     },
@@ -192,7 +188,11 @@ describe('runContextPass', () => {
       ['c_2', 'embedding', null, 'unresolved'],
     ]);
     expect(saved.concepts[0]?.prerequisiteConceptIds).toEqual(['c_2']);
-    expect(saved.concepts[1]?.exampleKo).toBeNull();
+    // 뜻과 사례는 1차 패스가 쓰지 않는다. 뒤의 조사 패스나 카드 쓰기 작업이 채운다.
+    expect(saved.concepts.map((c) => [c.definitionKo, c.exampleKo, c.whyItMatters])).toEqual([
+      ['', null, '이 논문의 첫 단계다.'],
+      ['', null, '검색이 벡터 거리로 이뤄진다.'],
+    ]);
     expect(saved.unresolved).toEqual(['dense retrieval의 배경']);
     expect(saved.promptVersion).toMatch(/^context\.no_tools@[0-9a-f]{12}$/);
 
@@ -434,7 +434,7 @@ describe('validateContextOutput', () => {
       {
         ...good,
         concepts: [
-          { ...card, definitionKo: ' ' },
+          { ...card, name: ' ' },
           { ...card, prerequisites: ['없는 개념', 'Retrieval'], glossaryTerms: ['없는 용어'] },
           { ...card, name: 'retrieval' },
         ],
