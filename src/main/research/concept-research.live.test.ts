@@ -78,10 +78,14 @@ describe.skipIf(!userData || !pdfSha || !contextFile || conceptIds.length === 0)
             startThread: (options) => rt.startThread(options),
           },
         });
+        const before = await rt.client?.request('account/rateLimits/read', {});
+        console.log(`[live] rateLimits(before)=${JSON.stringify(before)}`);
         const result = await runConceptResearch(
           { store, runner, log: (line) => console.log(`[research] ${line}`) },
           { pdfSha256: sha, generationId: GEN, batchSize: concepts.length },
         );
+        const after = await rt.client?.request('account/rateLimits/read', {});
+        console.log(`[live] rateLimits(after)=${JSON.stringify(after)}`);
         console.log(`[live] status=${result.status}`);
         if (result.status !== 'done') throw new Error(JSON.stringify(result));
         console.log(
