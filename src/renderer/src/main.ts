@@ -1,4 +1,15 @@
+import { AdditionalExplanationControls } from './panel/additional-explanations';
+import type { WorkProgress, WorkUpdate } from '@shared/work-status';
+import { WorkPanel } from './panel/work-panel';
+import { confirmTranslation } from './panel/import-dialog';
+import { setupLibrary } from './panel/library-panel';
 import 'pdfjs-dist/web/pdf_viewer.css';
+import { Workspace } from './workspace';
+import { SentenceFocus } from './viewer/sentence-focus';
+import { setupDisclosures } from './disclosures';
+import { setupReadingKeyboard } from './reading-keyboard';
+import { setupTutorial } from './tutorial';
+import { Bookmarks } from './bookmarks';
 import type { OpenedPdf, ProcessEvent, SentenceIndex, TranslationSnapshot } from '@shared/ipc';
 import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
 import { AccountPanel } from './panel/account-panel';
@@ -32,8 +43,20 @@ const zoomLabel = $('zoom-label');
 const viewerEl = $('viewer');
 const viewer = new PdfViewer({ container: viewerEl });
 const selection = new SelectionController(viewer, viewerEl);
-const panel = new SentencePanel($('selection'));
-const overviewPanel = new OverviewPanel($('overview'));
+const workspace = new Workspace(viewer, viewerEl, updateZoomLabel, showError);
+const sentenceFocus = new SentenceFocus(viewer, viewerEl, (result) => {
+  onSelection({ result, ranges: [], kind: 'keyboard', elapsedMs: 0 });
+});
+const bookmarks = new Bookmarks((id) => sentenceFocus.navigateTo(id), setStatus);
+setupDisclosures($('panel-content'));
+setupReadingKeyboard($('panel-content'));
+setupTutorial();
+const additionalControls = new AdditionalExplanationControls(showError);
+const panel = new SentencePanel($('selection'), additionalControls.create);
+const overviewPanel = new OverviewPanel($('overview'), additionalControls.create);
+const workPanel = new WorkPanel(async () => {
+  if (currentSha) await window.paperlens.refreshPreparation(currentSha);
+}, showError);
 const accountPanel = new AccountPanel($('account'), (err) => showError(err));
 const checksPanel = new ChecksPanel($('checks'), {
   login: async () => {
@@ -41,8 +64,15 @@ const checksPanel = new ChecksPanel($('checks'), {
     if (!start.started) throw new Error(`로그인을 시작하지 못했습니다: ${start.reason}`);
   },
   onError: (err) => showError(err),
+  onChanged: (view) => {
+    $('connection-dot').dataset['tone'] = view.allOk ? 'ok' : 'warn';
+    $('btn-account').title = view.title;
+  },
 });
 const processButton = $<HTMLButtonElement>('btn-process');
+const deleteButton = $<HTMLButtonElement>('btn-delete-paper');
+let openingPaper = false;
+let deletingPaper = false;
 let screenshotMode = false;
 /** 열려 있는 논문. 다른 논문의 처리 이벤트는 화면에 반영하지 않는다. */
 let currentSha: string | null = null;
@@ -52,16 +82,88 @@ let translations: TranslationSnapshot | null = null;
 /** 상단 단계 표시(PLAN 9: 추출 → 문장 연결 → 논문 문맥·조사 → 번역 → 완료). 진행률은 실제 완료 수만 쓴다. */
 function setStage(text: string): void {
   stageEl.textContent = text;
+  $('process-area').hidden = text === '';
 }
 
 function setStatus(text: string): void {
   statusEl.textContent = text;
+  statusEl.title = text;
+  $('statusbar').dataset['tone'] = 'normal';
 }
 
 /** 처리 단계 글과 시작·멈춤 단추를 모델대로 그린다(C2.9). */
+function updateDeleteButton(): void {
+  for (const id of ['btn-open', 'btn-welcome-open', 'btn-library']) {
+    $<HTMLButtonElement>(id).disabled = openingPaper || deletingPaper;
+  }
+  deleteButton.disabled = !currentSha || openingPaper || deletingPaper || processModel.running;
+  deleteButton.title = processModel.running
+    ? '번역 작업이 멈추거나 끝난 뒤 삭제할 수 있습니다'
+    : '현재 논문의 저장된 분석·번역 데이터 삭제';
+}
+
+async function resetToWelcome(): Promise<void> {
+  currentSha = null;
+  additionalControls.setDocument(null);
+  selection.setIndex(null);
+  sentenceFocus.setIndex(null);
+  bookmarks.setDocument(null, null);
+  panel.clear();
+  translations = null;
+  panel.setTranslations(lookupOf(null));
+  overviewPanel.set(null);
+  workPanel.reset(null);
+  processModel = INITIAL_PROCESS;
+  workspace.reset();
+  await viewer.close();
+  updateZoomLabel();
+  renderProcess();
+  setStage('');
+  titleEl.textContent = '논문 읽기';
+  titleEl.title = '';
+  $('doc-meta').textContent = 'PDF 파일을 열어 시작하세요';
+  $('welcome').hidden = false;
+  setStatus('PDF를 열어 읽기를 시작하세요.');
+  $('btn-open').focus();
+}
+
+async function deleteCurrentPaper(): Promise<void> {
+  if (!currentSha || deleteButton.disabled) return;
+  const sha = currentSha;
+  deletingPaper = true;
+  updateDeleteButton();
+  $<HTMLButtonElement>('btn-open').disabled = true;
+  try {
+    const result = await window.paperlens.deletePaperData(sha);
+    if (!result.deleted || currentSha !== sha) return;
+    await resetToWelcome();
+    setStatus('이 논문의 저장 데이터를 삭제했습니다. PDF 원본과 책갈피는 유지됩니다.');
+    $('btn-open').focus();
+  } finally {
+    deletingPaper = false;
+    $<HTMLButtonElement>('btn-open').disabled = false;
+    updateDeleteButton();
+  }
+}
+
 function renderProcess(): void {
+  updateDeleteButton();
   const view = processView(processModel);
-  if (view.stage !== '') setStage(view.stage);
+  $('process-area').dataset['running'] = String(processModel.running);
+  const progress = $<HTMLProgressElement>('process-progress');
+  progress.hidden =
+    !processModel.ready ||
+    processModel.total === 0 ||
+    (processModel.running && processModel.phase !== 'translating');
+  progress.max = Math.max(1, processModel.total);
+  progress.value = processModel.completed;
+  if (processModel.ready)
+    setStage(
+      workPanel.progress?.running && workPanel.progress.phase === 'cards'
+        ? '개념 설명 정리 중'
+        : view.stage,
+    );
+  $('btn-work-details').hidden = !processModel.running;
   processButton.hidden = view.button === null;
   if (view.button) {
     processButton.textContent = view.button.label;
@@ -76,13 +178,51 @@ async function loadTranslations(pdfSha256: string, fresh: boolean): Promise<void
   const snapshot = await window.paperlens.readTranslations(pdfSha256);
   if (currentSha !== pdfSha256) return;
   translations = snapshot;
+  additionalControls.setSnapshot(snapshot);
   panel.setTranslations(lookupOf(snapshot));
   overviewPanel.set(snapshot);
-  if (fresh) processModel = processFromSnapshot(snapshot);
+  $('notes-empty').hidden = snapshot.overview != null;
+  const count = Object.keys(snapshot.concepts ?? {}).length;
+  $('notes-count').textContent = String(count);
+  $('notes-count').hidden = count === 0;
+  if (fresh) {
+    processModel = processFromSnapshot(snapshot);
+    const work = await window.paperlens.readWork(pdfSha256);
+    if (currentSha !== pdfSha256) return;
+    workPanel.setPreparation(work.preparation);
+    const latest = workPanel.progress;
+    const progress =
+      latest && (!work.progress || latest.revision > work.progress.revision)
+        ? latest
+        : work.progress;
+    if (progress) applyWorkProgress(progress);
+  }
   renderProcess();
   console.info(
     `[paperlens] translations state=${snapshot.state} generation=${String(snapshot.generationId)} chunks=${snapshot.chunks.map((c) => c.status[0]).join('')} sentences=${Object.keys(snapshot.results).length} ms=${Math.round(performance.now() - t0)}`,
   );
+}
+
+function applyWorkProgress(progress: WorkProgress): void {
+  if (progress.pdfSha256 !== currentSha || !workPanel.setProgress(progress)) return;
+  processModel = {
+    ...processModel,
+    ready: true,
+    running: progress.running,
+    state: progress.state ?? processModel.state,
+    phase: progress.phase === 'cards' ? 'research' : progress.phase,
+    stepProgress: progress.step,
+    completed: progress.completed,
+    failed: progress.failed,
+    total: progress.total,
+  };
+  renderProcess();
+}
+
+function onWorkUpdate(event: WorkUpdate): void {
+  if (event.type === 'progress') applyWorkProgress(event.progress);
+  else if (event.type === 'preparation') workPanel.setPreparation(event.preparation);
+  else setStatus(event.message);
 }
 
 function onProcessEvent(event: ProcessEvent): void {
@@ -103,7 +243,7 @@ function onProcessEvent(event: ProcessEvent): void {
 }
 
 async function onProcessButton(): Promise<void> {
-  if (!currentSha) return;
+  if (!currentSha || !processModel.ready || processButton.disabled) return;
   if (processButton.dataset['action'] === 'stop') {
     const stopped = await window.paperlens.stopProcessing();
     if (stopped.accepted) processModel = { ...processModel, stopRequested: true };
@@ -117,21 +257,64 @@ async function onProcessButton(): Promise<void> {
   }
   processModel = { ...processModel, running: true, phase: 'context', message: null };
   renderProcess();
+  workspace.selectTab('work');
   setStatus('번역을 시작했습니다. 끝난 부분부터 표시됩니다.');
 }
 
 async function openPdf(): Promise<void> {
-  const result = await window.paperlens.openPdfDialog();
-  if (result.canceled) return;
-  await loadOpened(result);
+  if (openingPaper || deletingPaper) return;
+  openingPaper = true;
+  updateDeleteButton();
+  try {
+    const result = await window.paperlens.openPdfDialog();
+    if (result.canceled) return;
+    const saved = await window.paperlens.readTranslations(result.pdfSha256);
+    const shouldStart = saved.generationId === null && saved.state !== 'complete';
+    if (shouldStart && !(await confirmTranslation(result.fileName))) {
+      await resetToWelcome();
+      return;
+    }
+    await loadOpened(result, shouldStart);
+  } finally {
+    openingPaper = false;
+    updateDeleteButton();
+  }
 }
 
-async function loadOpened(result: OpenedPdf): Promise<void> {
+async function loadOpened(result: OpenedPdf, startAfterOpen = false): Promise<void> {
+  openingPaper = true;
+  updateDeleteButton();
+  try {
+    await loadOpenedDocument(result, startAfterOpen);
+    if (
+      startAfterOpen &&
+      currentSha === result.pdfSha256 &&
+      processModel.ready &&
+      !processModel.running
+    ) {
+      await onProcessButton();
+    }
+  } finally {
+    openingPaper = false;
+    updateDeleteButton();
+  }
+}
+
+async function loadOpenedDocument(result: OpenedPdf, startAfterOpen: boolean): Promise<void> {
+  workspace.reset();
+  titleEl.textContent = result.fileName;
+  $('doc-meta').textContent = '논문을 여는 중';
+  $('process-area').dataset['running'] = 'true';
+  $<HTMLProgressElement>('process-progress').hidden = true;
   setStatus(`읽는 중… ${result.fileName}`);
-  setStage('열는 중');
+  setStage('여는 중');
   selection.setIndex(null);
+  sentenceFocus.setIndex(null);
+  bookmarks.setDocument(null, null);
   panel.clear();
   currentSha = result.pdfSha256;
+  additionalControls.setDocument(result.pdfSha256);
+  workPanel.reset(result.pdfSha256);
   translations = null;
   processModel = INITIAL_PROCESS;
   panel.setTranslations(lookupOf(null));
@@ -149,17 +332,31 @@ async function loadOpened(result: OpenedPdf): Promise<void> {
     console.error(err);
     titleEl.textContent = `${result.fileName} · 열지 못함`;
     currentSha = null;
+    $('doc-meta').textContent = '다른 PDF를 열어 다시 시도하세요';
+    $('process-area').dataset['running'] = 'false';
+    $('statusbar').dataset['tone'] = 'error';
     return;
   }
-  titleEl.textContent = `${result.fileName} · ${doc.numPages}쪽 · ${result.pdfSha256.slice(0, 12)}…`;
+  titleEl.textContent = result.fileName;
+  titleEl.title = result.fileName;
+  $('doc-meta').textContent = `${doc.numPages}쪽 논문`;
+  workspace.documentReady();
   const ms = Math.round(performance.now() - t0);
   setStatus(`열림 (${ms}ms).`);
   console.info(`[paperlens] loaded ${result.fileName} pages=${doc.numPages} loadMs=${ms}`);
-  await extractText(result, doc);
+  try {
+    await extractText(result, doc, startAfterOpen);
+  } finally {
+    $('process-area').dataset['running'] = String(processModel.running);
+  }
 }
 
 /** 전 페이지 텍스트 항목을 모아 메인에 저장한다. 품질 판정으로 중단되면 상태 줄에 알린다. */
-async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<void> {
+async function extractText(
+  result: OpenedPdf,
+  doc: PDFDocumentProxy,
+  startAfterOpen: boolean,
+): Promise<void> {
   const t0 = performance.now();
   setStage('추출');
   const collected = await collectTextItems(doc, (done, total) => {
@@ -191,27 +388,39 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
     );
     return;
   }
+  // 같은 추출 revision의 저장된 색인을 우선 사용한다. 내 논문을 열 때 재분석하지 않는다.
+  const cached = await loadSentenceIndex(result.pdfSha256).catch(() => null);
+  if (cached) {
+    renderProcess();
+    setStatus(
+      `저장된 문장 ${cached.sentences.length}개를 불러왔습니다. 문장을 클릭하거나 드래그하세요.`,
+    );
+    return;
+  }
   setStatus(`텍스트 추출 완료 (${saved.itemCount}개 항목, ${ms}ms). GROBID 확인 중…`);
-  const health = await window.paperlens.checkParser();
+  let health = await window.paperlens.checkParser();
   console.info(`[paperlens] grobid ${JSON.stringify(health)}`);
   if (!health.ok) {
-    // 같은 rev의 document.json이 이미 캐시에 있으면(이전 실행에서 연결 완료) GROBID 없이 그것으로 선택·표시한다.
-    const reused = await loadSentenceIndex(result.pdfSha256).catch((err: unknown) => {
-      console.info(
-        `[paperlens] no cached document: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      return null;
-    });
-    if (reused) {
-      renderProcess();
-      setStatus(
-        `텍스트 추출 완료. GROBID에 연결할 수 없지만 이전에 연결한 문장 ${reused.sentences.length}개(캐시)를 사용합니다. 문장을 클릭하거나 드래그하세요.`,
-      );
+    if (startAfterOpen) {
+      setStage('논문 분석기 준비 중');
+      setStatus('번역에 필요한 논문 분석기를 시작하고 있습니다.');
+      const started = await window.paperlens.startGrobid();
+      if (started.started) {
+        for (let attempt = 0; attempt < 24 && !health.ok; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 2500));
+          health = await window.paperlens.checkParser();
+        }
+      } else {
+        setStage('논문 분석기 준비 필요');
+        setStatus(started.message);
+        return;
+      }
+    }
+    if (!health.ok) {
+      setStage('문장 연결 대기 (GROBID 없음)');
+      setStatus(`텍스트 추출 완료. ${health.guidance}`);
       return;
     }
-    setStage('문장 연결 대기 (GROBID 없음)');
-    setStatus(`텍스트 추출 완료. ${health.guidance}`);
-    return;
   }
   setStage('구조 분석');
   setStatus(`GROBID ${health.version ?? '?'} 연결됨 · 구조 분석 중… (문서에 따라 수십 초)`);
@@ -230,9 +439,7 @@ async function extractText(result: OpenedPdf, doc: PDFDocumentProxy): Promise<vo
   );
   await loadSentenceIndex(result.pdfSha256);
   renderProcess();
-  setStatus(
-    `문장 ${mapped.sentenceCount}개 준비 (연결 ${mapped.mapped}, 불확실 ${mapped.uncertain}, 미연결 ${mapped.unmapped}, 수식 ${mapped.equationCount}). 문장을 클릭하거나 드래그하세요.`,
-  );
+  setStatus(`문장 ${mapped.sentenceCount}개 준비. 문장을 클릭하거나 드래그하세요.`);
 }
 
 /** 확정된 document.json의 문장 색인을 받아 선택 해석기에 넣는다(C1.15). 없으면 throw. */
@@ -240,6 +447,8 @@ async function loadSentenceIndex(pdfSha256: string): Promise<SentenceIndex> {
   const t0 = performance.now();
   const index = await window.paperlens.readDocument(pdfSha256);
   selection.setIndex(index);
+  sentenceFocus.setIndex(index);
+  bookmarks.setDocument(pdfSha256, index);
   const spans = index.sentences.reduce((n, s) => n + s.sourceSpans.length, 0);
   console.info(
     `[paperlens] sentence index rev=${index.extractionRevision} sentences=${index.sentences.length} spans=${spans} excluded=${index.excludedBlocks.length} ms=${Math.round(performance.now() - t0)}`,
@@ -297,6 +506,10 @@ const PANEL_TARGET_MS = 200;
 function onSelection(ev: SelectionEvent): void {
   const t0 = performance.now();
   panel.show(ev.result);
+  sentenceFocus.setSelection(ev.result);
+  if (ev.result.reason !== 'empty_selection') bookmarks.setSelection(ev.result.sentences);
+  if (ev.result.sentences.length > 0) workspace.revealSelection();
+  if (ev.kind === 'keyboard') $('panel-content').focus({ preventScroll: true });
   const renderMs = performance.now() - t0;
   const totalMs = ev.elapsedMs + renderMs;
   const ids = ev.result.sentences.map((s) => s.id);
@@ -311,15 +524,23 @@ function onSelection(ev: SelectionEvent): void {
 
 function updateZoomLabel(): void {
   zoomLabel.textContent = `${Math.round(viewer.currentScale * 100)}%`;
+  $<HTMLButtonElement>('btn-zoom-out').disabled = !viewer.document || viewer.currentScale <= 0.5;
+  $<HTMLButtonElement>('btn-zoom-in').disabled = !viewer.document || viewer.currentScale >= 4;
 }
 
 async function boot(): Promise<void> {
+  setupLibrary((pdf) => loadOpened(pdf));
+  deleteButton.addEventListener('click', () => void deleteCurrentPaper().catch(showError));
+  window.paperlens.onWorkUpdate(onWorkUpdate);
+  window.paperlens.onOpenCompletedPaper((pdf) => {
+    void loadOpened(pdf).catch(showError);
+  });
+  $('btn-work-details').addEventListener('click', () => workspace.selectTab('work'));
   const info = await window.paperlens.getAppInfo();
   screenshotMode = info.screenshotMode;
-  setStatus(
-    `PaperLens ${info.appVersion} · Electron ${info.electronVersion} · PDF.js ${PDFJS_VERSION}`,
-  );
+  setStatus('PDF를 열어 읽기를 시작하세요.');
   $('btn-open').addEventListener('click', () => void openPdf().catch(showError));
+  $('btn-welcome-open').addEventListener('click', () => void openPdf().catch(showError));
   $('btn-zoom-in').addEventListener(
     'click',
     () =>
@@ -373,6 +594,7 @@ async function boot(): Promise<void> {
 
 function showError(err: unknown): void {
   setStatus(`오류: ${err instanceof Error ? err.message : String(err)}`);
+  $('statusbar').dataset['tone'] = 'error';
   console.error(err);
 }
 

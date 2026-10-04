@@ -14,6 +14,7 @@ export const RETRY_JITTER_RATIO = 0.2;
 
 export interface RetryingRunnerDeps {
   inner: LlmJobRunner;
+  onRetry?: (jobId: string, attempt: number, delayMs: number) => void;
   delaysMs?: readonly number[];
   shouldContinue?: () => boolean;
   sleep?: (ms: number) => Promise<void>;
@@ -66,6 +67,7 @@ export class RetryingJobRunner implements LlmJobRunner {
       this.log(
         `job ${request.jobId} 실패(${result.message.split('\n')[0] ?? ''}) → ${delay}ms 뒤 다시 보냄 (${attempt + 1}/${this.delays.length})`,
       );
+      this.deps.onRetry?.(request.jobId, attempt + 1, delay);
       await this.sleep(delay);
       if (!this.shouldContinue()) break;
       result = await this.deps.inner.run(request, onEvent);

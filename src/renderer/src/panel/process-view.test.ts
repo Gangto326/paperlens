@@ -31,12 +31,12 @@ describe('processView', () => {
   it('처음 연 논문은 번역 시작 단추를 보인다', () => {
     const model = processFromSnapshot(snapshot('mapping', ['pending', 'pending']));
     expect(processView(model)).toEqual({
-      stage: '번역 대기 · 0/2 청크',
+      stage: '번역 대기 · 0/2 구간',
       button: { label: '번역 시작', action: 'start', disabled: false },
     });
   });
 
-  it('진행률은 끝난 청크 수다. 컨텍스트 단계에는 숫자를 만들지 않는다', () => {
+  it('진행률은 끝난 구간 수다. 컨텍스트 단계에는 숫자를 만들지 않는다', () => {
     let model = processFromSnapshot(snapshot('mapping', ['pending', 'pending', 'pending']));
     model = play(model, [
       { type: 'state', pdfSha256: SHA, state: 'context_pending' },
@@ -71,7 +71,7 @@ describe('processView', () => {
       { type: 'plan', pdfSha256: SHA, total: 3 },
       { type: 'chunkStarted', pdfSha256: SHA, chunkId: 'chunk_0', total: 3 },
     ]);
-    expect(processView(model).stage).toBe('번역 중 0/3 청크');
+    expect(processView(model).stage).toBe('번역 중 0/3 구간');
     model = play(model, [
       {
         type: 'chunkFinished',
@@ -94,7 +94,7 @@ describe('processView', () => {
         sentenceIds: [],
       },
     ]);
-    expect(processView(model).stage).toBe('번역 중 1/3 청크 · 실패 1');
+    expect(processView(model).stage).toBe('번역 중 1/3 구간 · 실패 1');
   });
 
   it('멈춤을 요청하면 단추를 잠그고 안내한다', () => {
@@ -105,7 +105,7 @@ describe('processView', () => {
       stopRequested: true,
     };
     expect(processView(model)).toEqual({
-      stage: '번역 중 1/2 청크 · 돌던 청크가 끝나면 멈춤',
+      stage: '번역 중 1/2 구간 · 진행 중인 구간이 끝나면 멈춥니다',
       button: { label: '멈춤', action: 'stop', disabled: true },
     });
   });
@@ -130,34 +130,34 @@ describe('processView', () => {
         },
       ]);
     expect(processView(finished('complete', 'complete', 3, 0))).toEqual({
-      stage: '번역 완료 · 3/3 청크',
+      stage: '',
       button: null,
     });
     expect(processView(finished('complete_with_gaps', 'complete_with_gaps', 2, 1))).toEqual({
-      stage: '번역 완료(일부 실패) · 2/3 청크 · 실패 1',
+      stage: '번역 완료(일부 실패) · 2/3 구간 · 실패 1',
       button: { label: '번역 이어서', action: 'start', disabled: false },
     });
-    expect(processView(finished('paused', 'paused', 1, 0)).stage).toBe('멈춤 · 1/3 청크');
+    expect(processView(finished('paused', 'paused', 1, 0)).stage).toBe('멈춤 · 1/3 구간');
     expect(processView(finished('waiting_quota', 'waiting_quota', 1, 1)).stage).toBe(
-      '한도 대기 · 1/3 청크 · 실패 1',
+      '한도 대기 · 1/3 구간 · 실패 1',
     );
     expect(processView(finished('needs_login', 'needs_login', 0, 0)).button?.label).toBe(
       '번역 이어서',
     );
   });
 
-  it('다시 연 논문은 저장된 청크 수로 시작한다', () => {
+  it('다시 연 논문은 저장된 구간 수로 시작한다', () => {
     const model = processFromSnapshot(snapshot('paused', ['complete', 'complete', 'pending']));
     expect(processView(model)).toEqual({
-      stage: '멈춤 · 2/3 청크',
+      stage: '멈춤 · 2/3 구간',
       button: { label: '번역 이어서', action: 'start', disabled: false },
     });
     expect(
       processView(processFromSnapshot(snapshot('complete', ['complete', 'complete']))),
-    ).toEqual({ stage: '번역 완료 · 2/2 청크', button: null });
+    ).toEqual({ stage: '', button: null });
   });
 
-  it('시작하지 못한 실행은 알고 있던 청크 수를 지우지 않는다', () => {
+  it('시작하지 못한 실행은 알고 있던 구간 수를 지우지 않는다', () => {
     const model = play(processFromSnapshot(snapshot('paused', ['complete', 'pending'])), [
       {
         type: 'finished',

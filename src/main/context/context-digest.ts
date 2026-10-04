@@ -15,7 +15,7 @@ import { validateCoverage, type ContextProblem } from './context-validate';
  *
  * - 부분은 읽기 순서로 섹션을 이어 담는다. 한 부분의 본문 추정 토큰이 `maxTokens`를 넘지 않게 한다.
  *   섹션 하나가 그보다 길면 문장 경계에서 나눈다. 문장 하나가 그보다 길면 그 문장 하나가 한 부분이다.
- * - 부분 작업은 서로의 결과를 입력으로 받지 않는다. `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1).
+ * - 부분 작업은 서로의 결과를 입력으로 받지 않는다. 기본적으로 모두 동시에 시작한다.
  * - 부분마다 coverage 장부를 검사한다. 그 부분의 모든 섹션과 문장이 들어 있어야 한다.
  *   모든 부분이 통과하면 본문의 모든 문장이 적어도 한 부분 작업에 들어간 것이다.
  * - 돌던 작업의 보존(COMMIT_PLAN M3 P2): 부분 작업의 출력은 inflight에 남는다.
@@ -26,8 +26,6 @@ import { validateCoverage, type ContextProblem } from './context-validate';
 /** 실측(2026-09-30): 6,000토큰 안팎의 부분 4개를 동시에 돌려 2분 40초~4분 14초. 12,000은 재지 않았다. */
 export const DIGEST_PART_MAX_TOKENS = 6_000;
 export const DIGEST_TIMEOUT_MS = 20 * 60_000;
-/** 부분 4개 동시가 통했다. 5개 이상은 재지 않았다. */
-export const DIGEST_CONCURRENCY = 5;
 
 export interface ContextPart {
   /** `part_001`부터 */
@@ -259,6 +257,7 @@ export interface DigestRunOptions {
   extractionRevision: string;
   inflight: InflightStore;
   runner: LlmJobRunner;
+  /** 생략하면 모든 부분을 동시에 시작한다. 명시한 경우에만 동시 실행 수를 제한한다. */
   concurrency?: number;
   timeoutMs?: number;
   onEvent?: (event: LlmJobEvent) => void;
@@ -287,7 +286,7 @@ export const partInputHash = (part: ContextPart, extractionRevision: string): st
 export async function runDigests(options: DigestRunOptions): Promise<DigestRunResult> {
   const { input, parts, inflight, runner } = options;
   const log = options.log ?? (() => undefined);
-  const concurrency = Math.max(1, Math.floor(options.concurrency ?? DIGEST_CONCURRENCY));
+  const concurrency = Math.max(1, Math.floor(options.concurrency ?? parts.length));
   const outline = input.body.map((s) => ({ title: s.title, parent: s.parent }));
 
   const done = new Map<number, { jobId: string; checked: ValidatedPart }>();

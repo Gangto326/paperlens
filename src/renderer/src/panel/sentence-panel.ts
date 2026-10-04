@@ -1,3 +1,4 @@
+import type { AdditionalControl } from './additional-explanations';
 import type { SelectionResult } from '@shared/mapping/selection';
 import type { InlinePart, RichBlock } from './rich-text';
 import {
@@ -22,25 +23,56 @@ export class SentencePanel {
   private lookup: TranslationLookup = NO_TRANSLATIONS;
   private last: SelectionResult | null = null;
 
-  constructor(private readonly root: HTMLElement) {
+  constructor(
+    private readonly root: HTMLElement,
+    private readonly additional?: AdditionalControl,
+  ) {
     root.replaceChildren();
     this.summaryEl = document.createElement('p');
     this.summaryEl.className = 'selection-summary muted';
     this.listEl = document.createElement('div');
     this.listEl.className = 'sentence-list';
     root.append(this.summaryEl, this.listEl);
+    this.clear();
   }
 
   clear(): void {
     this.summaryEl.textContent = '';
     this.listEl.replaceChildren();
     this.last = null;
+    const empty = document.createElement('div');
+    empty.className = 'panel-empty';
+    const glyph = document.createElement('span');
+    glyph.className = 'empty-glyph';
+    glyph.setAttribute('aria-hidden', 'true');
+    glyph.textContent = '❞';
+    const title = document.createElement('h3');
+    title.textContent = '궁금한 문장에 머물러 보세요';
+    const hint = document.createElement('p');
+    hint.textContent =
+      '원문을 클릭하거나 드래그하면 선택한 문장의 번역과 해설이 여기에 나타납니다.';
+    empty.append(glyph, title, hint);
+    this.listEl.append(empty);
   }
 
   /** 번역 조회기를 바꾸고, 보여주던 선택이 있으면 새 결과로 다시 그린다. */
   setTranslations(lookup: TranslationLookup): void {
     this.lookup = lookup;
-    if (this.last) this.show(this.last);
+    if (this.last) {
+      const key = (details: HTMLDetailsElement): string =>
+        `${details.closest<HTMLElement>('.sentence')?.dataset['sentenceId']}/${details.dataset['additionalKey'] ?? details.dataset['conceptId'] ?? details.className}`;
+      const states = new Map(
+        [...this.root.querySelectorAll<HTMLDetailsElement>('.sentence details')].map((details) => [
+          key(details),
+          details.open,
+        ]),
+      );
+      this.show(this.last);
+      this.root.querySelectorAll<HTMLDetailsElement>('.sentence details').forEach((details) => {
+        const open = states.get(key(details));
+        if (open !== undefined) details.open = open;
+      });
+    }
   }
 
   /** 결과를 그린다. 빈 선택(empty_selection)은 이전 표시를 유지한다. */
@@ -49,11 +81,13 @@ export class SentencePanel {
     this.last = result;
     const view = selectionView(result, this.lookup);
     this.summaryEl.textContent = view.summary;
-    this.listEl.replaceChildren(...view.sentences.map(renderSentence));
+    this.listEl.replaceChildren(
+      ...view.sentences.map((sentence) => renderSentence(sentence, this.additional)),
+    );
   }
 }
 
-function renderSentence(s: SentenceView): HTMLElement {
+function renderSentence(s: SentenceView, additional?: AdditionalControl): HTMLElement {
   const article = document.createElement('article');
   article.className = `sentence status-${s.status}`;
   article.dataset['sentenceId'] = s.id;
@@ -103,7 +137,29 @@ function renderSentence(s: SentenceView): HTMLElement {
   ko.className = 'sentence-ko';
   ko.lang = 'ko';
   ko.textContent = t.ko;
-  article.append(ko);
+  const translationLabel = document.createElement('div');
+  translationLabel.className = 'translation-label';
+  translationLabel.textContent = '번역';
+  article.append(translationLabel, ko);
+  const copy = document.createElement('button');
+  copy.type = 'button';
+  copy.className = 'copy-button';
+  copy.textContent = '번역 복사';
+  copy.setAttribute('aria-label', `${s.label} 번역 복사`);
+  copy.addEventListener('click', () => {
+    void navigator.clipboard
+      .writeText(t.ko)
+      .then(() => {
+        copy.textContent = '복사됨';
+        setTimeout(() => {
+          copy.textContent = '번역 복사';
+        }, 1800);
+      })
+      .catch(() => {
+        copy.textContent = '복사 실패 · 다시 시도';
+      });
+  });
+  meta.append(copy);
   if (t.previous !== null) {
     const previous = document.createElement('p');
     previous.className = 'sentence-previous muted';
@@ -117,13 +173,23 @@ function renderSentence(s: SentenceView): HTMLElement {
     note.lang = 'ko';
     note.textContent = t.note;
     article.append(note);
+    if (additional)
+      article.append(additional({ kind: 'section', sentenceId: s.id, section: 'note' }));
   }
-  for (const section of t.sections) article.append(renderSection(section));
+  for (const section of t.sections) {
+    const element = renderSection(section);
+    if (additional)
+      element.append(additional({ kind: 'section', sentenceId: s.id, section: section.key }));
+    article.append(element);
+  }
   if (t.concepts.length > 0) {
     const list = document.createElement('div');
     list.className = 'concept-list';
-    list.append(...t.concepts.map(renderConcept));
-    article.append(list);
+    list.append(...t.concepts.map((concept) => renderConcept(concept, additional)));
+    const heading = document.createElement('h3');
+    heading.className = 'concepts-heading';
+    heading.textContent = `함께 알아둘 개념 ${t.concepts.length}`;
+    article.append(heading, list);
   }
   for (const warning of t.warnings) {
     const w = document.createElement('p');
@@ -209,7 +275,7 @@ export function renderRich(blocks: readonly RichBlock[]): HTMLElement {
 }
 
 /** 개념 카드. 이름만 보이고 누르면 펼쳐진다. */
-export function renderConcept(concept: ConceptView): HTMLElement {
+export function renderConcept(concept: ConceptView, additional?: AdditionalControl): HTMLElement {
   const details = document.createElement('details');
   details.className = 'concept';
   details.dataset['conceptId'] = concept.id;
@@ -235,6 +301,7 @@ export function renderConcept(concept: ConceptView): HTMLElement {
   if (concept.further.length > 0) {
     details.append(renderLinks(FURTHER_SOURCES_TITLE, concept.further));
   }
+  if (additional) details.append(additional({ kind: 'concept', conceptId: concept.id }));
   return details;
 }
 

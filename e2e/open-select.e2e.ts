@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs';
+import type { PaperLensApi } from '../src/preload';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
@@ -58,6 +59,7 @@ test.beforeAll(async () => {
     env: { ...process.env, PAPERLENS_NO_CODEX: '1', PAPERLENS_OPEN_PDF: PDF },
   });
   page = await app.firstWindow();
+  await page.locator('#tutorial-close').click();
 });
 
 test.afterAll(async () => {
@@ -72,7 +74,7 @@ test('열기 → 추출 → 문장 연결 → 클릭 선택 → 원문 표시', 
   await expect(page.locator('#status')).toContainText('문장을 클릭하거나 드래그', {
     timeout: 180_000,
   });
-  await expect(page.locator('#stage')).not.toContainText('열는 중');
+  await expect(page.locator('#stage')).not.toContainText('여는 중');
   await line(FIRST).click();
   await expect(page.locator('#selection .selection-summary')).toContainText('문장 1개', {
     timeout: 10_000,
@@ -112,4 +114,50 @@ test('드래그하면 걸친 문장이 모두 선택된다', async () => {
   await expect(en.nth(0)).toContainText(FIRST);
   await expect(en.nth(1)).toContainText(SECOND);
   await expect(en.nth(2)).toContainText(THIRD);
+});
+
+test('선택한 문장은 형광펜으로 남고 좌우 키로 본문 순서대로 이동한다', async () => {
+  const sentences = await page.evaluate(async () => {
+    const { paperlens } = globalThis as unknown as { paperlens: PaperLensApi };
+    const info = await paperlens.getAppInfo();
+    if (!info.autoOpened) throw new Error('검증 논문이 열리지 않았습니다');
+    return (await paperlens.readDocument(info.autoOpened.pdfSha256)).sentences;
+  });
+  const selected = await Promise.all(
+    (await page.locator('#selection .sentence').all()).map((node) =>
+      node.getAttribute('data-sentence-id'),
+    ),
+  );
+  const last = sentences.findIndex((sentence) => sentence.id === selected.at(-1));
+  const next = sentences[last + 1]!;
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#selection .sentence')).toHaveAttribute('data-sentence-id', next.id);
+  const mark = page.locator('.sentence-highlight').first();
+  await expect(mark).toHaveAttribute('data-sentence-id', next.id);
+  await expect(mark).toBeVisible();
+  // 원문 밖을 눌러도 현재 읽는 문장 표시는 유지된다.
+  await page.locator('#selection .sentence-ko, #selection .sentence-translation').first().click();
+  await expect(mark).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('#selection .sentence')).toHaveAttribute(
+    'data-sentence-id',
+    sentences[last]!.id,
+  );
+});
+
+test('확대해도 형광펜이 따라가며 쪽 입력 중에는 방향키가 문장을 바꾸지 않는다', async () => {
+  const mark = page.locator('.sentence-highlight').first();
+  const before = await mark.boundingBox();
+  const sentenceId = await page.locator('#selection .sentence').getAttribute('data-sentence-id');
+  await page.locator('#btn-zoom-in').click();
+  await expect(page.locator('#zoom-label')).toHaveText('150%');
+  const after = await mark.boundingBox();
+  expect(before && after).toBeTruthy();
+  if (before && after) expect(after.width / before.width).toBeCloseTo(1.2, 1);
+  await page.locator('#page-number').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#selection .sentence')).toHaveAttribute(
+    'data-sentence-id',
+    sentenceId!,
+  );
 });

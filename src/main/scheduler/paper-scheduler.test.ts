@@ -26,10 +26,10 @@ const USAGE: Usage = {
 };
 
 /** 섹션 3개, 섹션마다 문장 2개. 문장 하나는 100토큰(400자)이다. */
-const makeDocument = (): ExtractionDocument => {
+const makeDocument = (sectionCount = 3): ExtractionDocument => {
   const sections: Section[] = [];
   const sentences: Sentence[] = [];
-  for (let i = 0; i < 3; i += 1) {
+  for (let i = 0; i < sectionCount; i += 1) {
     const ids: string[] = [];
     for (let k = 0; k < 2; k += 1) {
       const id = `id_${i}_${k}`;
@@ -435,6 +435,58 @@ describe('PaperScheduler', () => {
   });
 
   describe('동시 실행', () => {
+    const allAtOnce = (runner: LlmJobRunner): PaperScheduler =>
+      new PaperScheduler({
+        store,
+        runner,
+        provider: 'codex',
+        runtimeVersion: () => 'test',
+        chunker: CHUNKER,
+        now: () => NOW,
+      });
+
+    it.each([1, 10, 22])('기본 설정은 %i개 구간을 첫 완료 전에 모두 시작한다', async (count) => {
+      const path = store.extractionPath(SHA, REV, 'document.json');
+      const hash = await store.writeJson('extractionDocument', path, makeDocument(count));
+      await store.updateManifest(SHA, (m) => store.recordFile(m, SHA, path, hash));
+      const runner = gatedRunner();
+      const running = allAtOnce(runner).run(SHA);
+      await until(() => runner.waiting().length === count);
+      // 어떤 구간도 응답하지 않은 상태에서 모든 요청이 실행기에 도착해야 한다.
+      for (const id of runner.waiting().reverse()) runner.release(id);
+      expect(await running).toMatchObject({ reason: 'complete', completedChunks: count });
+      expect(runner.peak()).toBe(count);
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+    });
+
+    it('전체 병렬 중 한도에 걸려도 다른 결과를 저장하고 재개 시 실패 구간만 요청한다', async () => {
+      const runner = gatedRunner((request) =>
+        request.jobId.includes('chunk_0001') ? 'quota' : null,
+      );
+      const s = allAtOnce(runner);
+      const events: SchedulerEvent[] = [];
+      s.onEvent((e) => events.push(e));
+      const running = s.run(SHA);
+      await until(() => runner.waiting().length === 3);
+      runner.release('chunk_0001');
+      await until(() => shape(events).includes('finish:chunk_0001:fail:0/3'));
+      runner.release('chunk_0003');
+      runner.release('chunk_0002');
+      expect(await running).toMatchObject({
+        reason: 'waiting_quota',
+        completedChunks: 2,
+        failedChunks: 1,
+      });
+      const resumed = runnerOf();
+      expect(await allAtOnce(resumed).run(SHA)).toMatchObject({
+        reason: 'complete',
+        completedChunks: 3,
+      });
+      expect(resumed.requests).toHaveLength(1);
+      expect(resumed.requests[0]!.jobId).toContain('chunk_0001');
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+    });
+
     it('청크를 동시에 돌리고, 끝나는 순서와 무관하게 모든 기록이 남는다', async () => {
       const runner = gatedRunner();
       const s = scheduler(runner, { concurrency: 3 });

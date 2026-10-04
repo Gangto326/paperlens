@@ -1,4 +1,10 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { additionalSource, parseAdditionalTarget } from '@shared/additional-explanation';
+import { AdditionalExplanations } from './explanations/additional-explanations';
+import type { ReadingWork, WorkUpdate } from '@shared/work-status';
+import { WorkProgressTracker } from './scheduler/work-progress';
+import { PreparationService } from './research/preparation';
+import { completionNotice } from './scheduler/completion-notification';
+import { app, BrowserWindow, dialog, ipcMain, shell, Notification } from 'electron';
 import { basename, join } from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import {
@@ -23,6 +29,9 @@ import {
   type TranslationSnapshot,
 } from '@shared/ipc';
 import { PaperCacheStore } from './cache/paper-cache-store';
+import { listLibrary } from './cache/paper-library';
+import { sha256File } from './cache/hash';
+import { PaperDataDeletion } from './cache/paper-data-deletion';
 import { PdfRegistry } from './pdf/pdf-registry';
 import { parseTextExtractionPayload, saveTextItems } from './extract/text-items-store';
 import { buildAndSaveDocument, readSentenceIndex } from './extract/document-store';
@@ -42,6 +51,7 @@ import { readTranslations } from './translate/results-store';
 
 let store: PaperCacheStore;
 let registry: PdfRegistry;
+let paperDeletion: PaperDataDeletion;
 let grobid: GrobidClient;
 /** saveTextItems가 판정한 페이지 정보. document.json(C1.14)에 넣기 전까지 `<sha>:<rev>`로 기억한다. */
 const extractedPages = new Map<string, Page[]>();
@@ -79,6 +89,87 @@ let scheduler: PaperScheduler | null = null;
 let autoResume: AutoResume | null = null;
 /** 멈춤 요청이 왔는지. 재시도 어댑터가 기다리기 전에 본다. 처리를 시작할 때 되돌린다. */
 let stopRequested = false;
+const publishWork = (payload: WorkUpdate): void => {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.webContents.send(IPC.workEvent, payload);
+  }
+};
+const workProgress = new WorkProgressTracker((progress) =>
+  publishWork({ type: 'progress', progress }),
+);
+let preparation: PreparationService;
+let additionalExplanations: AdditionalExplanations;
+const completionNotifications = new Set<Notification>();
+
+function notifyCompletion(event: SchedulerEvent): void {
+  const notice = completionNotice(event);
+  if (!notice) return;
+  const fileName = basename(registry.originalPathOf(event.pdfSha256));
+  const openPaper = async (): Promise<void> => {
+    const opened = await registry.register(registry.originalPathOf(event.pdfSha256));
+    let win = BrowserWindow.getAllWindows()[0];
+    if (!win) {
+      win = createWindow();
+      await new Promise<void>((resolve) =>
+        win!.webContents.once('did-finish-load', () => resolve()),
+      );
+    }
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+    win.webContents.send(IPC.openCompletedPaper, opened);
+  };
+  let fallbackShown = false;
+  // 미서명 개발 앱에서도 완료를 놓치지 않도록 앱 팝업으로 알린다.
+  const fallback = (): void => {
+    if (fallbackShown) return;
+    fallbackShown = true;
+    app.dock?.bounce('informational');
+    void dialog
+      .showMessageBox({
+        type: 'info',
+        title: notice.title,
+        message: `${fileName}\n${notice.title}`,
+        detail: notice.body,
+        buttons: ['논문 읽기', '나중에'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then((result) => {
+        if (result.response === 0) return openPaper();
+      })
+      .catch(console.error);
+  };
+  publishWork({
+    type: 'notification',
+    pdfSha256: event.pdfSha256,
+    message: `${fileName} · ${notice.title}`,
+  });
+  if (!Notification.isSupported()) {
+    fallback();
+    return;
+  }
+  try {
+    const notification = new Notification({
+      title: notice.title,
+      subtitle: fileName,
+      body: notice.body,
+      silent: false,
+    });
+    completionNotifications.add(notification);
+    notification.on('failed', () => {
+      completionNotifications.delete(notification);
+      fallback();
+    });
+    notification.on('close', () => completionNotifications.delete(notification));
+    notification.on('click', () => {
+      void openPaper().catch(console.error);
+    });
+    notification.show();
+  } catch {
+    fallback();
+  }
+}
 
 /** 스케줄러 이벤트 → renderer용 이벤트. 사용량·청크 계획 같은 내부 값은 보내지 않는다. */
 function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
@@ -141,6 +232,8 @@ function toProcessEvent(event: SchedulerEvent): ProcessEvent | null {
 
 /** 처리를 백그라운드로 시작한다. 끝날 때까지 기다리지 않는다. */
 function startProcessing(pdfSha256: string, trigger: string): ProcessStart {
+  if (!registry.isRegistered(pdfSha256) || paperDeletion.isDeleting(pdfSha256))
+    return { started: false, reason: '논문이 닫혔거나 데이터 삭제를 확인 중입니다.' };
   if (!scheduler) return { started: false, reason: '스케줄러가 준비되지 않았습니다' };
   if (!codex || codex.client?.state !== 'running') {
     return { started: false, reason: 'LLM 런타임이 실행 중이 아닙니다' };
@@ -156,11 +249,13 @@ function startProcessing(pdfSha256: string, trigger: string): ProcessStart {
   stopRequested = false;
   // 사용자가 직접 시작했으면 자동 재개의 기다림은 끝난다.
   autoResume?.cancel();
-  void scheduler
-    .run(pdfSha256)
-    .catch((err: unknown) =>
-      console.error(`[process] 실패: ${err instanceof Error ? err.message : String(err)}`),
+  void scheduler.run(pdfSha256).catch((err: unknown) => {
+    console.error(`[process] 실패: ${err instanceof Error ? err.message : String(err)}`);
+    workProgress.fail(
+      pdfSha256,
+      '처리 중 오류가 발생했습니다. 저장된 결과는 유지됩니다. 다시 시작해 주세요.',
     );
+  });
   return { started: true, reason: null };
 }
 
@@ -248,6 +343,102 @@ function createWindow(): BrowserWindow {
 }
 
 function registerIpc(): void {
+  paperDeletion = new PaperDataDeletion(
+    store,
+    (sha) =>
+      scheduler?.runningPaper === sha ||
+      preparation?.isRunning(sha) ||
+      additionalExplanations?.isRunning(sha),
+  );
+  const runPaperTask = <T>(sha: string, action: () => Promise<T>): Promise<T> => {
+    if (!registry.isRegistered(sha)) throw new Error('등록되지 않은 PDF');
+    return paperDeletion.run(sha, action);
+  };
+  additionalExplanations = new AdditionalExplanations(
+    store,
+    jobs,
+    async (sha, target) => {
+      const snapshot = await readTranslations(store, sha);
+      const source = additionalSource(snapshot, target);
+      if (!source) throw new Error('저장된 해설을 찾을 수 없습니다. 논문을 다시 열어주세요.');
+      const manifest = await store.readManifest(sha);
+      const rev = manifest.currentExtractionRevision;
+      if (!rev) throw new Error('논문 분석 결과가 없습니다.');
+      const document = await store.readJson(
+        'extractionDocument',
+        store.extractionPath(sha, rev, 'document.json'),
+      );
+      const sentences =
+        target.kind === 'section'
+          ? document.sentences.filter(
+              (s, i, all) =>
+                s.id === target.sentenceId ||
+                all[i - 1]?.id === target.sentenceId ||
+                all[i + 1]?.id === target.sentenceId,
+            )
+          : document.sentences
+              .filter((s) => snapshot.results[s.id]?.conceptIds?.includes(target.conceptId))
+              .slice(0, 4);
+      return {
+        source,
+        context: {
+          title: document.paper.title ?? document.paper.fileName,
+          summary: snapshot.overview?.summary ?? '',
+          sentences: sentences.map((s) => ({ id: s.id, en: s.en })),
+        },
+      };
+    },
+    (state) => {
+      for (const win of BrowserWindow.getAllWindows())
+        if (!win.isDestroyed()) win.webContents.send(IPC.additionalEvent, state);
+    },
+  );
+  const registeredSha = (sha: unknown): string => {
+    if (typeof sha !== 'string' || !registry.isRegistered(sha))
+      throw new Error('등록되지 않은 PDF');
+    return sha;
+  };
+  ipcMain.handle(IPC.additionalRead, (_event, sha: unknown) => {
+    const id = registeredSha(sha);
+    return runPaperTask(id, () => additionalExplanations.read(id));
+  });
+  ipcMain.handle(IPC.additionalRequest, (_event, sha: unknown, value: unknown) => {
+    const id = registeredSha(sha);
+    const target = parseAdditionalTarget(value);
+    return runPaperTask(id, () => additionalExplanations.request(id, target));
+  });
+  ipcMain.handle(IPC.paperDeleteData, async (event, sha: unknown) => {
+    if (typeof sha !== 'string' || !registry.isRegistered(sha))
+      throw new Error('등록되지 않은 PDF');
+    const fileName = basename(registry.originalPathOf(sha));
+    const deleted = await paperDeletion.remove(sha, async () => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      if (!win) throw new Error('삭제를 확인할 창이 없습니다.');
+      const answer = await dialog.showMessageBox(win, {
+        type: 'warning',
+        title: '논문 데이터 삭제',
+        message: `“${fileName}”의 저장 데이터를 삭제할까요?`,
+        detail:
+          '이 논문의 분석 결과, 번역·해설과 추가 AI 설명, 논문 노트와 추천 자료가 삭제됩니다. 되돌릴 수 없으며, 다시 읽으려면 분석·번역을 다시 진행해야 합니다.\n\nPDF 원본과 책갈피, 다른 논문의 데이터는 유지됩니다.',
+        buttons: ['취소', '삭제'],
+        defaultId: 0,
+        cancelId: 0,
+        noLink: true,
+      });
+      return answer.response === 1;
+    });
+    if (deleted) {
+      if (autoResume?.status.kind !== 'none' && autoResume?.status.pdfSha256 === sha)
+        autoResume.cancel();
+      workProgress.forget(sha);
+      preparation.forget(sha);
+      additionalExplanations.forget(sha);
+      for (const key of extractedPages.keys())
+        if (key.startsWith(`${sha}:`)) extractedPages.delete(key);
+      registry.forget(sha);
+    }
+    return { deleted };
+  });
   ipcMain.handle(IPC.appInfo, async (): Promise<AppInfo> => {
     const autoPath = process.env['PAPERLENS_OPEN_PDF'];
     const autoOpened = autoPath ? await registry.register(autoPath) : null;
@@ -274,6 +465,20 @@ function registerIpc(): void {
     return { canceled: false, ...opened };
   });
 
+  ipcMain.handle(IPC.libraryList, () => listLibrary(store, scheduler?.runningPaper ?? null));
+  ipcMain.handle(IPC.libraryOpen, async (_event, sha: unknown) => {
+    if (typeof sha !== 'string' || !/^[0-9a-f]{64}$/.test(sha))
+      throw new Error('잘못된 논문 ID입니다.');
+    const paper = (await listLibrary(store, scheduler?.runningPaper ?? null)).find(
+      (p) => p.pdfSha256 === sha,
+    );
+    if (!paper?.available || !paper.originalPath)
+      throw new Error('PDF 원본을 찾을 수 없습니다. PDF 열기에서 파일을 다시 선택해 주세요.');
+    if ((await sha256File(paper.originalPath)) !== sha)
+      throw new Error('PDF 원본이 다른 파일로 바뀌었습니다. PDF 열기에서 다시 선택해 주세요.');
+    return registry.register(paper.originalPath);
+  });
+
   ipcMain.handle(IPC.pdfReadBytes, async (_event, pdfSha256: unknown): Promise<Uint8Array> => {
     if (typeof pdfSha256 !== 'string') throw new Error('pdfSha256 must be a string');
     return registry.readBytes(pdfSha256);
@@ -286,13 +491,15 @@ function registerIpc(): void {
       if (!registry.isRegistered(parsed.pdfSha256)) {
         throw new Error(`등록되지 않은 PDF: ${parsed.pdfSha256}`);
       }
-      const result = await saveTextItems(store, parsed, {
-        parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
+      return runPaperTask(parsed.pdfSha256, async () => {
+        const result = await saveTextItems(store, parsed, {
+          parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
+        });
+        if (!result.halted) {
+          extractedPages.set(`${parsed.pdfSha256}:${result.extractionRevision}`, result.pages);
+        }
+        return result;
       });
-      if (!result.halted) {
-        extractedPages.set(`${parsed.pdfSha256}:${result.extractionRevision}`, result.pages);
-      }
-      return result;
     },
   );
 
@@ -309,19 +516,21 @@ function registerIpc(): void {
       if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
         throw new Error('등록되지 않은 PDF');
       }
-      const manifest = await store.readManifest(pdfSha256);
-      const rev = manifest.currentExtractionRevision;
-      if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
-      const bytes = await registry.readBytes(pdfSha256);
-      const result = await processFulltext(grobid, bytes);
-      const teiPath = await saveOriginalTei(store, pdfSha256, rev, result.tei);
-      return {
-        teiPath,
-        byteLength: Buffer.byteLength(result.tei),
-        hasSentenceCoords: result.hasSentenceCoords,
-        parserConfigHash: result.parserConfigHash,
-        elapsedMs: result.elapsedMs,
-      };
+      return runPaperTask(pdfSha256, async () => {
+        const manifest = await store.readManifest(pdfSha256);
+        const rev = manifest.currentExtractionRevision;
+        if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
+        const bytes = await registry.readBytes(pdfSha256);
+        const result = await processFulltext(grobid, bytes);
+        const teiPath = await saveOriginalTei(store, pdfSha256, rev, result.tei);
+        return {
+          teiPath,
+          byteLength: Buffer.byteLength(result.tei),
+          hasSentenceCoords: result.hasSentenceCoords,
+          parserConfigHash: result.parserConfigHash,
+          elapsedMs: result.elapsedMs,
+        };
+      });
     },
   );
 
@@ -332,20 +541,22 @@ function registerIpc(): void {
       if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
         throw new Error('등록되지 않은 PDF');
       }
-      const manifest = await store.readManifest(pdfSha256);
-      const rev = manifest.currentExtractionRevision;
-      if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
-      const pages = extractedPages.get(`${pdfSha256}:${rev}`);
-      if (!pages) throw new Error('텍스트 추출 결과가 메모리에 없습니다. PDF를 다시 여세요.');
-      const originalPath = registry.originalPathOf(pdfSha256);
-      const { build: _build, ...result } = await buildAndSaveDocument(store, pdfSha256, {
-        fileName: basename(originalPath),
-        originalPath,
-        pages,
-        parserVersion: grobidVersion,
-        parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
+      return runPaperTask(pdfSha256, async () => {
+        const manifest = await store.readManifest(pdfSha256);
+        const rev = manifest.currentExtractionRevision;
+        if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
+        const pages = extractedPages.get(`${pdfSha256}:${rev}`);
+        if (!pages) throw new Error('텍스트 추출 결과가 메모리에 없습니다. PDF를 다시 여세요.');
+        const originalPath = registry.originalPathOf(pdfSha256);
+        const { build: _build, ...result } = await buildAndSaveDocument(store, pdfSha256, {
+          fileName: basename(originalPath),
+          originalPath,
+          pages,
+          parserVersion: grobidVersion,
+          parserConfigHash: grobid.parserConfigHash(FULLTEXT_PARAMS),
+        });
+        return result;
       });
-      return result;
     },
   );
 
@@ -356,13 +567,15 @@ function registerIpc(): void {
       if (typeof pdfSha256 !== 'string' || !registry.isRegistered(pdfSha256)) {
         throw new Error('등록되지 않은 PDF');
       }
-      const index = await readSentenceIndex(store, pdfSha256);
-      // 개발·E2E용: PAPERLENS_AUTO_PROCESS=1이면 문장 색인을 읽은 직후 번역 처리를 시작한다(한도를 쓴다).
-      if (process.env['PAPERLENS_AUTO_PROCESS']) {
-        const started = startProcessing(pdfSha256, 'PAPERLENS_AUTO_PROCESS');
-        if (!started.started) console.log(`[process] 시작하지 않음: ${String(started.reason)}`);
-      }
-      return index;
+      return runPaperTask(pdfSha256, async () => {
+        const index = await readSentenceIndex(store, pdfSha256);
+        // 개발·E2E용: PAPERLENS_AUTO_PROCESS=1이면 문장 색인을 읽은 직후 번역 처리를 시작한다(한도를 쓴다).
+        if (process.env['PAPERLENS_AUTO_PROCESS']) {
+          const started = startProcessing(pdfSha256, 'PAPERLENS_AUTO_PROCESS');
+          if (!started.started) console.log(`[process] 시작하지 않음: ${String(started.reason)}`);
+        }
+        return index;
+      });
     },
   );
 
@@ -389,14 +602,50 @@ function registerIpc(): void {
     if (accepted) stopRequested = true;
     return { accepted };
   });
+  preparation = new PreparationService(
+    store,
+    jobs,
+    (value) => publishWork({ type: 'preparation', preparation: value }),
+    researchEnabled,
+  );
+  const assertRegistered = (sha: unknown): string => {
+    if (typeof sha !== 'string' || !registry.isRegistered(sha))
+      throw new Error('등록되지 않은 PDF');
+    return sha;
+  };
+  ipcMain.handle(IPC.workRead, async (_event, sha: unknown): Promise<ReadingWork> => {
+    const id = assertRegistered(sha);
+    return { progress: workProgress.read(id), preparation: await preparation.read(id) };
+  });
+  ipcMain.handle(IPC.preparationRefresh, async (_event, sha: unknown): Promise<void> => {
+    const id = assertRegistered(sha);
+    return runPaperTask(id, async () => {
+      const manifest = await store.readManifest(id);
+      const rev = manifest.currentExtractionRevision;
+      if (!rev) throw new Error('먼저 논문의 문장 분석을 완료해 주세요.');
+      const doc = await store.readJson(
+        'extractionDocument',
+        store.extractionPath(id, rev, 'document.json'),
+      );
+      void preparation.start(doc, true);
+    });
+  });
   scheduler = new PaperScheduler({
     store,
+    onDocument: (document) => {
+      void preparation.start(document);
+    },
     // 네트워크·서버 오류는 5·15·45초 뒤 다시 보낸다(C5.3). 멈춤 요청이 오면 기다리지 않는다.
-    runner: new RetryingJobRunner({
-      inner: jobs,
-      shouldContinue: () => !stopRequested,
-      log: (line) => console.log(`[process] ${line}`),
-    }),
+    runner: workProgress.wrap(
+      new RetryingJobRunner({
+        inner: jobs,
+        onRetry: (id, attempt, delay) =>
+          workProgress.retry(scheduler?.runningPaper ?? null, id, attempt, delay),
+        shouldContinue: () => !stopRequested,
+        log: (line) => console.log(`[process] ${line}`),
+      }),
+      () => scheduler?.runningPaper ?? null,
+    ),
     provider: 'codex',
     runtimeVersion: () => codex?.startInfo?.binary.version ?? 'unknown',
     research: researchEnabled ? 'builtin_web' : 'none',
@@ -408,6 +657,8 @@ function registerIpc(): void {
     }
   };
   scheduler.onEvent((event) => {
+    workProgress.handle(event);
+    notifyCompletion(event);
     const payload = toProcessEvent(event);
     if (payload) pushProcessEvent(payload);
     // 한도·로그인으로 멈추면 앱이 실행 중인 동안 풀리기를 기다렸다가 다시 시작한다(C3.5).

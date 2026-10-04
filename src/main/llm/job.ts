@@ -49,7 +49,8 @@ export type LlmJobEvent =
   | { type: 'stage'; jobId: string; stage: LlmJobStage; state: 'started' | 'completed' }
   /**
    * 지금까지 받은 출력 글자 수(누적)와 이번에 받은 조각. `item`은 이 작업에서 몇 번째 메시지인지(1부터)다.
-   * 조각은 검증 전의 글이다. 끊겼을 때 이어 가려고 저장하는 데만 쓰고 화면에 보이지 않는다(COMMIT_PLAN M3 P2).
+   * 조각은 검증 전의 글이다. 번역은 복구용으로만 사용한다(COMMIT_PLAN M3 P2).
+   * 추가 설명은 explanation 문자열만 미완성 미리보기로 표시하며 최종 검증 후 저장한다.
    */
   | { type: 'output'; jobId: string; chars: number; item: number; delta: string }
   | { type: 'usage'; jobId: string; usage: Usage }

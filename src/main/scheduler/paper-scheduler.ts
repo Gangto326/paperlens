@@ -22,7 +22,8 @@ import { runChunk } from '../translate/chunk-run';
  * 논문 단위 작업 스케줄러(COMMIT_PLAN C2.8, PLAN 9절). 앱 전체에서 한 번에 논문 하나만 돈다.
  * 순서: 컨텍스트(없으면 1차 패스) → 개념 카드 조사 → 뜻이 빈 카드를 검색 없이 쓰기 → `translating`
  * → 청크를 앞에서부터 → `complete` 또는 `complete_with_gaps`.
- * - 청크는 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 청크는 서로의 결과를 입력으로 받지 않는다.
+ * - 기본적으로 모든 청크를 동시에 시작한다. 청크는 서로의 결과를 입력으로 받지 않는다.
+ *   `concurrency`를 명시한 경우에만 동시 실행 수를 제한한다.
  *   앞의 청크부터 꺼내지만 끝나는 순서는 정해져 있지 않다. `metrics`는 청크 순서로 돌려준다.
  * - 쓸 수 있는 컨텍스트가 있으면 다시 만들지 않는다. 완료 청크는 다시 요청하지 않는다(runChunk가 inputHash로 판단).
  * - 로그인·한도 문제가 나면 새 청크를 꺼내지 않는다. 상태는 `needs_login`·`waiting_quota`로 남고 다시 시작하면 이어서 한다.
@@ -46,8 +47,6 @@ export const START_STATES: readonly PaperState[] = [
 ];
 
 export const DEFAULT_MAX_FAILED_CHUNKS = 3;
-/** 동시에 도는 청크 수. 실험에서 3개가 속도 제한 없이 통했다(docs/quality-backlog.md Q10). 4개 이상은 재지 않았다. */
-export const DEFAULT_CONCURRENCY = 3;
 
 export interface ChunkMetric {
   chunkId: string;
@@ -137,6 +136,8 @@ export interface RunOutcome {
 export interface PaperSchedulerDeps {
   store: PaperCacheStore;
   runner: LlmJobRunner;
+  /** 문맥 작업 전에 독립적인 사전 학습 자료 검색을 시작한다. */
+  onDocument?: (document: ExtractionDocument) => void;
   provider: string;
   runtimeVersion: () => string;
   chunker?: Partial<ChunkerOptions>;
@@ -146,7 +147,7 @@ export interface PaperSchedulerDeps {
    */
   research?: 'none' | 'builtin_web';
   maxFailedChunks?: number;
-  /** 동시에 도는 청크, 조사 묶음, 긴 논문의 부분 작업 수. 기본 `DEFAULT_CONCURRENCY`. 1이면 하나씩 돈다. */
+  /** 명시하면 각 단계의 동시 실행 수를 제한한다. 생략하면 각 단계 안의 모든 독립 작업을 동시에 시작한다. */
   concurrency?: number;
   now?: () => Date;
   log?: (line: string) => void;
@@ -325,6 +326,7 @@ export class PaperScheduler {
       throw err;
     }
 
+    this.deps.onDocument?.(document);
     const promptVersion = contextPromptVersionOf(buildContextInput(document).estimatedTokens);
     let contextUsage: Usage | null = null;
     let ready = await this.usableContext(pdfSha256, manifest, promptVersion);
@@ -538,7 +540,7 @@ export class PaperScheduler {
 
     const metrics: ChunkMetric[] = [];
     const maxFailed = this.deps.maxFailedChunks ?? DEFAULT_MAX_FAILED_CHUNKS;
-    const concurrency = Math.max(1, Math.floor(this.deps.concurrency ?? DEFAULT_CONCURRENCY));
+    const concurrency = Math.max(1, Math.floor(this.deps.concurrency ?? plan.chunks.length));
     let completed = 0;
     let failed = 0;
     let firstTranslationMs: number | null = null;

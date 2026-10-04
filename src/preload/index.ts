@@ -1,7 +1,11 @@
+import type { AdditionalExplanation, AdditionalTarget } from '@shared/additional-explanation';
+import type { ReadingWork, WorkUpdate } from '@shared/work-status';
+import type { OpenedPdf } from '@shared/ipc';
 import { contextBridge, ipcRenderer } from 'electron';
 import {
   IPC,
   type AppInfo,
+  type LibraryPaper,
   type DependencyReport,
   type StartGrobidResult,
   type LlmAccountEvent,
@@ -24,6 +28,37 @@ import {
 
 /** renderer에 노출하는 유일한 API. 채널을 직접 노출하지 않고 함수 단위로 감싼다. */
 const api = {
+  listLibrary: (): Promise<LibraryPaper[]> => ipcRenderer.invoke(IPC.libraryList),
+  openLibraryPaper: (sha: string): Promise<OpenedPdf> => ipcRenderer.invoke(IPC.libraryOpen, sha),
+  readAdditionalExplanations: (sha: string): Promise<AdditionalExplanation[]> =>
+    ipcRenderer.invoke(IPC.additionalRead, sha),
+  requestAdditionalExplanation: (
+    sha: string,
+    target: AdditionalTarget,
+  ): Promise<AdditionalExplanation> => ipcRenderer.invoke(IPC.additionalRequest, sha, target),
+  onAdditionalExplanation: (handler: (value: AdditionalExplanation) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, value: AdditionalExplanation): void =>
+      handler(value);
+    ipcRenderer.on(IPC.additionalEvent, listener);
+    return () => ipcRenderer.removeListener(IPC.additionalEvent, listener);
+  },
+  deletePaperData: (sha: string): Promise<{ deleted: boolean }> =>
+    ipcRenderer.invoke(IPC.paperDeleteData, sha),
+  readWork: (sha: string): Promise<ReadingWork> => ipcRenderer.invoke(IPC.workRead, sha),
+  refreshPreparation: (sha: string): Promise<void> =>
+    ipcRenderer.invoke(IPC.preparationRefresh, sha),
+  onWorkUpdate: (handler: (event: WorkUpdate) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: WorkUpdate): void =>
+      handler(payload);
+    ipcRenderer.on(IPC.workEvent, listener);
+    return () => ipcRenderer.removeListener(IPC.workEvent, listener);
+  },
+  onOpenCompletedPaper: (handler: (pdf: OpenedPdf) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: OpenedPdf): void =>
+      handler(payload);
+    ipcRenderer.on(IPC.openCompletedPaper, listener);
+    return () => ipcRenderer.removeListener(IPC.openCompletedPaper, listener);
+  },
   getAppInfo: (): Promise<AppInfo> => ipcRenderer.invoke(IPC.appInfo),
   openPdfDialog: (): Promise<PdfOpenDialogResult> => ipcRenderer.invoke(IPC.pdfOpenDialog),
   readPdfBytes: (pdfSha256: string): Promise<Uint8Array> =>

@@ -13,25 +13,419 @@
   <body>
     <div id="app">
       <header id="topbar">
-        <button id="btn-open" type="button">PDF 열기</button>
-        <span id="doc-title" class="muted">열린 문서 없음</span>
-        <span class="spacer"></span>
-        <button id="btn-zoom-out" type="button" aria-label="축소">−</button>
-        <span id="zoom-label">125%</span>
-        <button id="btn-zoom-in" type="button" aria-label="확대">+</button>
-        <span id="stage" class="muted"></span>
-        <button id="btn-process" type="button" hidden>번역 시작</button>
+        <div class="document-title">
+          <span id="doc-title">논문 읽기</span><span id="doc-meta">PDF 파일을 열어 시작하세요</span>
+        </div>
+        <div id="document-actions" role="group" aria-label="논문 도구">
+          <button id="btn-open" class="document-action document-open" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M3 9V6a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1M3 10h18l-2 9H5z" />
+            </svg>
+            PDF 열기
+          </button>
+          <button id="btn-library" class="document-action" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M4 4h4v16H4zM10 4h4v16h-4zM17 4l4 15-4 1-4-15" />
+            </svg>
+            내 논문
+          </button>
+          <button
+            id="btn-bookmarks"
+            class="document-action"
+            type="button"
+            popovertarget="bookmarks-popover"
+            disabled
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" />
+            </svg>
+            책갈피 <span id="bookmark-count">0</span>
+          </button>
+          <div class="document-utilities">
+            <button
+              id="btn-delete-paper"
+              class="document-action document-icon"
+              type="button"
+              disabled
+              aria-label="데이터 삭제"
+              title="현재 논문의 저장된 분석·번역 데이터 삭제"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5" />
+              </svg>
+            </button>
+            <button
+              id="btn-help"
+              class="document-action document-icon"
+              type="button"
+              aria-label="도움말"
+              title="도움말"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="8.5" />
+                <path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 1.5-2.5 1.5-2.5 3M12 16h.01" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button
+          id="btn-account"
+          type="button"
+          popovertarget="settings-popover"
+          aria-label="계정 및 서비스 상태"
+        >
+          계정 · 연결<span id="connection-dot" class="connection-dot" aria-hidden="true"></span>
+        </button>
       </header>
       <main id="layout">
-        <section id="viewer" aria-label="원문 뷰어"></section>
+        <section class="reader" aria-label="논문 읽기">
+          <div class="reader-toolbar">
+            <span class="toolbar-label">원문</span>
+            <div class="page-controls" aria-label="쪽 이동">
+              <button
+                id="btn-page-prev"
+                class="icon-button"
+                type="button"
+                aria-label="이전 쪽"
+                disabled
+              >
+                ‹
+              </button>
+              <label for="page-number" class="sr-only">이동할 쪽</label
+              ><input id="page-number" type="number" min="1" value="1" disabled />
+              <span id="page-total">/ —</span>
+              <button
+                id="btn-page-next"
+                class="icon-button"
+                type="button"
+                aria-label="다음 쪽"
+                disabled
+              >
+                ›
+              </button>
+            </div>
+            <div class="zoom-controls" aria-label="확대 및 축소">
+              <button
+                id="btn-zoom-out"
+                class="icon-button"
+                type="button"
+                aria-label="축소"
+                disabled
+              >
+                −
+              </button>
+              <span id="zoom-label">125%</span>
+              <button id="btn-zoom-in" class="icon-button" type="button" aria-label="확대" disabled>
+                +
+              </button>
+              <button id="btn-fit" type="button" disabled>폭 맞춤</button>
+            </div>
+          </div>
+          <div class="reader-body">
+            <section id="viewer" aria-label="원문 뷰어"></section>
+            <div id="welcome">
+              <div class="paper-illustration" aria-hidden="true">
+                <div class="paper-lines"><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+              <h1>읽을 PDF를 열어주세요</h1>
+              <p>
+                원문에서 궁금한 문장을 선택하세요.<br />번역부터 해설, 배경 개념까지 함께 읽습니다.
+              </p>
+              <button id="btn-welcome-open" class="primary" type="button">
+                PDF 열고 시작하기 <span aria-hidden="true">＋</span>
+              </button>
+            </div>
+          </div>
+        </section>
+        <div
+          id="panel-resizer"
+          role="separator"
+          aria-label="해설 패널 너비"
+          aria-orientation="vertical"
+          aria-valuemin="340"
+          aria-valuemax="680"
+          aria-valuenow="480"
+          tabindex="0"
+        ></div>
         <aside id="panel" aria-label="번역·해설 패널">
-          <div id="account" aria-label="LLM 계정"></div>
-          <section id="checks" aria-label="의존 서비스 점검"></section>
-          <p id="status" class="muted">초기화 중…</p>
-          <section id="overview" aria-label="논문 개요·용어집·개념 카드" hidden></section>
-          <section id="selection" aria-label="선택한 문장"></section>
+          <div class="panel-tabs" role="tablist" aria-label="읽기 도구">
+            <button
+              id="tab-sentence"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="sentence-pane"
+            >
+              문장 해설
+            </button>
+            <button
+              id="tab-paper"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="paper-pane"
+              tabindex="-1"
+            >
+              논문 노트 <span id="notes-count" hidden></span>
+            </button>
+            <button
+              id="tab-work"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="work-pane"
+              tabindex="-1"
+            >
+              진행 · 읽을거리
+            </button>
+          </div>
+          <div class="sentence-navigation" aria-label="문장 이동">
+            <span class="reading-indicator" aria-hidden="true"></span>
+            <span id="sentence-position" role="status">문장을 선택해 읽기</span>
+            <button
+              id="btn-bookmark-toggle"
+              type="button"
+              aria-pressed="false"
+              disabled
+              title="선택한 문장에 책갈피 추가 (⌘/Ctrl+D)"
+            >
+              책갈피
+            </button>
+            <button
+              id="btn-sentence-prev"
+              type="button"
+              aria-label="이전 문장"
+              title="이전 문장 (←)"
+              aria-keyshortcuts="ArrowLeft"
+              disabled
+            >
+              ←
+            </button>
+            <button
+              id="btn-sentence-next"
+              type="button"
+              aria-label="다음 문장"
+              title="다음 문장 (→)"
+              aria-keyshortcuts="ArrowRight"
+              disabled
+            >
+              →
+            </button>
+          </div>
+          <div id="panel-content" tabindex="-1" aria-label="해설 내용">
+            <section id="sentence-pane" role="tabpanel" aria-labelledby="tab-sentence">
+              <section id="selection" aria-label="선택한 문장"></section>
+            </section>
+            <section id="paper-pane" role="tabpanel" aria-labelledby="tab-paper" hidden>
+              <div id="notes-empty" class="panel-empty">
+                <span class="empty-glyph" aria-hidden="true">≡</span>
+                <h3>논문 전체를 한눈에</h3>
+                <p>번역을 시작하면 논문 개요와 용어집,<br />관련 개념이 이곳에 모입니다.</p>
+              </div>
+              <section id="overview" aria-label="논문 개요·용어집·개념 카드" hidden></section>
+            </section>
+            <section id="work-pane" role="tabpanel" aria-labelledby="tab-work" hidden>
+              <p id="work-empty" class="work-empty">
+                번역을 시작하면 진행 상황이 여기에 표시됩니다.
+              </p>
+              <section id="work-progress" aria-label="번역 진행 상황" hidden>
+                <div class="work-heading">
+                  <span id="work-badge"></span><span id="work-clock"></span>
+                </div>
+                <h2 id="work-state"></h2>
+                <p id="work-description"></p>
+                <ol id="work-steps"></ol>
+                <section class="work-metrics" aria-label="문장 번역 진행률">
+                  <div class="work-count-row">
+                    <h3>문장 번역</h3>
+                    <span id="work-counts"></span>
+                  </div>
+                  <div id="work-chunks" role="img" aria-label="구간별 처리 상태"></div>
+                  <div id="work-stats"></div>
+                </section>
+                <div class="work-timing"><span id="work-last"></span></div>
+                <p id="work-waiting" hidden>
+                  새 응답을 기다리고 있습니다. 긴 작업에서는 한동안 새 응답이 없을 수 있습니다.
+                  필요하면 아래 ‘멈춤’을 이용하세요.
+                </p>
+                <details class="work-log">
+                  <summary>자세한 작업 기록</summary>
+                  <ul id="work-jobs" aria-label="현재 진행 중인 작업"></ul>
+                  <ol id="work-history"></ol>
+                </details>
+              </section>
+              <section class="preparation-section" aria-label="먼저 알아두면 좋은 지식">
+                <div class="preparation-heading">
+                  <h2>기다리는 동안, 먼저 알아보기</h2>
+                  <button id="btn-preparation-refresh" type="button" disabled>자료 찾기</button>
+                </div>
+                <p id="preparation-message">번역을 시작하면 입문 영상과 해설 글을 찾습니다.</p>
+                <div id="preparation-resources"></div>
+                <p class="preparation-note">
+                  자료는 기본 브라우저에서 열립니다. 앱을 실행해 두면 번역 완료 시 알려드립니다.
+                </p>
+              </section>
+            </section>
+          </div>
+          <div id="process-area" hidden>
+            <div class="process-row">
+              <span id="stage" role="status"></span
+              ><button id="btn-process" class="primary" type="button" hidden>번역 시작</button>
+            </div>
+            <p id="process-time"></p>
+            <button id="btn-work-details" type="button">진행 상황 · 기다리며 볼 자료</button>
+            <progress id="process-progress" aria-label="번역 진행률" hidden></progress>
+          </div>
         </aside>
       </main>
+      <footer id="statusbar">
+        <span class="status-dot" aria-hidden="true"></span>
+        <p id="status" role="status">준비 중…</p>
+        <span class="footer-hint">← → 문장 이동　↑ ↓ 해설 스크롤　Tab 개념 열기</span>
+      </footer>
+      <dialog
+        id="import-dialog"
+        class="paper-dialog"
+        aria-labelledby="import-title"
+        aria-describedby="import-description"
+      >
+        <form method="dialog">
+          <span class="dialog-symbol" aria-hidden="true">文</span>
+          <h2 id="import-title">이 논문을 번역할까요?</h2>
+          <p id="import-file"></p>
+          <p id="import-description">
+            논문 분석부터 배경 자료 조사, 문장 번역과 해설까지 자동으로 진행합니다. 완료된 부분부터
+            바로 읽을 수 있습니다.
+          </p>
+          <p class="dialog-note">ChatGPT 계정의 사용 한도를 사용합니다.</p>
+          <div class="dialog-actions">
+            <button value="no">아니오</button
+            ><button id="import-yes" value="yes" class="primary">예, 번역 시작</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="library-dialog" class="paper-dialog" aria-labelledby="library-title">
+        <div class="library-heading">
+          <h2 id="library-title">내 논문</h2>
+          <button id="library-close" class="icon-button" aria-label="내 논문 닫기">×</button>
+        </div>
+        <p id="library-message" role="status"></p>
+        <ul id="library-list"></ul>
+      </dialog>
+      <dialog
+        id="reading-tutorial"
+        aria-labelledby="tutorial-title"
+        aria-describedby="tutorial-description"
+      >
+        <header class="tutorial-header">
+          <span id="tutorial-progress" aria-live="polite">읽기 안내 · 1 / 4</span>
+          <button id="tutorial-close" class="icon-button" type="button" aria-label="도움말 닫기">
+            ×
+          </button>
+        </header>
+        <h2 id="tutorial-title" tabindex="-1"></h2>
+        <p id="tutorial-description"></p>
+        <div class="tutorial-demo" data-demo="0">
+          <span class="tutorial-caption">예시 원문 · 아래 문장을 클릭해 보세요</span>
+          <button id="tutorial-sentence" type="button">
+            The model retrieves relevant documents.
+          </button>
+          <div id="tutorial-translation" class="tutorial-result" hidden>
+            모델은 관련 문서를 검색합니다.
+          </div>
+          <p class="tutorial-tip">여러 문장을 드래그하면 한 번에 선택할 수 있습니다.</p>
+        </div>
+        <div class="tutorial-demo" data-demo="1" hidden>
+          <span class="tutorial-caption">예시 문장 이동</span>
+          <p id="tutorial-example-en" class="tutorial-example-en"></p>
+          <p id="tutorial-example-ko"></p>
+          <div class="tutorial-keys">
+            <button id="tutorial-sentence-prev" type="button" aria-label="예시 이전 문장">←</button>
+            <span id="tutorial-example-position" aria-live="polite"></span>
+            <button id="tutorial-sentence-next" type="button" aria-label="예시 다음 문장">→</button>
+          </div>
+        </div>
+        <div class="tutorial-demo" data-demo="2" hidden>
+          <span class="tutorial-caption"
+            ><kbd>↑</kbd> <kbd>↓</kbd> 키를 눌러 아래 해설을 스크롤해 보세요</span
+          >
+          <div id="tutorial-scroll" tabindex="0" aria-label="스크롤 연습용 해설">
+            <h3>검색 증강 생성</h3>
+            <p>질문에 관련된 문서를 먼저 찾고, 그 내용을 참고해 답변을 만드는 방식입니다.</p>
+            <h3>검색 단계</h3>
+            <p>
+              질문과 관련된 자료를 골라냅니다. 검색 결과는 답변을 만드는 데 필요한 배경 정보를
+              제공합니다.
+            </p>
+            <h3>생성 단계</h3>
+            <p>
+              찾은 문서와 질문을 함께 읽고 답변을 작성합니다. 원문과 설명을 오가며 내용을 확인할 수
+              있습니다.
+            </p>
+            <p>여기까지 내려왔다면, 위쪽 방향키로 다시 올라가 보세요.</p>
+          </div>
+        </div>
+        <div class="tutorial-demo" data-demo="3" hidden>
+          <span class="tutorial-caption"><kbd>Tab</kbd> 키를 눌러 개념을 하나씩 펼쳐 보세요</span>
+          <div id="tutorial-concepts">
+            <details class="concept">
+              <summary>검색기</summary>
+              <p>질문에 관련된 문서를 찾는 역할을 합니다.</p>
+            </details>
+            <details class="concept">
+              <summary>생성기</summary>
+              <p>찾은 문서를 참고해 답변을 작성합니다.</p>
+            </details>
+            <details class="concept">
+              <summary>근거 문서</summary>
+              <p>답변의 내용을 확인할 수 있는 자료입니다.</p>
+            </details>
+          </div>
+          <p class="tutorial-tip">
+            카드를 모두 열면 Tab은 다음 버튼으로 이동합니다. Shift + Tab은 이전 항목으로 이동합니다.
+          </p>
+        </div>
+        <footer class="tutorial-footer">
+          <button id="tutorial-back" type="button">이전</button>
+          <span>상단 도움말에서 다시 볼 수 있어요</span>
+          <button id="tutorial-next" class="primary" type="button">다음</button>
+        </footer>
+      </dialog>
+      <div id="bookmarks-popover" popover aria-labelledby="bookmarks-title">
+        <header>
+          <h2 id="bookmarks-title">이 논문의 책갈피</h2>
+          <button
+            class="icon-button"
+            type="button"
+            popovertarget="bookmarks-popover"
+            popovertargetaction="hide"
+            aria-label="책갈피 닫기"
+          >
+            ×
+          </button>
+        </header>
+        <p class="bookmarks-hint">
+          문장을 선택한 뒤 책갈피 버튼 또는 <kbd>⌘/Ctrl + D</kbd>로 저장하세요.
+        </p>
+        <p id="bookmarks-empty">저장한 문장이 없습니다.</p>
+        <ol id="bookmark-list"></ol>
+      </div>
+      <div id="settings-popover" popover>
+        <header>
+          <h2>계정 및 연결</h2>
+          <button
+            class="icon-button"
+            type="button"
+            popovertarget="settings-popover"
+            popovertargetaction="hide"
+            aria-label="닫기"
+          >
+            ×
+          </button>
+        </header>
+        <div id="account" aria-label="LLM 계정"></div>
+        <section id="checks" aria-label="의존 서비스 점검"></section>
+      </div>
     </div>
     <script type="module" src="./src/main.ts"></script>
   </body>

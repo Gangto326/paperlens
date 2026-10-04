@@ -27,7 +27,7 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
  *
  * - 개념 카드를 몇 개씩 묶어 조사 작업을 보낸다. 작업 하나가 실패해도 나머지는 계속한다.
  *   실패한 묶음의 카드는 뜻이 빈 채로 남는다. 뒤의 카드 쓰기 작업(concept-cards.ts)이 검색 없이 채운다.
- * - 묶음은 `concurrency`개까지 동시에 돈다(COMMIT_PLAN M3 P1). 묶음은 서로의 결과를 입력으로 받지 않는다.
+ * - 묶음은 기본적으로 모두 동시에 시작한다. 묶음은 서로의 결과를 입력으로 받지 않는다.
  *   결과는 모두 끝난 뒤에 묶음 순서대로 장부에 넣는다. 그래서 출처 번호(src_N)는 끝나는 순서와 무관하다.
  * - 로그인 필요, 한도 초과, 런타임 없음은 패스를 멈춘다. 새 묶음을 보내지 않고 돌던 묶음이 끝나기를 기다린다.
  *   research.json과 context.json은 쓰지 않는다. 패스가 끝나야 쓴다.
@@ -47,8 +47,6 @@ import { SourceRegistry, type ClaimedSource, type RejectedSource } from './sourc
 export const CONCEPT_RESEARCH_STAGE = 'concept_research';
 export const RESEARCH_TIMEOUT_MS = 10 * 60_000;
 export const RESEARCH_BATCH_SIZE = 3;
-/** 동시에 도는 조사 묶음 수. 번역 청크의 기본값과 같게 두었다. 조사 묶음으로 잰 값은 아니다. */
-export const RESEARCH_CONCURRENCY = 3;
 
 export interface ConceptResearchModelOutput {
   concepts: {
@@ -112,7 +110,7 @@ export interface ConceptResearchOptions {
   pdfSha256: string;
   generationId: string;
   batchSize?: number;
-  /** 동시에 도는 묶음 수. 기본 `RESEARCH_CONCURRENCY`. 1이면 하나씩 돈다. */
+  /** 생략하면 모든 묶음을 동시에 시작한다. 명시한 경우에만 동시 실행 수를 제한한다. */
   concurrency?: number;
   timeoutMs?: number;
   onEvent?: (event: LlmJobEvent) => void;
@@ -302,7 +300,7 @@ export async function runConceptResearch(
     context.concepts.filter((c) => !cards.has(c.id)),
     options.batchSize ?? RESEARCH_BATCH_SIZE,
   );
-  const concurrency = Math.max(1, Math.floor(options.concurrency ?? RESEARCH_CONCURRENCY));
+  const concurrency = Math.max(1, Math.floor(options.concurrency ?? batches.length));
   const jobIdOf = (index: number): string => {
     const base = `rs_${generationId}_${stamp}_${index + 1}`;
     let jobId = base;

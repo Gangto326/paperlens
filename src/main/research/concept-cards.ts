@@ -17,6 +17,7 @@ import { batchesOf, readPaperIdentity } from './concept-research';
  * 카드의 researchStatus는 unresolved 그대로다. 화면은 "일반 설명, 출처 미확인"으로 표시한다.
  *
  * - 뜻이 빈 카드만 몇 개씩 묶어 보낸다. 없으면 아무것도 하지 않는다.
+ * - 서로 독립적인 묶음은 기본적으로 모두 동시에 시작한다.
  * - 작업 하나가 실패해도 나머지는 계속한다. 실패한 묶음의 카드는 뜻이 빈 채로 남고 화면에는 이름과
  *   "왜 중요한가"만 보인다. 다시 실행하면 그 카드만 다시 보낸다.
  * - 로그인 필요, 한도 초과, 런타임 없음은 새 묶음을 보내지 않는다. 그때까지 쓴 카드는 저장한다.
@@ -27,8 +28,6 @@ export const CONCEPT_CARDS_STAGE = 'concept_cards';
 export const CARDS_TIMEOUT_MS = 10 * 60_000;
 /** 조사 묶음(3)의 두 배. 검색이 없어 카드 하나에 드는 시간이 짧다고 보고 정한 값이다. 재지 않았다. */
 export const CARDS_BATCH_SIZE = 6;
-/** 동시에 도는 묶음 수. 번역 청크의 기본값과 같게 두었다. */
-export const CARDS_CONCURRENCY = 3;
 
 export interface ConceptCardsModelOutput {
   concepts: { id: string; definitionKo: string; exampleKo: string }[];
@@ -72,7 +71,7 @@ export interface ConceptCardsOptions {
   pdfSha256: string;
   generationId: string;
   batchSize?: number;
-  /** 동시에 도는 묶음 수. 기본 `CARDS_CONCURRENCY`. 1이면 하나씩 돈다. */
+  /** 생략하면 모든 묶음을 동시에 시작한다. 명시한 경우에만 동시 실행 수를 제한한다. */
   concurrency?: number;
   timeoutMs?: number;
   onEvent?: (event: LlmJobEvent) => void;
@@ -189,7 +188,7 @@ export async function runConceptCards(
   const identity = await readPaperIdentity(store, pdfSha256, manifest.currentExtractionRevision);
   const stamp = compact(now());
   const batches = batchesOf(targets, options.batchSize ?? CARDS_BATCH_SIZE);
-  const concurrency = Math.max(1, Math.floor(options.concurrency ?? CARDS_CONCURRENCY));
+  const concurrency = Math.max(1, Math.floor(options.concurrency ?? batches.length));
 
   const results = new Map<number, { jobId: string; result: LlmJobResult }>();
   const queue = [...batches.entries()];

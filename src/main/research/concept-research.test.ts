@@ -599,6 +599,41 @@ describe('runConceptResearch', () => {
     expect(await store.verifyFiles(SHA)).toEqual([]);
   });
 
+  it.each([false, true])(
+    '기본 설정은 모든 조사 묶음을 동시에 보내고 결과를 보존한다 (한도 실패: %s)',
+    async (quota) => {
+      const runner = gatedRunner((request) =>
+        quota && idsOf(request)[0] === 'c_1' ? 'quota' : answer(idsOf(request)),
+      );
+      const running = runConceptResearch(
+        { store, runner, now: () => NOW },
+        { pdfSha256: SHA, generationId: GEN, batchSize: 1 },
+      );
+      await until(() => runner.waiting().length === 5);
+      expect(runner.requests).toHaveLength(0);
+      runner.release('c_1');
+      await until(() => runner.requests.length === 1);
+      for (const id of ['c_5', 'c_4', 'c_3', 'c_2']) runner.release(id);
+      const result = await running;
+      expect(runner.peak()).toBe(5);
+      expect(runner.requests).toHaveLength(5);
+      if (quota) {
+        expect(result).toMatchObject({ status: 'stopped', reason: 'quota' });
+        const resumed = runnerOf((request) => answer(idsOf(request)));
+        expect(
+          await runConceptResearch(
+            { store, runner: resumed, now: () => NOW },
+            { pdfSha256: SHA, generationId: GEN, batchSize: 1 },
+          ),
+        ).toMatchObject({ status: 'done', recovered: 4, researched: 5 });
+        expect(resumed.requests.map(idsOf)).toEqual([['c_1']]);
+      } else {
+        expect(result).toMatchObject({ status: 'done', researched: 5, sources: 10 });
+      }
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+    },
+  );
+
   it('동시에 돌던 묶음 하나가 한도에 걸리면 새 묶음을 보내지 않고 멈춘다', async () => {
     const runner = gatedRunner((request) =>
       idsOf(request)[0] === 'c_1' ? 'quota' : answer(idsOf(request)),

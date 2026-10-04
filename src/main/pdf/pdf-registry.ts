@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs';
-import { basename } from 'node:path';
+import { basename, join } from 'node:path';
 import type { OpenedPdf } from '@shared/ipc';
 import { sha256File } from '../cache/hash';
 import type { PaperCacheStore } from '../cache/paper-cache-store';
@@ -17,12 +17,19 @@ export class PdfRegistry {
     const stat = await fs.stat(originalPath);
     const pdfSha256 = await sha256File(originalPath);
     await this.store.initPaper(pdfSha256);
+    await this.store.writeText(
+      join(this.store.paperDir(pdfSha256), 'source.json'),
+      JSON.stringify({ originalPath }),
+    );
     this.paths.set(pdfSha256, originalPath);
     return { pdfSha256, fileName: basename(originalPath), originalPath, byteLength: stat.size };
   }
 
   isRegistered(pdfSha256: string): boolean {
     return this.paths.has(pdfSha256);
+  }
+  forget(pdfSha256: string): void {
+    this.paths.delete(pdfSha256);
   }
 
   /** 등록된 해시의 원본 경로. 미등록이면 예외. */

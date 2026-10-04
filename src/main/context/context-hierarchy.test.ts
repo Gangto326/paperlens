@@ -244,6 +244,19 @@ describe('planParts', () => {
 });
 
 describe('runContextPass 긴 논문', () => {
+  it('기본 설정은 5개를 넘는 모든 부분을 동시에 읽고 나서 통합한다', async () => {
+    const count = document.sentences.length;
+    const runner = runnerOf(() => null, count);
+    const result = await run(runner, { partMaxTokens: 100 });
+    if (!result.ok) throw new Error(result.message);
+    expect(count).toBeGreaterThan(5);
+    expect(runner.peak()).toBe(count);
+    expect(runner.requests.slice(0, count).every(isPart)).toBe(true);
+    expect(runner.requests).toHaveLength(count + 1);
+    expect(isPart(runner.requests[count]!)).toBe(false);
+    expect(await store.verifyFiles(SHA)).toEqual([]);
+  });
+
   it('부분 작업을 동시에 돌리고 통합 턴으로 컨텍스트를 만든다. coverage에 빠진 문장이 없다', async () => {
     const runner = runnerOf(() => null, 3);
     const result = await run(runner, { concurrency: 3 });

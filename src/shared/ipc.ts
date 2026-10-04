@@ -16,8 +16,18 @@ export type { SentenceIndex, SentenceIndexEntry } from './mapping/selection';
  */
 export const IPC = {
   appInfo: 'app:info',
+  workRead: 'work:read',
+  workEvent: 'work:event',
+  preparationRefresh: 'work:preparation',
+  openCompletedPaper: 'work:openCompleted',
   pdfOpenDialog: 'pdf:openDialog',
+  libraryList: 'library:list',
+  libraryOpen: 'library:open',
   pdfReadBytes: 'pdf:readBytes',
+  paperDeleteData: 'paper:deleteData',
+  additionalRead: 'additional:read',
+  additionalRequest: 'additional:request',
+  additionalEvent: 'additional:event',
   extractSaveTextItems: 'extract:saveTextItems',
   parserHealth: 'parser:health',
   parserFulltext: 'parser:fulltext',
@@ -80,6 +90,17 @@ export interface OpenedPdf {
   fileName: string;
   originalPath: string;
   byteLength: number;
+}
+
+export interface LibraryPaper {
+  pdfSha256: string;
+  title: string;
+  fileName: string;
+  originalPath: string | null;
+  available: boolean;
+  state: PaperState;
+  running: boolean;
+  updatedAt: string;
 }
 
 export type PdfOpenDialogResult = { canceled: true } | ({ canceled: false } & OpenedPdf);

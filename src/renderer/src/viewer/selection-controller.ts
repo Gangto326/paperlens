@@ -12,7 +12,7 @@ export interface SelectionEvent {
   /** 해석에 쓴 항목 범위(디버그·검증용) */
   ranges: TextRange[];
   /** 'drag' = 비어 있지 않은 Selection, 'click' = caret/지점 */
-  kind: 'drag' | 'click';
+  kind: 'drag' | 'click' | 'keyboard';
   elapsedMs: number;
 }
 

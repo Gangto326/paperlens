@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Concept, ContextDocument, Usage } from '@shared/schema';
 import { sampleChunk, sampleContext } from '@shared/schema/fixtures';
 import { PaperCacheStore } from '../cache/paper-cache-store';
@@ -126,6 +126,52 @@ const run = (runner: LlmJobRunner, batchSize = 2): ReturnType<typeof runConceptC
   );
 
 describe('runConceptCards', () => {
+  it.each([false, true])(
+    '기본 설정은 모든 설명 묶음을 동시에 보내고 결과를 보존한다 (한도 실패: %s)',
+    async (quota) => {
+      await seed([1, 2, 3, 4, 5].map((n) => card(n)));
+      const base = runnerOf((request) =>
+        quota && idsOf(request)[0] === 'c_1' ? 'quota' : answer(idsOf(request)),
+      );
+      const gates = new Map<string, () => void>();
+      const runner: LlmJobRunner = {
+        ...base,
+        run: async (request, onEvent) => {
+          await new Promise<void>((resolve) => gates.set(idsOf(request)[0]!, resolve));
+          return base.run(request, onEvent);
+        },
+      };
+      const running = runConceptCards(
+        { store, runner, now: () => NOW },
+        { pdfSha256: SHA, generationId: GEN, batchSize: 1 },
+      );
+      await vi.waitFor(() => expect(gates.size).toBe(5), { timeout: 4000 });
+      expect(base.requests).toHaveLength(0);
+      gates.get('c_1')!();
+      await vi.waitFor(() => expect(base.requests).toHaveLength(1));
+      for (const id of ['c_5', 'c_4', 'c_3', 'c_2']) gates.get(id)!();
+      const result = await running;
+      expect(base.requests).toHaveLength(5);
+      if (quota) {
+        expect(result).toMatchObject({ status: 'stopped', reason: 'quota', written: 4 });
+        const resumed = runnerOf((request) => answer(idsOf(request)));
+        expect(
+          await runConceptCards(
+            { store, runner: resumed, now: () => NOW },
+            { pdfSha256: SHA, generationId: GEN, batchSize: 1 },
+          ),
+        ).toMatchObject({ status: 'done', written: 1, empty: 0 });
+        expect(resumed.requests.map(idsOf)).toEqual([['c_1']]);
+      } else {
+        expect(result).toMatchObject({ status: 'done', written: 5, empty: 0 });
+      }
+      expect((await saved()).concepts.map((c) => c.definitionKo)).toEqual(
+        [1, 2, 3, 4, 5].map((n) => `쓴 뜻 c_${n}`),
+      );
+      expect(await store.verifyFiles(SHA)).toEqual([]);
+    },
+  );
+
   it('뜻이 빈 카드만 검색 없이 묶어 보내고, 받은 뜻과 사례를 저장한다', async () => {
     await seed([card(1), card(2, '조사로 쓴 뜻'), card(3), card(4)]);
     const runner = runnerOf((request) => answer(idsOf(request)));

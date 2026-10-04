@@ -144,6 +144,18 @@ export class PaperCacheStore {
     return this.readJson('manifest', this.manifestPath(pdfSha256));
   }
 
+  async listPaperHashes(): Promise<string[]> {
+    try {
+      const entries = await fs.readdir(join(this.root, 'papers'), { withFileTypes: true });
+      return entries
+        .filter((e) => e.isDirectory() && /^[0-9a-f]{64}$/.test(e.name))
+        .map((e) => e.name);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw err;
+    }
+  }
+
   /**
    * manifest를 갱신한다. 파일 해시 등록은 manifest보다 먼저 결과 파일을 확정한 뒤 호출한다
    * (PLAN 8.3: 결과 파일과 해시 확정 → manifest에서 완료 표시).

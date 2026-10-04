@@ -16,7 +16,7 @@ export class ChecksPanel {
       onChanged?: (view: ChecksView) => void;
     },
   ) {
-    this.render(true);
+    this.render(false);
   }
 
   async refresh(openIfProblem = true): Promise<ChecksView> {

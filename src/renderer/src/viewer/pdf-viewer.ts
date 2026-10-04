@@ -35,6 +35,12 @@ export class PdfViewer {
   private readonly container: HTMLElement;
   private readonly onPageRendered = new Set<(pageIndex: number, slot: HTMLDivElement) => void>();
 
+  private readonly onLayout = new Set<() => void>();
+
+  addLayoutListener(fn: () => void): void {
+    this.onLayout.add(fn);
+  }
+
   constructor(private readonly opts: PdfViewerOptions) {
     this.container = opts.container;
     this.observer = this.createObserver();
@@ -165,6 +171,7 @@ export class PdfViewer {
       slot.element.style.setProperty('--user-unit', String(slot.page.userUnit));
       this.observer.observe(slot.element);
     }
+    for (const fn of this.onLayout) fn();
   }
 
   private createObserver(): IntersectionObserver {

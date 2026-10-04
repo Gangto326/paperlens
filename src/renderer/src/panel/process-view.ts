@@ -3,7 +3,7 @@ import type { PaperState } from '@shared/schema';
 
 /**
  * 처리 단계 표시와 시작·멈춤 단추의 뷰 모델(C2.9, PLAN 9절). DOM을 모르는 순수 변환이다.
- * 진행률은 실제로 끝난 청크 수만 쓴다. 컨텍스트 작성처럼 끝을 알 수 없는 단계는 백분율을 만들지 않는다.
+ * 진행률은 실제로 끝난 구간 수만 쓴다. 컨텍스트 작성처럼 끝을 알 수 없는 단계는 백분율을 만들지 않는다.
  */
 export interface ProcessModel {
   /** 문장 색인을 읽어 처리를 시작할 수 있는 논문이 열려 있는지 */
@@ -103,7 +103,7 @@ export function applyProcessEvent(model: ProcessModel, event: ProcessEvent): Pro
         stopRequested: false,
         state: event.state,
         phase: 'finished',
-        // 시작하지 못한 실행(busy 등)은 청크 수를 모른다. 알고 있던 값을 지우지 않는다.
+        // 시작하지 못한 실행(busy 등)은 구간 수를 모른다. 알고 있던 값을 지우지 않는다.
         completed: event.total > 0 ? event.completed : model.completed,
         failed: event.total > 0 ? event.failed : model.failed,
         total: event.total > 0 ? event.total : model.total,
@@ -145,9 +145,9 @@ export function processView(model: ProcessModel): ProcessView {
         ? `논문 문맥 작성 중${step ? ` · 부분 ${step.done}/${step.total}` : ''}`
         : model.phase === 'research'
           ? `개념 자료 조사 중${step ? ` · 묶음 ${step.done}/${step.total}` : ''}`
-          : `번역 중${progress} 청크${failed}`;
+          : `번역 중${progress} 구간${failed}`;
     return {
-      stage: model.stopRequested ? `${stage} · 돌던 청크가 끝나면 멈춤` : stage,
+      stage: model.stopRequested ? `${stage} · 진행 중인 구간이 끝나면 멈춥니다` : stage,
       button: { label: '멈춤', action: 'stop', disabled: model.stopRequested },
     };
   }
@@ -161,8 +161,8 @@ export function processView(model: ProcessModel): ProcessView {
         : model.waiting.resumeAt === null
           ? ' · 한도를 주기적으로 확인합니다'
           : ` · ${clockText(model.waiting.resumeAt)}에 한도를 다시 확인합니다`;
-  const stage = `${base}${model.total > 0 ? ` ·${progress} 청크${failed}` : ''}${waiting}`;
-  if (model.state === 'complete') return { stage, button: null };
+  const stage = `${base}${model.total > 0 ? ` ·${progress} 구간${failed}` : ''}${waiting}`;
+  if (model.state === 'complete') return { stage: '', button: null };
   const resumable = model.completed > 0 || model.failed > 0 || name !== undefined;
   return {
     stage,
