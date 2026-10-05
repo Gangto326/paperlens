@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { dockerExecutable, localDockerArgs } from './setup-platform';
 
 /**
  * Docker 상태 확인(COMMIT_PLAN C5.1). `docker` 명령으로 데몬이 응답하는지, GROBID 이미지와 컨테이너가 있는지 본다.
@@ -7,10 +8,15 @@ import { execFile } from 'node:child_process';
  */
 export const GROBID_IMAGE = 'grobid/grobid:0.9.1-crf';
 export const GROBID_CONTAINER = 'paperlens-grobid';
+/** Project only lifecycle facts: full inspect output may exceed command limits and contains environment secrets. */
+export const GROBID_INSPECT_FORMAT =
+  '[{"Id":{{json .Id}},"Config":{"Image":{{json .Config.Image}},"Labels":{"local.paperlens.managed":{{if .Config.Labels}}{{json (index .Config.Labels "local.paperlens.managed")}}{{else}}null{{end}}}},"State":{"Running":{{json .State.Running}},"OOMKilled":{{json .State.OOMKilled}},"ExitCode":{{json .State.ExitCode}}},"HostConfig":{"PortBindings":{{json .HostConfig.PortBindings}}}}]';
 /** 터미널에서 직접 띄울 때의 명령. 점검 화면의 안내문에 쓴다. */
 export const GROBID_RUN_ARGS = [
   'run',
   '-d',
+  '--platform',
+  'linux/amd64',
   '--rm',
   '--init',
   '--ulimit',
@@ -44,14 +50,19 @@ export type Exec = (
 
 export const execDocker: Exec = (file, args, timeoutMs) =>
   new Promise((resolve) => {
-    execFile(file, args, { timeout: timeoutMs, windowsHide: true }, (error, stdout) => {
-      const err = error as NodeJS.ErrnoException | null;
-      resolve({
-        stdout: String(stdout ?? ''),
-        code: err ? (typeof err.code === 'number' ? err.code : null) : 0,
-        error: err,
-      });
-    });
+    execFile(
+      file === 'docker' ? dockerExecutable() : file,
+      file === 'docker' ? localDockerArgs(args) : args,
+      { timeout: timeoutMs, windowsHide: true },
+      (error, stdout) => {
+        const err = error as NodeJS.ErrnoException | null;
+        resolve({
+          stdout: String(stdout ?? ''),
+          code: err ? (typeof err.code === 'number' ? err.code : null) : 0,
+          error: err,
+        });
+      },
+    );
   });
 
 export async function checkDocker(

@@ -32,7 +32,7 @@ describe('checksView', () => {
     expect(v.rows[2]?.text).toBe('로그인됨 (a@b.c) · plus');
   });
 
-  it('Docker가 꺼져 있으면 GROBID도 Docker부터 안내하고 띄우기 단추를 주지 않는다', () => {
+  it('Docker가 꺼져 있으면 앱 내 준비 안내로 연결한다', () => {
     const v = checksView(
       report({
         docker: {
@@ -47,11 +47,11 @@ describe('checksView', () => {
     );
     expect(v.title).toBe('의존 서비스 점검 · 문제 2건');
     expect(v.rows[0]?.guidance).toContain('Docker Desktop을 실행');
-    expect(v.rows[1]).toMatchObject({ state: 'fail', action: null });
+    expect(v.rows[1]).toMatchObject({ state: 'fail', action: { kind: 'setup' } });
     expect(v.rows[1]?.guidance).toContain('Docker가 먼저');
   });
 
-  it('이미지가 있고 컨테이너가 없으면 띄우기 단추, 돌고 있으면 기다리라고 한다', () => {
+  it('이미지와 컨테이너 상태에 맞는 설명과 준비 안내를 제공한다', () => {
     const down = {
       ok: false as const,
       reason: 'unreachable' as const,
@@ -59,7 +59,7 @@ describe('checksView', () => {
       guidance: 'y',
     };
     const v = checksView(report({ grobid: down }));
-    expect(v.rows[1]?.action).toEqual({ label: 'GROBID 띄우기', kind: 'start_grobid' });
+    expect(v.rows[1]?.action).toEqual({ label: '읽기 환경 준비', kind: 'setup' });
     const starting = checksView(
       report({
         grobid: down,
@@ -72,7 +72,7 @@ describe('checksView', () => {
         },
       }),
     );
-    expect(starting.rows[1]?.action).toBeNull();
+    expect(starting.rows[1]?.action?.kind).toBe('setup');
     expect(starting.rows[1]?.text).toContain('아직 응답하지 않습니다');
     const noImage = checksView(
       report({
@@ -86,8 +86,8 @@ describe('checksView', () => {
         },
       }),
     );
-    expect(noImage.rows[1]?.action).toBeNull();
-    expect(noImage.rows[1]?.guidance).toContain('docker pull');
+    expect(noImage.rows[1]?.action?.kind).toBe('setup');
+    expect(noImage.rows[1]?.guidance).toContain('자동으로 받고');
   });
 
   it('Codex는 로그인 필요·런타임 없음·LLM 끔을 구분한다', () => {

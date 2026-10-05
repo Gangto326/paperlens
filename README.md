@@ -1,6 +1,6 @@
 # PaperLens
 
-논문 PDF를 열어 문장을 고르면 오른쪽에 번역과 해설을 보여 주는 개인용 데스크탑 앱이다(macOS, Intel).
+논문 PDF를 열어 문장을 고르면 오른쪽에 번역과 해설을 보여 주는 개인용 데스크탑 앱이다(macOS Intel, Windows x64).
 
 - 문장 구조 분석은 GROBID(Docker 컨테이너)가 한다.
 - 번역과 해설은 ChatGPT 구독 계정으로 로그인한 Codex 런타임이 한다. 런타임은 앱에 들어 있다.
@@ -8,34 +8,26 @@
 
 ## 처음 한 번
 
-1. Docker Desktop을 설치하고 실행한다.
-2. GROBID 이미지를 받는다(1.7GB, 한 번만).
+Windows에서는 `PaperLens-0.1.0-win-x64-Setup.exe`를 실행해 설치 위치를 선택하고 설치를 마친 뒤 바탕 화면의 PaperLens를 연다. 설치 파일에는 Windows용 Codex가 포함된다. 현재 빌드는 코드 서명 인증서가 없는 테스트용이므로 Windows에서 게시자 확인 경고가 나타날 수 있다.
 
-   ```sh
-   docker pull grobid/grobid:0.9.1-crf
-   ```
+배포받은 앱은 **읽기 환경 준비**를 열고 동의를 선택한 뒤 **Codex에게 진단·자동 해결 맡기기**를 누른다(ChatGPT 로그인 필요). 로그인 없이 진행하려면 **기본 자동 준비 시작**을 누른다. 별도 서버를 운영할 필요 없이 각 사용자의 컴퓨터에서 GROBID를 실행한다. Docker와 분석기는 앱 패키지에 포함하지 않고 최초 준비 때 받는다.
 
-3. 앱을 만든다.
+1. 앱이 컴퓨터에 맞는 공식 Docker 설치 파일을 다운로드하고 SHA-256 검증 후 설치 창을 연다. 이미 설치되어 있으면 건너뛴다.
+2. **내가 해야 할 일**의 Mac 또는 Windows 안내를 따라 설치 승인과 약관 동의를 마친다. Mac에서는 Docker 아이콘을 Applications로 드래그한다. Windows에서는 필요하면 재부팅하고 앱으로 돌아온다.
+3. Docker 실행, GROBID 이미지 다운로드, 로컬 분석기 실행과 응답 확인은 앱이 이어서 처리한다. Windows에서 WSL 업데이트를 요구하면 앱의 **Windows 실행 환경 설치·업데이트** 버튼을 이용한다.
+4. **준비 완료**를 확인하고 **ChatGPT 로그인**으로 계정을 연결한다. 설치 자체에는 ChatGPT 로그인이 필요 없다.
 
-   ```sh
-   npm install
-   npm run package    # dist/mac/PaperLens.app 생성 (약 710MB)
-   ```
+인터넷 연결과 약 10GB의 여유 공간, RAM 8GB 이상을 권장한다. 준비 화면에는 오프라인으로 볼 수 있는 문제 해결 안내가 있다. Codex에게 맡기면 앱이 실제 Docker·이미지·컨테이너·포트·여유 공간·WSL·가상화 상태를 측정하고, Codex가 필요한 조치를 선택하면 앱이 실행한 뒤 다시 측정한다. 설치·다운로드·Docker 실행·WSL 준비·앱이 관리하는 분석기 재시작을 처리할 수 있다. 실행 직전 상태와 소유권을 재확인하며, 논문 분석 중에는 재시작하지 않는다. 최대 4회 판단하고 같은 동작은 2회까지만 시도한다. 진행 내용과 조치 결과를 화면에 표시하고 언제든 중단할 수 있다.
 
-   `PaperLens.app`은 원하는 폴더(예: 응용 프로그램)로 옮겨도 된다. 서명하지 않은 앱이다. 열리지 않으면 Finder에서 우클릭 → 열기를 쓴다.
+Codex는 진단용 구조화 응답으로 다음 조치를 결정한다. 번역 런타임에 컴퓨터 전체를 변경할 수 있는 셸 권한을 주는 방식은 아니다. 설치 승인·약관·재부팅·가상화 설정처럼 직접 해야 할 일은 앱 안에서 안내한다. 로그는 알려진 오류 흔적만 추출하고 PDF·계정 정보·파일 경로·로그 원문은 모델에 보내지 않는다. **진단·설명만 받기**는 실제 상태를 조사하되 변경하지 않는다.
 
-4. 앱을 열고 오른쪽 패널 맨 위 계정 칸의 **ChatGPT 로그인**을 누른다. 브라우저에서 로그인을 마치면 앱이 "ChatGPT 로그인됨"으로 바뀐다. 로그인 정보는 앱 전용 폴더에만 저장되고 다음 실행에도 유지된다.
+자동 준비 대상은 macOS Intel/Apple silicon 및 Windows x64다. **macOS Intel 앱과 Windows x64 설치 파일을 각각 패키징할 수 있으며, Windows 설치·실행 흐름은 Windows 실기기 검증이 남아 있다.** Windows ARM 및 Linux용 자동 설치는 지원하지 않는다. 조직에서 사용하는 Docker Desktop의 이용 조건은 조직 정책을 따른다.
 
 ## 매번 쓰는 순서
 
-1. **Docker Desktop을 켠다.** 앱은 Docker를 대신 켜지 않는다.
-2. **앱을 연다.** 오른쪽 패널의 "의존 서비스 점검"이 Docker, GROBID, 로그인 상태를 보여 준다. 문제가 있으면 펼쳐져 있다.
-3. **필요하면 GROBID를 미리 띄운다.** 점검 칸의 **GROBID 띄우기**를 누르면 된다(수십 초 걸림). 터미널로 띄우려면:
-
-   ```sh
-   docker run -d --rm --init --ulimit core=0 -m 4g -p 127.0.0.1:8070:8070 --name paperlens-grobid grobid/grobid:0.9.1-crf
-   ```
-
+1. **앱을 연다.** 처음 동의한 자동 시작 설정이 유지되어 Docker와 분석기를 준비한다. 준비 화면에서 다음 실행 자동 시작을 끌 수 있다.
+2. **읽기 환경 준비**에서 진행 상태를 확인한다. 설치가 중단되었거나 재부팅했다면 **자동 준비 시작**으로 이어간다.
+3. 준비 완료 후 논문을 연다.
 4. **PDF 열기**로 새 논문을 고른다. 확인 창에서 **예, 번역 시작**을 누르면 추출 → 구조 분석 → 문장 연결 → 번역까지 자동으로 진행한다. **아니오** 또는 Esc를 누르면 시작 화면으로 돌아간다. Docker가 켜져 있고 이미지가 설치돼 있으면 GROBID도 필요할 때 시작한다.
 5. 문장을 **클릭**하거나 여러 문장을 **드래그**하면 오른쪽에 원문이 뜬다. 번역 전에는 "처리 대기"로 보인다.
 6. **진행 · 읽을거리**에서 진행 상황을 본다. 중단한 논문은 **번역 이어서**로 재개한다. 단계는 아래 순서로 넘어간다.
@@ -44,11 +36,7 @@
    - "개념 설명 정리 중": 조사에서 설명을 채우지 못한 개념이 있으면, 남은 설명 묶음을 모두 동시에 작성한다.
    - "문장 번역·해설": 준비가 끝나면 모든 본문 구간을 동시에 번역한다. 완료된 구간은 캐시에서 재사용하며, 끝난 부분부터 바로 읽을 수 있다. 완료·진행·대기 개수와 구간별 막대로 진행을 확인한다. 서비스의 실제 응답 속도에 따라 소요 시간은 달라진다.
    - **멈춤**을 누르면 돌던 덩어리까지 마치고 멈춘다. **번역 이어서**로 남은 부분을 계속한다.
-7. 다 쓰면 앱을 닫고 GROBID를 내린다. GROBID는 메모리를 4GB까지 쓴다.
-
-   ```sh
-   docker stop paperlens-grobid
-   ```
+7. 다 쓰면 앱을 완전히 종료한다(Mac: 메뉴에서 종료 또는 ⌘Q). 앱이 관리하는 GROBID 컨테이너는 자동으로 중지된다. Docker 자체나 사용자가 별도로 실행한 컨테이너는 종료하지 않는다. GROBID의 메모리 제한은 4GB다.
 
 한 번 번역한 논문은 다시 열면 저장된 결과가 바로 보인다. 같은 논문은 GROBID가 꺼져 있어도 저장된 문장 연결로 읽을 수 있다.
 
@@ -79,29 +67,35 @@
 
 | 증상 | 할 일 |
 |---|---|
-| 점검에 "Docker" 문제 | Docker Desktop이 켜져 있는지 본다 |
-| "GROBID 띄우기"가 없고 이미지가 없다는 안내 | `docker pull grobid/grobid:0.9.1-crf` |
-| "문장 연결 대기 (GROBID 없음)" | GROBID를 띄운 뒤 PDF를 다시 연다 |
+| 점검에 "Docker" 문제 | **읽기 환경 준비 → 자동 준비 시작** |
+| 분석기가 없다는 안내 | **읽기 환경 준비**에서 자동 다운로드·실행 |
+| "문장 연결 대기 (GROBID 없음)" | 준비 완료를 확인한 뒤 PDF를 다시 연다 |
 | "ChatGPT 로그인 필요" | 계정 칸의 로그인 단추 |
 | 앱을 하나만 켰는데도 "다른 프로세스(pid …)가 이 논문을 처리 중입니다"가 계속됨 | 앱을 모두 닫고 `~/Library/Application Support/paperlens/cache/papers/<논문 해시>/job.lock`을 지운다 |
-| 노트북이 느려짐 | 앱을 닫고 `docker stop paperlens-grobid` |
+| 노트북이 느려짐 | 앱을 완전히 종료하고 사용하지 않는 프로그램을 닫는다 |
 
 ## 저장 위치
 
 `~/Library/Application Support/paperlens/`
 
 - `cache/papers/<PDF 해시>/` — 추출 결과, 문장 연결, 번역·해설. 지우면 그 논문을 처음부터 다시 처리한다.
+- `local-setup/` — 자동 시작 설정과 다운로드한 설치 파일. 준비 중단은 설치된 Docker나 이미지를 삭제하지 않는다.
 - `codex-home/` — 앱 전용 로그인 정보와 런타임 설정. 다른 곳의 Codex 설정과 섞이지 않는다.
 
 ## 개발
 
 ```sh
+npm install
 npm run dev        # 개발 실행
 npm run check      # 타입 검사 → 린트 → 테스트
 npm run build      # out/ 빌드 (npx electron . 으로 실행)
 npm run e2e        # 앱 화면 검사. GROBID가 떠 있어야 하고 먼저 npm run build
 npm run package    # macOS 실행 패키지
+npm run package:win # Windows x64 설치 파일 (dist/windows/*-Setup.exe)
 ```
 
+- Windows 패키징은 별도 임시 폴더에 잠금 파일 기준 Windows 의존성을 설치하며 기존 Mac 개발 환경을 변경하지 않는다. 앱과 Codex가 모두 Windows x64 실행 파일인지 빌드 중 확인한다. Docker·GROBID는 첫 실행 시 별도로 받으며, 로그인 정보나 사용자 논문은 패키징 대상에 넣지 않는다. Windows 실기기에서 설치·로그인·분석기 준비·PDF 분석을 확인한 뒤 배포한다.
 - 설계는 `PLAN.md`, 커밋 순서와 진행 기록은 `COMMIT_PLAN.md`, 환경과 검증 논문은 `docs/environment.md`, 품질 의견과 실측 기록은 `docs/quality-backlog.md`, 평가 결과와 알려진 실패 조건은 `docs/evaluation.md`에 있다.
+- 자동 설치 UI 검증만 실행: `npm run build && npx playwright test e2e/local-setup.e2e.ts`. Docker 설치·이미지 다운로드·GPT 호출 없이 시험한다.
+- 공식 설치 안내: [Mac](https://docs.docker.com/desktop/setup/install/mac-install/), [Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [WSL 명령](https://learn.microsoft.com/windows/wsl/basic-commands).
 - 무거운 것(GROBID, 앱 창, 전체 검사)은 겹쳐 띄우지 않는다.

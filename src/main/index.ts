@@ -43,7 +43,11 @@ import { CodexAccount, formatAccountStatus, formatRateLimits } from './llm/codex
 import { formatSmokeRecord, runStructuredSmoke, saveSmokeRecord } from './llm/codex/codex-smoke';
 import { CodexJobRunner } from './llm/codex/codex-jobs';
 import { coalesce } from './deps/coalesce';
-import { checkDocker, startGrobidContainer } from './deps/docker';
+import { checkDocker } from './deps/docker';
+import { createLocalSetup } from './deps/setup-runtime';
+import { SetupAgent } from './deps/setup-agent';
+import { SetupAssistant } from './deps/setup-assistant';
+import { SETUP_ACTIONS, type SetupAction } from '@shared/local-setup';
 import { RetryingJobRunner } from './llm/retrying-runner';
 import { AutoResume } from './scheduler/auto-resume';
 import { PaperScheduler, type SchedulerEvent } from './scheduler/paper-scheduler';
@@ -53,6 +57,9 @@ let store: PaperCacheStore;
 let registry: PdfRegistry;
 let paperDeletion: PaperDataDeletion;
 let grobid: GrobidClient;
+let setupAgent: SetupAgent;
+let parsingPapers = 0;
+let localSetup: Awaited<ReturnType<typeof createLocalSetup>>;
 /** saveTextItems가 판정한 페이지 정보. document.json(C1.14)에 넣기 전까지 `<sha>:<rev>`로 기억한다. */
 const extractedPages = new Map<string, Page[]>();
 /** 마지막 헬스체크에서 읽은 GROBID 버전(Pipeline.parserVersion). */
@@ -85,6 +92,7 @@ const jobs = new CodexJobRunner({
   },
   log: (line) => console.log(`[llm] ${line}`),
 });
+const setupAssistant = new SetupAssistant(jobs);
 let scheduler: PaperScheduler | null = null;
 let autoResume: AutoResume | null = null;
 /** 멈춤 요청이 왔는지. 재시도 어댑터가 기다리기 전에 본다. 처리를 시작할 때 되돌린다. */
@@ -521,7 +529,12 @@ function registerIpc(): void {
         const rev = manifest.currentExtractionRevision;
         if (!rev) throw new Error(`추출 revision이 없습니다 (state=${manifest.state})`);
         const bytes = await registry.readBytes(pdfSha256);
-        const result = await processFulltext(grobid, bytes);
+        if (setupAgent.read().busy)
+          throw new Error('읽기 환경 자동 해결이 끝난 뒤 PDF를 다시 열어주세요.');
+        parsingPapers++;
+        const result = await processFulltext(grobid, bytes).finally(() => {
+          parsingPapers--;
+        });
         const teiPath = await saveOriginalTei(store, pdfSha256, rev, result.tei);
         return {
           teiPath,
@@ -682,7 +695,7 @@ function registerIpc(): void {
     }),
   );
 
-  // 의존 서비스 점검(C5.1). 설치는 하지 않는다. GROBID는 받아 둔 이미지가 있을 때만 띄운다.
+  // 점검은 읽기 전용이다. 다운로드·설치는 별도의 준비 흐름에서 처리한다.
   // 바깥 프로그램을 띄우는 부분(docker 명령, GROBID 응답 확인)은 호출이 몰려도 실행이 늘지 않게 묶는다.
   // 방금 결과를 다시 쓰는 2초는 사람이 "다시 확인"을 누르는 간격보다 짧고, GROBID 준비를 기다리는 5초 간격보다 짧다.
   const probeServices = coalesce(() => Promise.all([checkDocker(), grobid.isAlive()]), {
@@ -707,7 +720,49 @@ function registerIpc(): void {
       checkedAt: new Date().toISOString(),
     };
   });
-  ipcMain.handle(IPC.depsStartGrobid, (): Promise<StartGrobidResult> => startGrobidContainer());
+  ipcMain.handle(IPC.depsStartGrobid, (): Promise<StartGrobidResult> =>
+    setupAgent.read().busy
+      ? Promise.resolve({
+          started: false,
+          message: '읽기 환경 자동 해결이 끝난 뒤 PDF를 다시 열어주세요.',
+        })
+      : localSetup.startExisting(),
+  );
+  ipcMain.handle(IPC.setupRead, () => localSetup.setup.read());
+  ipcMain.handle(IPC.setupAction, async (_event, action: unknown) => {
+    if (typeof action !== 'string' || !SETUP_ACTIONS.includes(action as SetupAction))
+      throw new Error('알 수 없는 준비 동작입니다.');
+    if (setupAgent.read().busy) {
+      if (action !== 'cancel')
+        throw new Error('자동 해결이 진행 중입니다. 먼저 중단한 뒤 직접 조작해주세요.');
+      await setupAgent.cancel();
+    }
+    return localSetup.action(action as SetupAction);
+  });
+  ipcMain.handle(IPC.setupHelp, async (_event, question: unknown) => {
+    if (account.lastStatus.state !== 'authenticated')
+      throw new Error(
+        '계정 메뉴에서 ChatGPT 로그인 후 다시 눌러주세요. 기본 설치 안내와 자동 준비는 로그인 없이 이용할 수 있습니다.',
+      );
+    return setupAssistant.ask(
+      localSetup.setup.read(),
+      question,
+      await localSetup.diagnose(AbortSignal.timeout(45_000)),
+    );
+  });
+
+  ipcMain.handle(IPC.setupAgentRead, () => setupAgent.read());
+  ipcMain.handle(IPC.setupAgentStart, (_event, question: unknown, consent: unknown) => {
+    if (account.lastStatus.state !== 'authenticated')
+      throw new Error(
+        'ChatGPT 로그인 후 다시 맡겨주세요. 기본 자동 준비는 로그인 없이도 이용할 수 있습니다.',
+      );
+    return setupAgent.start(question, consent);
+  });
+  ipcMain.handle(IPC.setupAgentCancel, async () => {
+    await setupAgent.cancel();
+    return setupAgent.read();
+  });
 
   // 계정·로그인·한도(C1.19). 실제 로그인은 기본 브라우저에서 사용자가 마치고, 완료는 llm:accountEvent로 푸시된다.
   ipcMain.handle(IPC.llmAccountRead, async (): Promise<LlmAccountStatus> => account.read());
@@ -792,22 +847,50 @@ app.on('before-quit', (event) => {
   const live = [codex, codexResearch].filter(
     (r): r is CodexRuntime => r !== null && r.client !== null && r.client.state !== 'exited',
   );
-  if (quitting || live.length === 0) return;
+  if (quitting) return;
   quitting = true;
   event.preventDefault();
-  void Promise.all(
-    live.map((r) =>
+  void Promise.all([
+    setupAgent?.cancel(true).then(() => localSetup?.close()) ?? localSetup?.close(),
+    ...live.map((r) =>
       r.stop().catch((err: unknown) => console.error(`[codex] 종료 실패: ${String(err)}`)),
     ),
-  ).finally(() => app.quit());
+  ]).finally(() => app.quit());
 });
 
-void app.whenReady().then(() => {
+void app.whenReady().then(async () => {
   store = new PaperCacheStore(join(app.getPath('userData'), 'cache'));
   registry = new PdfRegistry(store);
   grobid = new GrobidClient();
+  localSetup = await createLocalSetup(
+    async () => (await grobid.isAlive()).ok,
+    (state) => {
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) win.webContents.send(IPC.setupEvent, state);
+      }
+    },
+    () => parsingPapers === 0,
+  );
+  setupAgent = new SetupAgent(jobs, {
+    diagnose: (signal) => localSetup.diagnose(signal),
+    execute: (action, signal) => localSetup.executeRepair(action, signal),
+    waitForSetup: (signal) => localSetup.waitForSetup(signal),
+    cancel: async (preserveAutomaticStart) => {
+      if (preserveAutomaticStart) {
+        localSetup.setup.abort();
+        await localSetup.setup.settled();
+      } else await localSetup.setup.cancel();
+    },
+    publish: (state) => {
+      if (state.phase === 'ready') localSetup.setup.confirmReady();
+      for (const win of BrowserWindow.getAllWindows())
+        if (!win.isDestroyed()) win.webContents.send(IPC.setupAgentEvent, state);
+    },
+  });
   registerIpc();
   createWindow();
+  if (!process.env['PAPERLENS_NO_SETUP_AUTOSTART'])
+    void localSetup.resume().catch((error: unknown) => console.error('[setup]', error));
   void bootCodex();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

@@ -48,9 +48,17 @@ export const IPC = {
   /** 의존 서비스 점검(C5.1). */
   depsCheck: 'deps:check',
   depsStartGrobid: 'deps:startGrobid',
+  setupRead: 'setup:read',
+  setupAction: 'setup:action',
+  setupEvent: 'setup:event',
+  setupHelp: 'setup:help',
+  setupAgentRead: 'setup:agentRead',
+  setupAgentStart: 'setup:agentStart',
+  setupAgentCancel: 'setup:agentCancel',
+  setupAgentEvent: 'setup:agentEvent',
 } as const;
 
-/** 시작 시 의존 서비스 점검 결과(C5.1). 자동 설치는 없다. 각 항목의 조치는 renderer가 안내문으로 만든다. */
+/** 시작 시 의존 서비스 점검 결과(C5.1). 준비가 필요한 항목은 앱 내 설치 안내로 연결한다. */
 export interface DependencyReport {
   docker: {
     ok: boolean;
@@ -130,7 +138,7 @@ export interface TextExtractionResult {
   halted: boolean;
 }
 
-/** GROBID 서비스 상태. 실패 시 guidance에 사용자가 할 일(Docker 실행 명령)을 담는다. */
+/** GROBID 서비스 상태. 실패 시 guidance에 사용자가 할 일(앱 내 준비 안내)을 담는다. */
 export type ParserHealth =
   | { ok: true; version: string | null }
   | {

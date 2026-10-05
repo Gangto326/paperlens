@@ -12,6 +12,7 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "package": "electron-vite build && electron-builder --mac dir --x64",
+    "package:win": "electron-vite build && node scripts/package-windows.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

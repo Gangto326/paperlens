@@ -12,6 +12,7 @@ export class ChecksPanel {
     private readonly root: HTMLElement,
     private readonly deps: {
       login: () => Promise<void>;
+      setup: () => void;
       onError: (err: unknown) => void;
       onChanged?: (view: ChecksView) => void;
     },
@@ -30,7 +31,11 @@ export class ChecksPanel {
     return this.view;
   }
 
-  private async act(kind: 'start_grobid' | 'login'): Promise<void> {
+  private async act(kind: 'start_grobid' | 'login' | 'setup'): Promise<void> {
+    if (kind === 'setup') {
+      this.deps.setup();
+      return;
+    }
     if (this.busy) return;
     this.busy = true;
     try {

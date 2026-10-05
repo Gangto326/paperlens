@@ -14,6 +14,7 @@ import type { OpenedPdf, ProcessEvent, SentenceIndex, TranslationSnapshot } from
 import { collectTextItems, TEXT_EXTRACTOR_VERSION } from './extract/text-items';
 import { AccountPanel } from './panel/account-panel';
 import { ChecksPanel } from './panel/checks-panel';
+import { SetupPanel } from './panel/setup-panel';
 import {
   INITIAL_PROCESS,
   applyProcessEvent,
@@ -59,6 +60,7 @@ const workPanel = new WorkPanel(async () => {
 }, showError);
 const accountPanel = new AccountPanel($('account'), (err) => showError(err));
 const checksPanel = new ChecksPanel($('checks'), {
+  setup: () => setupPanel.open(),
   login: async () => {
     const start = await window.paperlens.startLogin();
     if (!start.started) throw new Error(`로그인을 시작하지 못했습니다: ${start.reason}`);
@@ -68,6 +70,9 @@ const checksPanel = new ChecksPanel($('checks'), {
     $('connection-dot').dataset['tone'] = view.allOk ? 'ok' : 'warn';
     $('btn-account').title = view.title;
   },
+});
+const setupPanel = new SetupPanel(() => {
+  void checksPanel.refresh(false);
 });
 const processButton = $<HTMLButtonElement>('btn-process');
 const deleteButton = $<HTMLButtonElement>('btn-delete-paper');

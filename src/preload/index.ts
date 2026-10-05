@@ -1,6 +1,8 @@
+import type { SetupAgentState } from '@shared/setup-diagnosis';
 import type { AdditionalExplanation, AdditionalTarget } from '@shared/additional-explanation';
 import type { ReadingWork, WorkUpdate } from '@shared/work-status';
 import type { OpenedPdf } from '@shared/ipc';
+import type { SetupAction, SetupAdvice, SetupState } from '@shared/local-setup';
 import { contextBridge, ipcRenderer } from 'electron';
 import {
   IPC,
@@ -95,6 +97,26 @@ const api = {
   /** 의존 서비스 점검(C5.1). */
   checkDependencies: (): Promise<DependencyReport> => ipcRenderer.invoke(IPC.depsCheck),
   startGrobid: (): Promise<StartGrobidResult> => ipcRenderer.invoke(IPC.depsStartGrobid),
+  readSetupAgent: (): Promise<SetupAgentState> => ipcRenderer.invoke(IPC.setupAgentRead),
+  startSetupAgent: (question: string, consent: boolean): Promise<SetupAgentState> =>
+    ipcRenderer.invoke(IPC.setupAgentStart, question, consent),
+  cancelSetupAgent: (): Promise<SetupAgentState> => ipcRenderer.invoke(IPC.setupAgentCancel),
+  onSetupAgentEvent: (handler: (state: SetupAgentState) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, state: SetupAgentState): void =>
+      handler(state);
+    ipcRenderer.on(IPC.setupAgentEvent, listener);
+    return () => ipcRenderer.removeListener(IPC.setupAgentEvent, listener);
+  },
+  readSetup: (): Promise<SetupState> => ipcRenderer.invoke(IPC.setupRead),
+  setupAction: (action: SetupAction): Promise<SetupState> =>
+    ipcRenderer.invoke(IPC.setupAction, action),
+  setupHelp: (question: string): Promise<SetupAdvice> =>
+    ipcRenderer.invoke(IPC.setupHelp, question),
+  onSetupEvent: (handler: (state: SetupState) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, state: SetupState): void => handler(state);
+    ipcRenderer.on(IPC.setupEvent, listener);
+    return () => ipcRenderer.removeListener(IPC.setupEvent, listener);
+  },
   onProcessEvent: (handler: (event: ProcessEvent) => void): (() => void) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: ProcessEvent): void =>
       handler(payload);

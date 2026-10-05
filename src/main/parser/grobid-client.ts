@@ -33,7 +33,8 @@ export const DEFAULT_GROBID_CONFIG: GrobidConfig = {
 export const GROBID_RUN_COMMAND =
   'docker run --rm --init --ulimit core=0 -m 4g -p 127.0.0.1:8070:8070 grobid/grobid:0.9.1-crf';
 
-export const GROBID_GUIDANCE = `GROBID 서비스에 연결할 수 없습니다. Docker Desktop을 실행한 뒤 터미널에서 다음 명령으로 GROBID를 띄우고 다시 시도하세요:\n${GROBID_RUN_COMMAND}`;
+export const GROBID_GUIDANCE =
+  '논문 분석기에 연결할 수 없습니다. 상단 “읽기 환경 준비”를 열고 “자동 준비 시작”을 누르세요. 필요한 설치와 실행을 앱 안에서 안내합니다.';
 
 export type GrobidHealth =
   | { ok: true; version: string | null }

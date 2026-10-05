@@ -2,7 +2,7 @@ import type { DependencyReport } from '@shared/ipc';
 
 /**
  * 의존 서비스 점검 화면의 뷰 모델(COMMIT_PLAN C5.1). DOM을 모르는 순수 변환이다.
- * 항목 셋(Docker, GROBID, Codex 로그인)마다 상태와 사용자가 할 일을 적는다. 자동 설치는 없다.
+ * 항목 셋(Docker, GROBID, Codex 로그인)마다 상태와 사용자가 할 일을 적는다. 준비가 필요하면 앱 내 안내로 연결한다.
  * 하나라도 안 되면 화면을 펼쳐 보여 준다.
  */
 export interface CheckRow {
@@ -14,7 +14,7 @@ export interface CheckRow {
   /** 사용자가 할 일. 없으면 null */
   guidance: string | null;
   /** 단추. start_grobid는 받아 둔 이미지로 컨테이너를 띄운다. login은 계정 패널과 같다 */
-  action: { label: string; kind: 'start_grobid' | 'login' } | null;
+  action: { label: string; kind: 'start_grobid' | 'login' | 'setup' } | null;
 }
 
 export interface ChecksView {
@@ -49,9 +49,9 @@ export function checksView(report: DependencyReport): ChecksView {
     guidance: docker.ok
       ? null
       : docker.reason === 'not_installed'
-        ? 'Docker Desktop을 설치하세요. GROBID(논문 구조 분석)가 Docker 안에서 돕니다.'
-        : 'Docker Desktop을 실행하세요. 실행된 뒤 "다시 확인"을 누르세요.',
-    action: null,
+        ? '“읽기 환경 준비”에서 공식 설치 파일을 받고 안내에 따라 설치하세요. 별도로 검색하거나 명령어를 입력할 필요가 없습니다.'
+        : '“읽기 환경 준비”에서 Docker Desktop을 실행하고 이어서 준비할 수 있습니다.',
+    action: docker.ok ? null : { label: '읽기 환경 준비', kind: 'setup' },
   });
 
   const grobid = report.grobid;
@@ -65,7 +65,6 @@ export function checksView(report: DependencyReport): ChecksView {
       action: null,
     });
   } else {
-    const canStart = docker.ok && docker.imagePresent === true;
     rows.push({
       key: 'grobid',
       label: 'GROBID',
@@ -76,14 +75,11 @@ export function checksView(report: DependencyReport): ChecksView {
       guidance: !docker.ok
         ? 'Docker가 먼저 실행돼야 합니다.'
         : docker.imagePresent === false
-          ? '터미널에서 docker pull grobid/grobid:0.9.1-crf 로 이미지를 받은 뒤 "GROBID 띄우기"를 누르세요.'
+          ? '“읽기 환경 준비”에서 논문 분석기를 자동으로 받고 실행하세요.'
           : docker.containerRunning
             ? '잠시 뒤 "다시 확인"을 누르세요.'
-            : '"GROBID 띄우기"를 누르면 받아 둔 이미지로 컨테이너를 띄웁니다. 준비까지 수십 초 걸립니다.',
-      action:
-        canStart && !docker.containerRunning
-          ? { label: 'GROBID 띄우기', kind: 'start_grobid' }
-          : null,
+            : '“읽기 환경 준비”에서 분석기를 실행하세요. 준비까지 수십 초 걸릴 수 있습니다.',
+      action: { label: '읽기 환경 준비', kind: 'setup' },
     });
   }
 
@@ -103,7 +99,8 @@ export function checksView(report: DependencyReport): ChecksView {
       label: 'Codex 로그인',
       state: 'fail',
       text: 'Codex App Server가 실행 중이 아닙니다',
-      guidance: '앱을 다시 시작하세요. 계속되면 터미널 로그의 [codex] 줄을 확인하세요.',
+      guidance:
+        '앱을 완전히 종료한 뒤 다시 여세요. 인터넷 연결도 확인해주세요. 논문 분석 환경 준비는 로그인 없이 진행할 수 있습니다.',
       action: null,
     });
   } else if (codex.account.state === 'authenticated') {

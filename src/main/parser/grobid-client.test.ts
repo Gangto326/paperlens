@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { afterEach, describe, expect, it } from 'vitest';
-import { GrobidClient, GrobidError, GROBID_RUN_COMMAND } from './grobid-client';
+import { GrobidClient, GrobidError } from './grobid-client';
 
 type Handler = (req: IncomingMessage, res: ServerResponse) => void;
 
@@ -32,7 +32,7 @@ describe('GrobidClient.isAlive', () => {
     expect(health).toEqual({ ok: true, version: '0.9.1' });
   });
 
-  it('서비스가 없으면 unreachable + Docker 안내', async () => {
+  it('서비스가 없으면 unreachable + 앱 내 준비 안내', async () => {
     const baseUrl = await listen((_req, res) => res.end('true'));
     await new Promise<void>((r) => server!.close(() => r()));
     server = null;
@@ -40,7 +40,7 @@ describe('GrobidClient.isAlive', () => {
     expect(health.ok).toBe(false);
     if (!health.ok) {
       expect(health.reason).toBe('unreachable');
-      expect(health.guidance).toContain(GROBID_RUN_COMMAND);
+      expect(health.guidance).toContain('읽기 환경 준비');
     }
   });
 

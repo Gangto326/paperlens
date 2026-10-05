@@ -2029,3 +2029,136 @@ summary::after {
   margin: 0 8px 16px;
   color: var(--warning);
 }
+
+/* Setup follows the reader's quiet blue/white palette; numbering encodes real steps. */
+#local-setup {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px 32px;
+  color: var(--text);
+  background: var(--paper);
+}
+#local-setup::backdrop {
+  background: rgb(24 34 54 / 40%);
+}
+.setup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+}
+#setup-title {
+  font-size: 26px;
+  margin: 8px 0 12px;
+  color: var(--ink);
+}
+.setup-intro,
+.setup-guide,
+.setup-consent {
+  line-height: 1.75;
+}
+.setup-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  padding-left: 20px;
+  margin: 24px 0;
+}
+.setup-steps li {
+  padding: 8px 2px;
+  border-bottom: 3px solid var(--line);
+  color: var(--muted);
+}
+.setup-steps li[data-state='current'] {
+  border-color: var(--accent);
+  color: var(--ink);
+  font-weight: 700;
+}
+.setup-steps li[data-state='done'] {
+  border-color: #3b7762;
+  color: #29614e;
+}
+.setup-current {
+  padding: 12px 16px;
+  background: var(--accent-soft);
+  border-radius: 8px;
+}
+#setup-message {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+#setup-machine {
+  margin: 0;
+  font-size: 12px;
+}
+#setup-progress {
+  width: 100%;
+  margin: 8px 0;
+  accent-color: var(--accent);
+}
+.setup-consent {
+  display: block;
+  margin-top: 20px;
+}
+.setup-consent input {
+  margin-right: 8px;
+  accent-color: var(--accent);
+}
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.setup-guide {
+  border-top: 1px solid var(--line);
+  padding: 15px 0;
+}
+.setup-guide summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+#setup-instructions {
+  padding-left: 24px;
+}
+#setup-instructions li {
+  padding-left: 5px;
+  margin: 12px 0;
+}
+#setup-troubleshooting details {
+  padding: 12px 0 0;
+}
+#setup-question {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+  padding: 10px;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+#setup-answer {
+  white-space: pre-wrap;
+}
+#setup-action-error {
+  color: var(--danger);
+}
+#setup-action-error:empty {
+  display: none;
+}
+.setup-footnote,
+#setup-auto-note {
+  font-size: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  #local-setup {
+    padding: 20px;
+  }
+  .setup-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
