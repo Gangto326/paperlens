@@ -6,6 +6,22 @@
 - 번역과 해설은 ChatGPT 구독 계정으로 로그인한 Codex 런타임이 한다. 런타임은 앱에 들어 있다.
 - 채팅, 노트, 동기화, 번역본 PDF 내보내기는 없다.
 
+## 내려받기
+
+[Releases](https://github.com/Gangto326/paperlens/releases)에 설치 파일이 있다. 0.1.0 (2026-10-11):
+
+| 운영체제 | 파일 | 크기 | SHA-256 |
+|---|---|---|---|
+| macOS (Intel) | [PaperLens-0.1.0-mac-x64.zip](https://github.com/Gangto326/paperlens/releases/download/v0.1.0/PaperLens-0.1.0-mac-x64.zip) | 273MB | `304e80c2147bc4877a5b2551b40a7e685d188bfc3dd6553628d484198a5bd7ef` |
+| Windows (x64) | [PaperLens-0.1.0-win-x64-Setup.exe](https://github.com/Gangto326/paperlens/releases/download/v0.1.0/PaperLens-0.1.0-win-x64-Setup.exe) | 215MB | `603f12a08ad854dbcebd29aca8150141ae7fc3a9634bddeb1e39b58ceae2b2d9` |
+
+두 파일 모두 코드 서명이 없다. 처음 열 때 운영체제가 막는다.
+
+- **Mac**: zip을 풀어 `PaperLens.app`을 응용 프로그램 폴더로 옮긴다. 처음 열면 "확인할 수 없는 개발자" 또는 "악성 소프트웨어 검사 불가" 안내가 뜨고 열리지 않는다. 시스템 설정 → 개인정보 보호 및 보안 → 아래쪽 보안 항목에서 **그래도 열기**를 누른다. 터미널을 쓴다면 `xattr -dr com.apple.quarantine /Applications/PaperLens.app` 한 번으로도 된다. Apple silicon Mac에서는 Rosetta로 돈다.
+- **Windows**: 설치 파일을 실행하면 SmartScreen 경고가 뜬다. **추가 정보 → 실행**을 누른다. Windows 실기기에서 설치·실행은 아직 확인하지 않았다.
+
+받은 파일이 손상되지 않았는지 보려면 해시를 비교한다. Mac: `shasum -a 256 <파일>`, Windows PowerShell: `Get-FileHash <파일>`.
+
 ## 처음 한 번
 
 Windows에서는 `PaperLens-0.1.0-win-x64-Setup.exe`를 실행해 설치 위치를 선택하고 설치를 마친 뒤 바탕 화면의 PaperLens를 연다. 설치 파일에는 Windows용 Codex가 포함된다. 현재 빌드는 코드 서명 인증서가 없는 테스트용이므로 Windows에서 게시자 확인 경고가 나타날 수 있다.
